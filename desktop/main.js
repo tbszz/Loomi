@@ -91,6 +91,12 @@ async function start() {
   python = await detectPython();
   pythonExecutable = python.executable;
   warnings = python.warnings;
+  // Export packages are installed for the user in the background; the warning only returns if that fails.
+  if (python.executable && python.missing.length) {
+    warnings = [];
+    python = { ...python, warnings: [] };
+    installingPython = installPythonDeps().catch(() => {}).finally(() => { installingPython = null; });
+  }
   const env = { ...process.env, RESUME_PROTOCOL_PORT: String(port), RESUME_PROTOCOL_HOST: '127.0.0.1', RESUME_PROTOCOL_DATA_DIR: dataDir, RESUME_PROTOCOL_SECURE_COOKIES: 'false', ...(python.executable ? { RESUME_PROTOCOL_PYTHON: python.executable } : {}) };
   // PDF.js classifies Electron utility processes as renderers (no DOMMatrix).
   // A regular fork in Node mode preserves its real Node detection and sqlite.
