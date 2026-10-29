@@ -25,7 +25,7 @@ function isFileDrag(event) {
   return Array.from(event.dataTransfer?.types || []).includes('Files');
 }
 
-export function WorkspaceChat({ conversation, documents, pending, busy, canCancel, onSend, onCancel, onAttach, onDropFiles, onSelectJob, onOpenPreview, renderAttachment, scrubMessage, notice, onDismissNotice, catalogUserId }) {
+export function WorkspaceChat({ conversation, documents, pending, busy, canCancel, onSend, onCancel, onAttach, onDropFiles, onSelectJob, onOpenPreview, renderAttachment, scrubMessage, notice, onDismissNotice, catalogUserId, compact = false }) {
   const messages = useMemo(() => visibleMessages(conversation).map(scrubMessage), [conversation, scrubMessage]);
   const runtime = useExternalStoreRuntime({
     messages, convertMessage: toAssistantMessage,
@@ -84,7 +84,7 @@ export function WorkspaceChat({ conversation, documents, pending, busy, canCance
       <ThreadPrimitive.Root className="aui-thread" data-empty={empty} {...dragHandlers}>
         <ThreadPrimitive.Viewport className="aui-viewport" autoScroll aria-label="对话内容">
           <div className="aui-messages" role="log" aria-live="polite" aria-relevant="additions">
-            {empty ? <><Welcome hasResume={Boolean(documents?.length)} onAttach={onAttach} disabled={busy} /><Suggestions disabled={busy} /></> : null}
+            {empty ? compact ? <div className="side-chat-empty"><h3>顺手问一句。</h3><p>沿用当前求职背景，消息只留在旁聊。</p></div> : <><Welcome hasResume={Boolean(documents?.length)} onAttach={onAttach} disabled={busy} /><Suggestions disabled={busy} /></> : null}
             <ThreadPrimitive.Messages>{({ message }) => {
               const careerMessage = message.metadata?.custom?.careerMessage;
               return <CareerMessage message={careerMessage} streaming={Boolean(pending)} conversation={conversation} documents={documents} latestResumeId={latestResumeId} onSelectJob={onSelectJob} onOpenPreview={onOpenPreview} renderAttachment={renderAttachment} />;
@@ -97,10 +97,10 @@ export function WorkspaceChat({ conversation, documents, pending, busy, canCance
         <div className="aui-composer-dock">
           <Presence visible={Boolean(notice)} className="notice-presence"><div className="notice-reveal"><div><div className="aui-notice" role="status"><span>{notice}</span><button type="button" onClick={onDismissNotice} aria-label="关闭提示">关闭</button></div></div></div></Presence>
           <Presence visible={Boolean(conversation?.context?.selectedJob)}><button type="button" className="aui-context-chip" onClick={onOpenPreview}><BriefcaseBusiness size={13} /><Crossfade identity={conversation?.context?.selectedJob?.id || conversation?.context?.selectedJob?.title}>当前目标 · {conversation?.context?.selectedJob?.title}</Crossfade></button></Presence>
-          <CareerComposer key={conversation?.id || 'new'} busy={busy} canCancel={canCancel} onAttach={onAttach} catalogUserId={catalogUserId} />
-          <p className="aui-composer-hint">建议以你的真实经历为依据，重要信息请与原文核对。</p>
+          <CareerComposer key={conversation?.id || 'new'} busy={busy} canCancel={canCancel} onAttach={onAttach} catalogUserId={catalogUserId} compact={compact} />
+          {!compact && <p className="aui-composer-hint">建议以你的真实经历为依据，重要信息请与原文核对。</p>}
         </div>
-        <LoomiPet pending={pending} lastMessage={messages.at(-1)} />
+        {!compact && <LoomiPet pending={pending} lastMessage={messages.at(-1)} />}
         <Presence visible={dragActive || dropAccepted}><div className="aui-drop-overlay" data-accepted={dropAccepted} aria-hidden="true">
           <div className="aui-drop-card"><svg className="drop-dashes" aria-hidden="true"><rect /></svg><Upload size={22} strokeWidth={1.6} /><strong>松开鼠标，上传材料</strong><span>支持 PDF、DOCX、TXT、Markdown、JSON，最大 8MB</span></div>
         </div></Presence>
@@ -155,7 +155,7 @@ function Suggestions({ disabled }) {
   )}</div>;
 }
 
-function CareerComposer({ busy, canCancel, onAttach, catalogUserId }) {
+function CareerComposer({ busy, canCancel, onAttach, catalogUserId, compact }) {
   const aui = useAui();
   const text = useAuiState(s => s.composer.isEditing ? s.composer.text : '');
   const input = useRef(null);
@@ -239,7 +239,7 @@ function CareerComposer({ busy, canCancel, onAttach, catalogUserId }) {
         {catalogUserId ? <button type="button" onMouseDown={event => event.preventDefault()} onClick={() => { setCatalogAttempt(attempt => attempt + 1); input.current?.focus(); }}>重试加载 Skills</button> : null}
       </p> : !matches.length ? <p role="status">没有匹配的 Skill。</p> : null}
     </div></Presence>
-    <ComposerPrimitive.Input ref={input} disabled={busy} className="aui-composer-input" placeholder="今天想推进哪一步？输入 / 选择 Skill" aria-label="给 Resume Protocol 发消息" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded={open} aria-controls={open ? listId : undefined} aria-activedescendant={open && matches.length ? `${listId}-${activeIndex}` : undefined} minRows={1} maxRows={7} submitMode="enter" addAttachmentOnPaste={false} cancelOnEscape={false}
+    <ComposerPrimitive.Input ref={input} disabled={busy} className="aui-composer-input" placeholder={compact ? '在旁聊中提问…' : '今天想推进哪一步？输入 / 选择 Skill'} aria-label={compact ? '给旁聊发消息' : '给 Loomi 发消息'} aria-autocomplete="list" aria-haspopup="listbox" aria-expanded={open} aria-controls={open ? listId : undefined} aria-activedescendant={open && matches.length ? `${listId}-${activeIndex}` : undefined} minRows={1} maxRows={7} submitMode="enter" addAttachmentOnPaste={false} cancelOnEscape={false}
       onChange={event => {
         // Recover when an IME drops compositionend but resumes ordinary input,
         // matching assistant-ui's own composition recovery without losing focus.
@@ -251,8 +251,8 @@ function CareerComposer({ busy, canCancel, onAttach, catalogUserId }) {
       onCompositionStart={() => { composing.current = true; }} onCompositionEnd={event => { composing.current = false; setCursor(event.target.selectionStart); }} />
     <div className="aui-composer-toolbar">
       <div className="aui-composer-tools">
-        <button type="button" className="aui-attach" onClick={onAttach} disabled={busy} aria-label="上传简历" title="上传简历 · 也可直接拖入对话区 · PDF、DOCX、TXT、MD、JSON，最大 8MB"><Paperclip size={19} /></button>
-        <span>简历与岗位助手</span>
+        {!compact && <button type="button" className="aui-attach" onClick={onAttach} disabled={busy} aria-label="上传简历" title="上传简历 · 也可直接拖入对话区 · PDF、DOCX、TXT、MD、JSON，最大 8MB"><Paperclip size={19} /></button>}
+        <span>{compact ? '旁聊' : '简历与岗位助手'}</span>
       </div>
       <span className="aui-submit-slot" data-running={canCancel}>
       {canCancel ? <ComposerPrimitive.Cancel className="aui-stop" aria-label="停止生成" title="停止生成"><SubmitIcon running /></ComposerPrimitive.Cancel>

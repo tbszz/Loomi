@@ -318,7 +318,7 @@ if (process.argv.includes('--job-spaces-browser') || process.argv.includes('--ge
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`http://127.0.0.1:${server.address().port}/__composer`);
-    const input = page.getByRole('textbox', { name: '给 Resume Protocol 发消息' });
+    const input = page.getByRole('textbox', { name: '给 Loomi 发消息' });
     const sent = () => page.evaluate(() => window.sent);
     await input.fill('Plain Enter');
     await input.press('Enter');

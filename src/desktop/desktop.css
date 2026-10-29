@@ -1,31 +1,37 @@
 /* Every rule is desktop-only. Reuse the workspace's live color tokens. */
-html[data-desktop="true"] body { padding-top: 36px; }
+html[data-desktop="true"] body:has(.workspace-shell) { padding-top: 36px; }
 html[data-desktop="true"] .workspace-shell { height: calc(100dvh - 36px); min-height: 0; }
+.desktop-entry { position: fixed; inset: 0; background: #121211; }
+.desktop-entry-notice { position: fixed; z-index: 30; bottom: 12px; left: 50%; transform: translateX(-50%); max-width: calc(100vw - 48px); padding: 8px 14px; border: 1px solid var(--dt-line); border-radius: 8px; background: var(--dt-surface); font-size: 12px; overflow-wrap: anywhere; }
+.desktop-entry-notice button { margin-left: 12px; padding: 4px 8px; border: 1px solid var(--dt-line); border-radius: 5px; background: var(--dt-soft); }
 .desktop-titlebar { position: fixed; top: 0; left: 0; right: 0; height: 36px; display: flex; align-items: center; gap: 9px; padding: 0 150px 0 18px; background: var(--aui-bg); border-bottom: 1px solid var(--aui-line); color: var(--aui-muted); z-index: 90; font: 500 11px/1 'Segoe UI',sans-serif; letter-spacing: .25px; -webkit-app-region: drag; user-select: none; }
-.desktop-monogram { font-size: 10px; font-weight: 750; color: var(--aui-accent); }
 .desktop-titlebar-caption { margin-left: 9px; padding-left: 16px; border-left: 1px solid var(--aui-line-strong); font-size: 10px; color: var(--aui-muted-soft); }
 .aui-workspace .project-sidebar footer:has(.desktop-account-area) { display: flex; flex-direction: column; gap: 3px; padding-bottom: 12px; }
-.aui-workspace .desktop-account-area { width: 100%; padding-top: 10px; color: var(--aui-ink); font-size: 12px; }
-.desktop-account-card { padding: 14px 12px 8px; background: var(--aui-surface-soft); border: 1px solid var(--aui-line); border-radius: 12px; }
-.desktop-account-identity { display: flex; align-items: center; gap: 9px; }
-.desktop-avatar { flex: 0 0 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; background: var(--aui-accent-soft); color: var(--aui-accent-strong); font: 600 15px/1 'Segoe UI',sans-serif; }
-.desktop-account-identity strong { display: block; font-size: 12px; font-weight: 600; line-height: 1.5; }
-.desktop-account-caption { display: block; color: var(--aui-muted); font-size: 10px; line-height: 1.8; }
+.aui-workspace .desktop-account-area { width: 100%; min-width: 0; padding-top: 7px; color: var(--aui-ink); font-size: 12px; }
+.desktop-account-card { display: flex; align-items: center; gap: 3px; min-width: 0; padding: 7px 5px; background: var(--aui-surface-soft); border: 1px solid var(--aui-line); border-radius: 9px; }
+.desktop-account-identity { flex: 1; min-width: 0; margin-left: 4px; }
+.desktop-avatar { flex: 0 0 27px; height: 27px; display: grid; place-items: center; border-radius: 8px; background: var(--aui-accent-soft); color: var(--aui-accent-strong); font: 600 13px/1 'Segoe UI',sans-serif; }
+.desktop-account-identity strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 600; line-height: 1.5; }
 .aui-workspace .desktop-account-area button { -webkit-app-region: no-drag; border: 0; font: inherit; box-shadow: none; cursor: pointer; transition: background .16s ease, color .16s ease; }
-.aui-workspace .desktop-account-area .desktop-data-button { padding: 5px; min-width: 0; width: auto; margin-left: auto; background: transparent; color: var(--aui-muted); }
-.desktop-status { display: flex; align-items: baseline; gap: 6px; width: fit-content; max-width: 100%; margin: 12px 0 11px; padding: 3px 7px; border: 1px solid var(--aui-line); border-radius: 5px; color: var(--aui-muted); font-size: 10px; line-height: 1.6; overflow-wrap: anywhere; }
-.desktop-status-dot { flex: 0 0 5px; height: 5px; border-radius: 50%; background: var(--aui-muted-soft); align-self: center; }
+.aui-workspace .desktop-account-card button { display: grid; place-items: center; flex: 0 0 28px; min-width: 28px; min-height: 30px; width: 28px; padding: 4px; background: transparent; color: var(--aui-muted); }
+.desktop-status { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--aui-muted); font-size: 9px; line-height: 1.6; }
+.desktop-status-dot { display: inline-block; width: 4px; height: 4px; margin-right: 4px; border-radius: 50%; background: var(--aui-muted-soft); vertical-align: middle; }
 .desktop-status[data-state="synced"] .desktop-status-dot { background: #7a946c; }
 .desktop-status[data-state="error"] { color: var(--aui-accent-strong); }
 .desktop-status[data-state="syncing"] .desktop-status-dot { background: var(--aui-accent); animation: desktop-pulse 1s ease-in-out infinite alternate; }
-.aui-workspace .desktop-account-area .desktop-connect { display: flex; width: 100%; align-items: center; gap: 7px; padding: 9px 0 3px; border-top: 1px solid var(--aui-line); border-radius: 0; background: transparent; color: var(--aui-muted); font-size: 11px; text-align: left; }
-.desktop-connect span { flex: 1; }
 .aui-workspace .desktop-account-area button:hover { color: var(--aui-accent-strong); }
 .aui-workspace .desktop-account-area button:focus-visible, .desktop-dialog input:focus-visible { outline: 2px solid var(--aui-accent); outline-offset: 3px; }
-.desktop-warning { display: flex; align-items: flex-start; gap: 7px; padding: 10px; margin-bottom: 10px; border: 1px solid var(--aui-line-strong); border-radius: 9px; background: var(--aui-accent-soft); color: var(--aui-ink); font-size: 11px; line-height: 1.7; }
-.desktop-warning > svg { flex-shrink: 0; margin-top: 3px; color: var(--aui-accent-strong); }
+.desktop-warning { padding: 6px 8px; margin-bottom: 6px; border: 1px solid var(--aui-line-strong); border-radius: 8px; background: var(--aui-surface-soft); color: var(--aui-ink); font-size: 10px; line-height: 1.5; }
+.desktop-warning-heading { display: flex; align-items: center; gap: 5px; }
+.desktop-warning-heading span { flex: 1; }
+.desktop-warning-details { max-height: 64px; overflow: auto; margin: 3px 0; }
+.desktop-warning-details [role="alert"] { color: var(--accent-reject); }
+.desktop-warning-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .desktop-warning p { margin: 0; overflow-wrap: anywhere; }
-.aui-workspace .desktop-warning button { width: auto; min-width: 0; display: inline-flex; padding: 3px 0; gap: 4px; background: transparent; color: var(--aui-accent-strong); font-size: 10px; }
+.aui-workspace .desktop-warning button { width: auto; min-width: 0; min-height: 24px; display: inline-flex; align-items: center; padding: 2px 0; gap: 4px; background: transparent; color: var(--aui-ink); font-size: 10px; }
+.aui-workspace .desktop-warning button:disabled { opacity: .6; cursor: wait; }
+.aui-workspace .project-sidebar footer:has(.desktop-account-area) { flex-shrink: 0; }
+.aui-workspace .project-sidebar footer:has(.desktop-account-area) .sidebar-account-row > button:first-child { min-width: 64px; }
 .desktop-dialog { width: min(430px, calc(100vw - 48px)); max-height: calc(100dvh - 80px); overflow: auto; padding: 0; border: 1px solid var(--aui-line-strong); border-radius: 18px; background: var(--aui-surface); color: var(--aui-ink); box-shadow: var(--aui-shadow); animation: desktop-enter .18s ease-out; }
 .desktop-dialog::backdrop { background: rgb(20 19 17 / 42%); backdrop-filter: blur(3px); }
 .desktop-dialog form { position: relative; padding: 32px; }

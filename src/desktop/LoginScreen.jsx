@@ -3,6 +3,7 @@ import { ArrowRight, Check, Eye, EyeOff, LoaderCircle, LockKeyhole } from 'lucid
 import LoomiFigure from './LoomiFigure.jsx';
 import { initialLoginState, loginReducer, loomiMood, pupilOffset, validateLogin } from './loginState.js';
 import { useReducedMotion } from './useReducedMotion.js';
+import { cornerWebPaths } from './introTimeline.js';
 import './desktopTheme.css';
 import './loginScreen.css';
 
@@ -69,10 +70,10 @@ export default function LoginScreen({ onSubmit, onSuccess }) {
     <div className="desktop-drag-region" aria-hidden="true" />
     <div className="login-stack">
       <section className="login-card" aria-labelledby={`${id}-title`} style={{ animationName: state.status === 'error' ? (state.attempt % 2 ? 'login-shake' : 'login-shake-again') : 'none' }}>
-        <svg className="login-corner-web" viewBox="0 0 140 100" aria-hidden="true"><path d="M140 0L0 0M140 0L25 37M140 0L60 73M140 0L140 100M105 0Q108 17 119 21Q128 27 140 26M68 0Q73 33 94 42Q115 54 140 53M31 0Q38 48 69 63Q100 81 140 80" /></svg>
+        <svg className="login-corner-web" viewBox="0 0 105 75" aria-hidden="true">{cornerWebPaths().map((path, i) => <path key={i} d={path} />)}</svg>
         <div className="login-card-content">
           <header className="login-heading">
-            <h1 id={`${id}-title`} className="desktop-wordmark">Resume Protocol<sup>®</sup></h1>
+            <h1 id={`${id}-title`} className="desktop-wordmark">Loomi<sup>®</sup></h1>
             <p className="login-subtitle">你的长期求职助手，记得你的每一段经历。</p>
           </header>
           <div className="login-mode" role="group" aria-label="账户操作">

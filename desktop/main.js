@@ -1,17 +1,21 @@
-import { app, BrowserWindow, Menu, ipcMain, nativeTheme, safeStorage, screen, shell } from 'electron';
-import { fork } from 'node:child_process';
+import { app, BrowserWindow, Menu, ipcMain, nativeTheme, screen, shell } from 'electron';
+import { fork, execFile } from 'node:child_process';
 import path from 'node:path';
-import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { createWriteStream, existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile, stat, rename } from 'node:fs/promises';
 import { setTimeout as delay } from 'node:timers/promises';
-import { findFreePort, navigationAction, detectPython, loadLocalAccount, saveLocalAccount, authenticateLocalAccount, windowBounds } from './core.js';
+import { findFreePort, navigationAction, detectPython, pythonDependencyInstall, windowBounds } from './core.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = app.isPackaged ? path.join(process.resourcesPath, 'app.asar.unpacked') : path.dirname(here);
 // A separate profile is useful for QA and portable development; never the repository data/.
 if (process.env.RESUME_PROTOCOL_DESKTOP_USER_DATA) app.setPath('userData', path.resolve(process.env.RESUME_PROTOCOL_DESKTOP_USER_DATA));
+// Installs from before the Loomi rename keep their profile under the old product name.
+else {
+  const legacy = path.join(app.getPath('appData'), 'Resume Protocol');
+  if (existsSync(legacy) && !existsSync(app.getPath('userData'))) app.setPath('userData', legacy);
+}
 app.setAppUserModelId('com.resumeprotocol.desktop');
 const userData = app.getPath('userData');
 const dataDir = path.join(userData, 'data');
@@ -19,6 +23,7 @@ const logDir = path.join(userData, 'logs');
 const logPath = path.join(logDir, 'server.log');
 let mainWindow, loadingWindow, child, log, origin, saved = {}, quitting = false, stopping = false, serverExited = false;
 let warnings = [];
+let python, pythonExecutable, installingPython;
 const localStatus = () => ({ state: 'local' });
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -53,15 +58,48 @@ async function start() {
   log.on('error', error => { console.error('Desktop log unavailable:', error.message); app.quit(); });
   try { saved = JSON.parse(await readFile(path.join(userData, 'window.json'), 'utf8')); } catch { /* defaults */ }
   makeMenu();
-  loadingWindow = new BrowserWindow({ width: 520, height: 360, resizable: false, autoHideMenuBar: true, backgroundColor: '#faf9f6', icon: path.join(here, 'assets/icon.png'), webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false } });
-  await loadingWindow.loadURL(shellPage('你的下一步，从这里开始。', '正在打开本机工作区', false));
-  loadingWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-  loadingWindow.webContents.on('will-navigate', event => event.preventDefault());
 
   const port = await findFreePort();
   origin = `http://127.0.0.1:${port}`;
-  const python = await detectPython();
+  // Open the dark main window at once; the intro plays here as soon as the server answers.
+  const bounds = windowBounds(saved, screen.getAllDisplays().map(display => display.workArea));
+  mainWindow = new BrowserWindow({ ...bounds, minWidth: 1100, minHeight: 700, autoHideMenuBar: true, title: 'Loomi', titleBarStyle: 'hidden', titleBarOverlay: overlay('dark'), backgroundColor: '#121211', icon: path.join(here, 'assets/icon.png'), webPreferences: { preload: path.join(here, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, webviewTag: false, additionalArguments: [`--resume-version=${app.getVersion()}`] } });
+  const session = mainWindow.webContents.session;
+  session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
+  session.setPermissionCheckHandler(() => false);
+  session.webRequest.onHeadersReceived((details, callback) => {
+    const headers = { ...details.responseHeaders };
+    if (new URL(details.url).origin === origin) headers['Content-Security-Policy'] = ["default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'self' blob:; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'"];
+    callback({ responseHeaders: headers });
+  });
+  const external = url => { if (navigationAction(url, origin) === 'external') shell.openExternal(url).catch(error => log.write(`[desktop] External link failed: ${error.message}\n`)); };
+  for (const event of ['will-navigate', 'will-frame-navigate', 'will-redirect']) mainWindow.webContents.on(event, (e, legacyUrl) => {
+    const url = e.url || legacyUrl;
+    if (navigationAction(url, origin) !== 'allow') { e.preventDefault(); if (e.isMainFrame !== false) external(url); }
+  });
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => { external(url); return { action: 'deny' }; });
+  mainWindow.webContents.on('will-attach-webview', event => event.preventDefault());
+  // index.html is shared with the web build; the desktop window always reads Loomi.
+  mainWindow.on('page-title-updated', event => event.preventDefault());
+  installBridge();
+  mainWindow.on('close', () => {
+    saved = { ...mainWindow.getNormalBounds(), maximized: mainWindow.isMaximized(), theme: saved.theme };
+    // A tiny local preference file; synchronous close acknowledgement is unnecessary.
+    writeFile(path.join(userData, 'window.json'), JSON.stringify(saved)).catch(error => log.write(`[desktop] Window preferences: ${error.message}\n`));
+  });
+  if (saved.maximized) mainWindow.maximize();
+  // The installer ships its own Python with the export packages; a system Python is only the fallback.
+  const bundledPython = path.join(process.resourcesPath, 'python', 'python.exe');
+  if (app.isPackaged && !process.env.RESUME_PROTOCOL_PYTHON && existsSync(bundledPython)) python = await detectPython({ env: { ...process.env, RESUME_PROTOCOL_PYTHON: bundledPython } });
+  if (!python?.executable) python = await detectPython();
+  pythonExecutable = python.executable;
   warnings = python.warnings;
+  // Export packages are installed for the user in the background; the warning only returns if that fails.
+  if (python.executable && python.missing.length) {
+    warnings = [];
+    python = { ...python, warnings: [] };
+    installingPython = installPythonDeps().catch(() => {}).finally(() => { installingPython = null; });
+  }
   const env = { ...process.env, RESUME_PROTOCOL_PORT: String(port), RESUME_PROTOCOL_HOST: '127.0.0.1', RESUME_PROTOCOL_DATA_DIR: dataDir, RESUME_PROTOCOL_SECURE_COOKIES: 'false', ...(python.executable ? { RESUME_PROTOCOL_PYTHON: python.executable } : {}) };
   // PDF.js classifies Electron utility processes as renderers (no DOMMatrix).
   // A regular fork in Node mode preserves its real Node detection and sqlite.
@@ -80,43 +118,8 @@ async function start() {
     }
   });
   await waitUntilReady();
-  if (!safeStorage.isEncryptionAvailable()) throw new Error('Windows 账户加密服务不可用，无法安全保存本机账户。请检查系统账户后重试。');
-  const codec = { encrypt: value => safeStorage.encryptString(value), decrypt: bytes => safeStorage.decryptString(bytes) };
-  const accountPath = path.join(userData, 'local-account.json');
-  const account = await loadLocalAccount(accountPath, codec, os.userInfo().username);
-  const authenticated = await authenticateLocalAccount(account, (endpoint, payload) => fetch(`${origin}${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: payload.email, password: payload.password, name: payload.name }), signal: AbortSignal.timeout(15000) }));
-  await saveLocalAccount(accountPath, { ...account, registered: true }, codec);
   if (quitting) return;
-  const bounds = windowBounds(saved, screen.getAllDisplays().map(display => display.workArea));
-  mainWindow = new BrowserWindow({ ...bounds, minWidth: 1100, minHeight: 700, show: false, autoHideMenuBar: true, title: 'Resume Protocol', titleBarStyle: 'hidden', titleBarOverlay: overlay(saved.theme), backgroundColor: saved.theme === 'dark' ? '#262624' : '#faf9f6', icon: path.join(here, 'assets/icon.png'), webPreferences: { preload: path.join(here, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, webviewTag: false, additionalArguments: [`--resume-version=${app.getVersion()}`] } });
-  const session = mainWindow.webContents.session;
-  const pair = authenticated.cookie.split(';')[0];
-  const separator = pair.indexOf('=');
-  await session.cookies.set({ url: origin, name: pair.slice(0, separator), value: pair.slice(separator + 1), path: '/', httpOnly: true, sameSite: 'lax' });
-  session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
-  session.setPermissionCheckHandler(() => false);
-  session.webRequest.onHeadersReceived((details, callback) => {
-    const headers = { ...details.responseHeaders };
-    if (new URL(details.url).origin === origin) headers['Content-Security-Policy'] = ["default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'self' blob:; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'"];
-    callback({ responseHeaders: headers });
-  });
-  const external = url => { if (navigationAction(url, origin) === 'external') shell.openExternal(url).catch(error => log.write(`[desktop] External link failed: ${error.message}\n`)); };
-  for (const event of ['will-navigate', 'will-frame-navigate', 'will-redirect']) mainWindow.webContents.on(event, (e, legacyUrl) => {
-    const url = e.url || legacyUrl;
-    if (navigationAction(url, origin) !== 'allow') { e.preventDefault(); if (e.isMainFrame !== false) external(url); }
-  });
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => { external(url); return { action: 'deny' }; });
-  mainWindow.webContents.on('will-attach-webview', event => event.preventDefault());
-  installBridge();
-  mainWindow.on('close', () => {
-    saved = { ...mainWindow.getNormalBounds(), maximized: mainWindow.isMaximized(), theme: saved.theme };
-    // A tiny local preference file; synchronous close acknowledgement is unnecessary.
-    writeFile(path.join(userData, 'window.json'), JSON.stringify(saved)).catch(error => log.write(`[desktop] Window preferences: ${error.message}\n`));
-  });
-  await mainWindow.loadURL(`${origin}/#workspace`);
-  if (saved.maximized) mainWindow.maximize();
-  mainWindow.show();
-  loadingWindow?.destroy(); loadingWindow = null;
+  await mainWindow.loadURL(`${origin}/`);
   nativeTheme.on('updated', () => mainWindow?.webContents.send('desktop:theme-changed', nativeTheme.shouldUseDarkColors ? 'dark' : 'light'));
 }
 
@@ -139,6 +142,10 @@ function installBridge() {
   handle('desktop:open-data', () => openPath(dataDir));
   handle('desktop:open-logs', () => openPath(logPath));
   handle('desktop:diagnostics', () => ({ warnings, cloudUrl: process.env.RESUME_PROTOCOL_CLOUD_URL || 'https://app.resumeprotocol.com' }));
+  handle('desktop:install-python-deps', () => {
+    if (!installingPython) installingPython = installPythonDeps().finally(() => { installingPython = null; });
+    return installingPython;
+  });
   for (const name of ['status', 'sign-out', 'now']) handle(`desktop:sync-${name}`, localStatus);
   handle('desktop:sync-sign-in', () => { throw new Error('云端账户连接尚未开放。你的材料与对话仍只保存在本机。'); });
   ipcMain.on('desktop:theme', (event, theme) => {
@@ -148,17 +155,37 @@ function installBridge() {
   });
 }
 
+async function installPythonDeps() {
+  const { command, args } = pythonDependencyInstall(pythonExecutable);
+  log.write('\n[desktop] Installing Python export dependencies\n');
+  let failure;
+  try {
+    await new Promise((resolve, reject) => {
+      const installer = execFile(command, args, { windowsHide: true, timeout: 300000, maxBuffer: 8 * 1024 * 1024, encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' } }, error => error ? reject(error) : resolve());
+      installer.stdout.on('data', bytes => log.write(bytes));
+      installer.stderr.on('data', bytes => log.write(bytes));
+    });
+  } catch (error) { failure = error; log.write(`[desktop] Python dependency install: ${error.message}\n`); }
+  const checked = await detectPython({ env: { ...process.env, RESUME_PROTOCOL_PYTHON: pythonExecutable } });
+  warnings = [...warnings.filter(warning => !python.warnings.includes(warning)), ...checked.warnings];
+  python = checked;
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('desktop:warnings', warnings);
+  if (failure) throw failure;
+  if (!checked.executable || checked.missing.length) throw new Error(checked.warnings.map(warning => warning.message || warning).join('\n'));
+  return { warnings };
+}
+
 async function openPath(target) { const error = await shell.openPath(target); if (error) throw new Error(error); }
 function makeMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: '编辑', submenu: [{ role: 'undo' }, { role: 'redo' }, { type: 'separator' }, { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' }] },
     ...(!app.isPackaged ? [{ label: '视图', submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }] }] : []),
-    { label: '帮助', submenu: [{ label: '打开数据文件夹', click: () => openPath(dataDir).catch(showFailure) }, { label: '打开日志', click: () => openPath(logPath).catch(showFailure) }, { label: `Resume Protocol ${app.getVersion()}`, enabled: false }, { type: 'separator' }, { role: 'quit', label: '退出' }] },
+    { label: '帮助', submenu: [{ label: '打开数据文件夹', click: () => openPath(dataDir).catch(showFailure) }, { label: '打开日志', click: () => openPath(logPath).catch(showFailure) }, { label: `Loomi ${app.getVersion()}`, enabled: false }, { type: 'separator' }, { role: 'quit', label: '退出' }] },
   ]));
 }
 
 function shellPage(title, detail, failed) {
-  return `data:text/html;charset=utf-8,${encodeURIComponent(`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>Resume Protocol</title><style>body{margin:0;padding:48px;background:#faf9f6;color:#292722;font:14px/1.7 'Segoe UI','Microsoft YaHei',sans-serif}.mark{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:#b66d51;color:#fff;font-weight:700;font-size:20px}small{display:block;letter-spacing:2px;color:#756f64;margin:20px 0 8px}h1{font-size:22px;font-weight:600;margin:0 0 12px}p{color:#756f64;overflow-wrap:anywhere;user-select:text}.pulse{width:28px;height:3px;background:#b66d51;margin-top:24px;animation:pulse 1.3s ease-in-out infinite alternate}@keyframes pulse{to{opacity:.2;transform:scaleX(2)}}@media(prefers-reduced-motion:reduce){.pulse{animation:none}}</style><div class="mark">RP</div><small>RESUME PROTOCOL</small><h1>${escape(title)}</h1><p>${escape(detail)}</p>${failed ? '' : '<div class="pulse"></div>'}</html>`)}`;
+  return `data:text/html;charset=utf-8,${encodeURIComponent(`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>Loomi</title><style>body{margin:0;padding:48px;background:#faf9f6;color:#292722;font:14px/1.7 'Segoe UI','Microsoft YaHei',sans-serif}.mark{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:#b66d51;color:#fff;font-weight:700;font-size:20px}small{display:block;letter-spacing:2px;color:#756f64;margin:20px 0 8px}h1{font-size:22px;font-weight:600;margin:0 0 12px}p{color:#756f64;overflow-wrap:anywhere;user-select:text}.pulse{width:28px;height:3px;background:#b66d51;margin-top:24px;animation:pulse 1.3s ease-in-out infinite alternate}@keyframes pulse{to{opacity:.2;transform:scaleX(2)}}@media(prefers-reduced-motion:reduce){.pulse{animation:none}}</style><div class="mark">L</div><small>LOOMI</small><h1>${escape(title)}</h1><p>${escape(detail)}</p>${failed ? '' : '<div class="pulse"></div>'}</html>`)}`;
 }
 
 async function showFailure(error) {
