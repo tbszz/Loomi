@@ -3,7 +3,7 @@ import express from "express";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-import { createCustomModel, createDefaultModel, validatePublicHttpsBaseUrl } from "./modelClient.js";
+import { createCustomAgentModel, createDefaultModel, validatePublicHttpsBaseUrl } from "./modelClient.js";
 
 const SETTINGS_KEY = "modelSettings";
 const KEY_FILE = "model-settings.key";
@@ -41,7 +41,7 @@ export function createUserModel(database, userId, { dataDir, ...clientOptions } 
   const stored = readStoredSettings(database, userId);
   if (stored.mode !== "custom") return createDefaultModel({ dataDir, skills: clientOptions.skills });
   const apiKey = decryptApiKey(stored.encryptedApiKey, { dataDir });
-  return createCustomModel({ ...stored, apiKey }, clientOptions);
+  return createCustomAgentModel({ ...stored, apiKey }, { dataDir, ...clientOptions });
 }
 
 export function readStoredSettings(database, userId) {

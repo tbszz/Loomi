@@ -68,7 +68,7 @@ function App() {
   const [documents, setDocuments] = useState([]);
   const [candidateFacts, setCandidateFacts] = useState([]);
   const [activeDocumentId, setActiveDocumentId] = useState("");
-  const [modelSettings, setModelSettings] = useState({ mode: "default", protocol: "openai", baseUrl: "", model: "", hasApiKey: false });
+  const [modelSettings, setModelSettings] = useState({ mode: "default", protocol: "anthropic", baseUrl: "", model: "", hasApiKey: false });
   const [authMode, setAuthMode] = useState("login");
   const [authVisible, setAuthVisible] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
@@ -1241,8 +1241,9 @@ function SettingsPanel({ visible, settings, onClose, onSubmit }) {
         <label>{t("workspace.mode")}<select name="mode" value={mode} onChange={(event) => setMode(event.target.value)}><option value="default">{t("workspace.default")}</option><option value="custom">{t("workspace.custom")}</option></select></label>
         {mode === "default" ? <p className="settings-note">{t("workspace.useTheSystemModelNoSetupRequired")}</p> : (
           <div className="custom-settings">
-            <label>{t("workspace.protocol")}<select name="protocol" defaultValue={settings.protocol}><option value="openai">{t("settings.openai")}</option><option value="anthropic">Anthropic</option></select></label>
-            <label>{t("settings.baseUrl")}<input name="baseUrl" defaultValue={settings.baseUrl || ""} placeholder="https://api.example.com/v1" /></label>
+            <label>{t("workspace.protocol")}<select name="protocol" defaultValue={settings.protocol}><option value="anthropic">{t("settings.anthropic")}</option><option value="openai">{t("settings.openai")}</option></select></label>
+            <p className="settings-note">{t("settings.agentNote")}</p>
+            <label>{t("settings.baseUrl")}<input name="baseUrl" defaultValue={settings.baseUrl || ""} placeholder="https://api.deepseek.com/anthropic" /></label>
             <label>{t("settings.model")}<input name="model" defaultValue={settings.model || ""} placeholder={t("settings.modelName")} /></label>
             <label>{t("settings.apiKey")}<input name="apiKey" type="password" placeholder={settings.hasApiKey ? t("workspace.leaveBlankToKeepExistingKey") : t("workspace.pasteKey")} /></label>
           </div>

@@ -25,6 +25,10 @@ export function createDefaultModel({ dataDir, skills } = {}) {
     baseUrl: (process.env.MINIMAX_API_URL || 'https://api.minimaxi.com/anthropic').replace(/\/+$/, ''),
     model: process.env.MINIMAX_MODEL || 'MiniMax-M2.7', gitBashPath: process.env.CLAUDE_CODE_GIT_BASH_PATH, sessionDirectory, skills });
   if (runtime === 'claude' || runtime === 'auto') {
+    // ANTHROPIC_BASE_URL points the SDK at any Anthropic-compatible gateway.
+    if (process.env.ANTHROPIC_BASE_URL) return createClaudeAgentModel({ provider: 'custom',
+      apiKey: process.env.ANTHROPIC_AUTH_TOKEN || process.env.ANTHROPIC_API_KEY, baseUrl: toSdkBaseUrl(process.env.ANTHROPIC_BASE_URL),
+      model: process.env.CLAUDE_AGENT_MODEL, gitBashPath: process.env.CLAUDE_CODE_GIT_BASH_PATH, sessionDirectory, skills });
     return createClaudeAgentModel({ apiKey: process.env.ANTHROPIC_API_KEY, model: process.env.CLAUDE_AGENT_MODEL,
       gitBashPath: process.env.CLAUDE_CODE_GIT_BASH_PATH, sessionDirectory, skills });
   }
@@ -49,8 +53,24 @@ export function createCustomModel(settings, options = {}) {
   return request;
 }
 
+// A user-supplied Anthropic-compatible endpoint (DeepSeek, Kimi, GLM, MiniMax,
+// a relay, ...) runs the primary Agent through the same Claude Agent SDK loop.
+// OpenAI-protocol endpoints cannot drive the SDK and stay helper-only.
+export function createCustomAgentModel(settings, { dataDir, skills, ...clientOptions } = {}) {
+  const normalized = normalizeCustomSettings(settings);
+  if (normalized.protocol !== 'anthropic') return createCustomModel(normalized, clientOptions);
+  const sessionDirectory = path.join(dataDir || process.env.RESUME_PROTOCOL_DATA_DIR || path.join(root, 'data'), 'agent-sessions');
+  return createClaudeAgentModel({ provider: 'custom', apiKey: normalized.apiKey, baseUrl: toSdkBaseUrl(normalized.baseUrl),
+    model: normalized.model, gitBashPath: process.env.CLAUDE_CODE_GIT_BASH_PATH, sessionDirectory, skills });
+}
+
+// The SDK appends /v1/messages itself.
+export function toSdkBaseUrl(baseUrl) {
+  return trimTrailingSlash(baseUrl).replace(/\/v1(?:\/messages)?$/, '');
+}
+
 async function unsupportedPrimaryRuntime() {
-  throw publicModelError('兼容模型配置仅支持辅助生成；主职业 Agent 需要 Claude Agent SDK。请使用默认 SDK 模型配置。');
+  throw publicModelError('OpenAI 协议的自定义模型只能用于辅助生成，无法驱动职业 Agent。请在「模型设置」中把协议改为 Anthropic 兼容（DeepSeek、Kimi、智谱 GLM、MiniMax 等均提供 Anthropic 兼容端点）。');
 }
 
 export function normalizeCustomSettings(settings) {

@@ -433,7 +433,7 @@ function defaultModelStatus() {
   const request = createDefaultModel();
   const runtime = request.runtime || "compatible";
   const configured = runtime === "claude-agent-sdk"
-    ? Boolean(request.provider === 'minimax' ? process.env.MINIMAX_API_KEY : request.provider === 'bigmodel' ? process.env.BIGMODEL_API_KEY : process.env.ANTHROPIC_API_KEY)
+    ? Boolean(request.provider === 'minimax' ? process.env.MINIMAX_API_KEY : request.provider === 'bigmodel' ? process.env.BIGMODEL_API_KEY : request.provider === 'custom' ? (process.env.ANTHROPIC_AUTH_TOKEN || process.env.ANTHROPIC_API_KEY) : process.env.ANTHROPIC_API_KEY)
     : Boolean(process.env.MINIMAX_API_KEY || process.env.ANTHROPIC_API_KEY);
   return { runtime, configured };
 }
