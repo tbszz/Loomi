@@ -252,7 +252,7 @@ try {
     await page.goto(`${base}/#workspace`, { waitUntil: 'domcontentloaded' });
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.getByRole('heading', { name: '下一步，我们一起准备。' }).waitFor();
-    await page.getByRole('button', { name: '新建求职者' }).click();
+    await page.getByRole('combobox', { name: '切换求职者' }).selectOption('__new_candidate__');
     await page.getByRole('textbox', { name: '求职者名称' }).fill('张三');
     await page.getByRole('button', { name: '创建', exact: true }).click();
     await page.getByRole('combobox', { name: '切换求职者' }).waitFor();
