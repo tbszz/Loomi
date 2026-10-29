@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('resumeDesktop', {
   openLogs: () => ipcRenderer.invoke('desktop:open-logs'),
   onThemeChange: callback => subscribe('desktop:theme-changed', callback),
   getDiagnostics: () => ipcRenderer.invoke('desktop:diagnostics'),
+  installPythonDeps: () => ipcRenderer.invoke('desktop:install-python-deps'),
   onWarnings: callback => subscribe('desktop:warnings', callback),
   sync: {
     /** @returns {Promise<SyncStatus>} */

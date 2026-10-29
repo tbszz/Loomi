@@ -95,6 +95,7 @@ npm run dev -- --port 5178
 # http://127.0.0.1:5178/desktop-preview.html
 # Add ?skipIntro=1 or ?theme=light (or combine with &).
 node scripts/test-desktop-login.mjs
+node scripts/test-desktop-app.mjs # after npm run build; real server, temporary data, stubbed desktop bridge
 node --test src/desktop/introTimeline.test.js src/desktop/loginState.test.js
 ```
 
@@ -128,6 +129,11 @@ Captured screenshots:
 
 Verify with the targeted unit command above, `npm run build`, and the browser
 script (23 screenshots). The production build excludes this dev-only preview;
-the browser script exercises the desktop components through Vite directly. Actual Electron
-session routing, frameless window dragging, a physical 60fps display and spoken
-screen-reader output require shell/device verification after integration.
+the preview browser script exercises the desktop components through Vite directly.
+`test-desktop-app.mjs` checks the integrated production entry, real registration/login,
+session recovery, logout, dependency warning states and model settings at 1100×700
+and 1440×960. It starts `node server/index.js` with temporary data, stubs the minimal
+desktop bridge, uses local Chrome and saves screenshots/results under `output/desktop/`.
+The actual dependency IPC is covered by `desktop/main.test.js` with process fixtures;
+no packages are downloaded during tests. Packaged Electron window dragging, a physical
+60fps display and spoken screen-reader output still require device verification.

@@ -4,7 +4,7 @@ import net from 'node:net';
 import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { findFreePort, navigationAction, detectPython, loadLocalAccount, authenticateLocalAccount, windowBounds } from './core.js';
+import { findFreePort, navigationAction, detectPython, pythonDependencyInstall, pythonResult, loadLocalAccount, authenticateLocalAccount, windowBounds } from './core.js';
 import { syncStatusLabel } from '../src/desktop/sync-status.js';
 
 test('free port is bound only on loopback and is available after selection', async () => {
@@ -68,9 +68,37 @@ test('Python detection skips store aliases, resolves interpreter, reports missin
   };
   const result = await detectPython({ run, platform: 'win32', env: {} });
   assert.equal(result.executable, 'C:/Python/python.exe');
-  assert.match(result.warnings[0], /reportlab/);
+  assert.match(result.warnings[0].message, /reportlab/);
   assert.ok(calls.every(([, args]) => args.includes('-c')));
   assert.equal((await detectPython({ run: async () => { throw new Error('not found'); }, env: {}, platform: 'win32' })).executable, null);
+});
+
+test('dependency install uses the detected interpreter as a literal executable with fixed pip arguments', () => {
+  assert.deepEqual(pythonDependencyInstall('C:/Python With Spaces/python.exe'), { command: 'C:/Python With Spaces/python.exe', args: ['-m', 'pip', 'install', '--user', 'reportlab', 'python-docx'] });
+  assert.throws(() => pythonDependencyInstall(null), /未找到 Python/);
+});
+
+test('dependency warnings identify repairable modules and disappear only after a clean probe', () => {
+  const missing = pythonResult({ executable: 'python.exe', missing: ['reportlab', 'docx'] });
+  assert.deepEqual(missing.missing, ['reportlab', 'docx']);
+  assert.equal(missing.warnings[0].code, 'python-deps');
+  assert.match(missing.warnings[0].message, /reportlab、python-docx/);
+  assert.deepEqual(pythonResult({ executable: 'python.exe', missing: [] }).warnings, []);
+  assert.equal(pythonResult(null).executable, null);
+  assert.match(pythonResult(null).warnings[0], /未找到 Python/);
+  assert.throws(() => pythonResult({ executable: 'python.exe' }), /Python/);
+});
+
+test('dependency recheck pins the same interpreter passed to the server and never falls back', async () => {
+  const calls = [];
+  const result = await detectPython({ env: { RESUME_PROTOCOL_PYTHON: 'C:/Detected/python.exe' }, platform: 'win32', run: async (command, args, options) => {
+    calls.push({ command, args, options });
+    throw new Error('probe failed');
+  } });
+  assert.equal(result.executable, null);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].command, 'C:/Detected/python.exe');
+  assert.equal(calls[0].options.windowsHide, true);
 });
 
 test('remembered bounds from a removed monitor are restored to a visible display', () => {

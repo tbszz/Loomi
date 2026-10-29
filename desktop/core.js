@@ -57,6 +57,17 @@ export async function authenticateLocalAccount(account, request) {
   return { user: result.user, cookie };
 }
 
+export function pythonDependencyInstall(executable) {
+  if (!executable) throw new Error('未找到 Python。安装 Python 3 后重启即可。');
+  return { command: executable, args: ['-m', 'pip', 'install', '--user', 'reportlab', 'python-docx'] };
+}
+
+export function pythonResult(result) {
+  if (!result) return { executable: null, missing: [], warnings: ['未找到 Python。简历导出和招聘资讯采集暂不可用；上传材料与本机记录仍可使用。安装 Python 3 后重启即可。'] };
+  if (!result.executable || !Array.isArray(result.missing)) throw new Error('Python 检测结果无效。');
+  return { executable: result.executable, missing: result.missing, warnings: result.missing.length ? [{ code: 'python-deps', message: `Python 已找到；简历导出还需要安装 ${result.missing.map(m => m === 'docx' ? 'python-docx' : m).join('、')}。` }] : [] };
+}
+
 export async function detectPython({ run = promisify(execFile), env = process.env, platform = process.platform } = {}) {
   const probe = 'import sys,json,importlib.util; print(json.dumps({"executable":sys.executable,"missing":[m for m in ["reportlab","docx"] if importlib.util.find_spec(m) is None]}))';
   const candidates = env.RESUME_PROTOCOL_PYTHON ? [[env.RESUME_PROTOCOL_PYTHON, []]] : platform === 'win32' ? [['python', []], ['py', ['-3']], ['python3', []]] : [['python3', []], ['python', []]];
@@ -65,10 +76,10 @@ export async function detectPython({ run = promisify(execFile), env = process.en
       const { stdout } = await run(command, [...prefix, '-c', probe], { timeout: 4000, windowsHide: true, encoding: 'utf8', env: { ...env, PYTHONIOENCODING: 'utf-8' } });
       const result = JSON.parse(stdout.trim());
       if (!result.executable) continue;
-      return { executable: result.executable, warnings: result.missing.length ? [`Python 已找到；简历导出还需要安装 ${result.missing.map(m => m === 'docx' ? 'python-docx' : m).join('、')}。`] : [] };
+      return pythonResult(result);
     } catch { /* Windows Store aliases and broken interpreters are not usable Python. */ }
   }
-  return { executable: null, warnings: ['未找到 Python。简历导出和招聘资讯采集暂不可用；上传材料与本机记录仍可使用。安装 Python 3 后重启即可。'] };
+  return pythonResult(null);
 }
 
 export function windowBounds(saved = {}, areas) {
