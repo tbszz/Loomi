@@ -1,5 +1,7 @@
 node_modules/
 dist/
+release/
+output/desktop/
 tmp/
 .DS_Store
 .omx/

@@ -34,6 +34,8 @@ import {
 import "./styles.css";
 import { readableDocumentName } from './documentName.js';
 import { ApplicationPanel } from './components/ApplicationPanel.jsx';
+const DesktopAccount = window.resumeDesktop ? React.lazy(() => import('./desktop/DesktopAccount.jsx').then(module => ({ default: module.DesktopAccount }))) : null;
+const DesktopChrome = window.resumeDesktop ? React.lazy(() => import('./desktop/DesktopAccount.jsx').then(module => ({ default: module.DesktopChrome }))) : null;
 import { PasswordResetForm } from './components/PasswordResetForm.jsx';
 import { MotionGroup, Presence, usePresence, waitForMotion } from './motionHooks.jsx';
 import { startRun, appendRunStatus } from './motionState.js';
@@ -119,6 +121,7 @@ function App() {
   const [pending, setPending] = useState(null);
   const [notice, setNotice] = useState("");
   const [theme, setTheme] = useState(() => readStoredTheme());
+  useEffect(() => window.resumeDesktop?.onThemeChange(setTheme), []);
   const fileInputRef = useRef(null);
   const activeConversationRef = useRef('');
   const activeCandidateRef = useRef('');
@@ -690,6 +693,7 @@ function App() {
 
   return (
     <div className="workspace-shell aui-workspace" data-theme={theme} data-shortcut-hints={shortcutHints} data-sidebar-open={sidebarOpen} data-panel-open={panelOpen} data-panel-minimized={panelMinimized} data-sidebar-collapsed={sidebarCollapsed}>
+      {DesktopChrome && <React.Suspense fallback={null}><DesktopChrome /></React.Suspense>}
       <MobileBar
         theme={theme}
         onMenu={() => setSidebarOpen(true)}
@@ -966,7 +970,7 @@ function ProjectSidebar({
           <button type="button" className="sidebar-import" aria-label="导入旧记录" onClick={onImport}><Upload size={13} /><span>IMPORT RECORDS · 导入旧记录</span></button>
           <div className="sidebar-account-row">
           <button type="button" onClick={onSettings}><Settings size={15} /><span>设置</span></button>
-          <button type="button" onClick={onLogout}><LogOut size={15} /><span>{user?.name || user?.email || "账户"}</span></button>
+          {DesktopAccount ? <React.Suspense fallback={null}><DesktopAccount user={user} /></React.Suspense> : <button type="button" onClick={onLogout}><LogOut size={15} /><span>{user?.name || user?.email || "账户"}</span></button>}
           <button type="button" className="sidebar-chevron" onClick={onCollapse} aria-label={collapsed ? "展开项目目录" : "收起项目目录"}><ChevronLeft size={16} /></button>
           </div>
         </footer>
