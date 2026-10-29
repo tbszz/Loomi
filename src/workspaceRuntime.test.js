@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { toAssistantMessage, visibleMessages, promptText } from './workspaceRuntime.js';
 
 await test('workspace refactor leaves landing markup, original CSS and document head intact', () => {
-  const main = readFileSync(new URL('./main.jsx', import.meta.url), 'utf8');
+  const main = readFileSync(new URL('./main.jsx', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
   const hash = value => createHash('sha256').update(value).digest('hex');
   const normalizedFile = url => readFileSync(url, 'utf8').replace(/\r\n/g, '\n');
   // Frozen so an accidental edit to the landing page still fails loudly.

@@ -14,8 +14,6 @@ import {
   Menu,
   MessageSquareText,
   Moon,
-  Minimize2,
-  Maximize2,
   Paperclip,
   Plus,
   Send,
@@ -34,6 +32,8 @@ import {
 import "./styles.css";
 import { readableDocumentName } from './documentName.js';
 import { ApplicationPanel } from './components/ApplicationPanel.jsx';
+import { CardToggles, WorkspaceCards, useWorkspaceCards } from './components/WorkspaceCards.jsx';
+import { SideChat } from './components/SideChat.jsx';
 const DesktopAccount = window.resumeDesktop ? React.lazy(() => import('./desktop/DesktopAccount.jsx').then(module => ({ default: module.DesktopAccount }))) : null;
 const DesktopChrome = window.resumeDesktop ? React.lazy(() => import('./desktop/DesktopAccount.jsx').then(module => ({ default: module.DesktopChrome }))) : null;
 import { PasswordResetForm } from './components/PasswordResetForm.jsx';
@@ -68,13 +68,8 @@ function App() {
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [projectEditor, setProjectEditor] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [panelOpen, setPanelOpen] = useState(false);
-  const [panelMinimized, setPanelMinimized] = useState(false);
-  const [panelPosition, setPanelPosition] = useState({ x: 0, y: 0 });
-  useEffect(() => { if (!panelOpen) setPanelMinimized(false); }, [panelOpen]);
   function openEvidencePanel() {
-    setPanelMinimized(false);
-    setPanelOpen(true);
+    cardsController.open('documents');
   }
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [shortcutHints, setShortcutHints] = useState(false);
@@ -98,7 +93,6 @@ function App() {
       setView(current => (current === next ? current : next));
       if (next === "landing") {
         setSidebarOpen(false);
-        setPanelOpen(false);
       }
     };
     window.addEventListener("hashchange", onHashChange);
@@ -113,7 +107,7 @@ function App() {
         if (window.matchMedia('(max-width: 860px)').matches) setSidebarOpen(value=>!value);
         else setSidebarCollapsed(value=>!value);
       }
-      if (event.key === 'Escape') { setPanelOpen(false); setSidebarOpen(false); }
+      if (event.key === 'Escape') setSidebarOpen(false);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -145,7 +139,7 @@ function App() {
     [activeProjectId, projects]
   );
   const activeConversation = useMemo(
-    () => conversations.find((item) => item.id === activeConversationId && item.candidateId === activeCandidateId) || conversations.find((item) => item.candidateId === activeCandidateId) || null,
+    () => conversations.find((item) => !item.parentId && item.id === activeConversationId && item.candidateId === activeCandidateId) || conversations.find((item) => !item.parentId && item.candidateId === activeCandidateId) || null,
     [activeConversationId, activeCandidateId, conversations]
   );
   const activeCandidate = candidates.find(candidate => candidate.id === activeCandidateId) || null;
@@ -159,6 +153,7 @@ function App() {
   activeCandidateRef.current = activeCandidateId;
   candidateDocumentsRef.current = activeCandidateId;
   const resumeVariant = activeConversation?.context?.variant || activeConversation?.context?.formalResume || null;
+  const cardsController = useWorkspaceCards(user?.id, activeConversation);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -228,7 +223,7 @@ function App() {
     ]);
     if (!alive) return;
     const nextProjects = projectResult.projects || [];
-    const nextConversations = conversationResult.conversations || [];
+    const nextConversations = (conversationResult.conversations || []).filter(item => !item.parentId);
     const nextCandidates = candidateResult.candidates || [];
     setProjects(nextProjects);
     setConversations(nextConversations);
@@ -414,7 +409,7 @@ function App() {
   function selectCandidate(candidateId) {
     if (candidateId === activeCandidateId) return;
     setActiveCandidateId(candidateId);
-    setActiveConversationId(conversations.find(item => item.candidateId === candidateId)?.id || "");
+    setActiveConversationId(conversations.find(item => !item.parentId && item.candidateId === candidateId)?.id || "");
     const candidate = candidates.find(item => item.id === candidateId);
     setNotice(candidate ? `已切换到「${candidate.name}」。` : "");
     setSidebarOpen(false);
@@ -663,6 +658,32 @@ function App() {
     });
   }
 
+  function renderWorkspaceCard(id) {
+    if (id === 'sidechat') return <SideChat
+      key={`${user?.id}-${activeConversation?.id || 'new'}`}
+      parent={activeConversation}
+      userId={user?.id}
+      ensureParent={ensureConversation}
+      documents={documents}
+      renderAttachment={(message, items) => <AttachmentStatus message={message} documents={items} />}
+      scrubMessage={scrubAssistantMessage}
+    />;
+    if (id === 'apply') return activeConversation?.candidateId
+      ? <ApplicationPanel key={activeConversation.id} conversation={activeConversation} disabled={Boolean(pending)} />
+      : <p className="card-empty">先开始一次对话，再连接网申网页。</p>;
+    return <EvidencePanel
+      conversation={activeConversation}
+      documents={documents}
+      activeDocument={activeDocument}
+      annotations={annotations}
+      candidateFacts={candidateFacts}
+      variant={resumeVariant}
+      onDocument={setActiveDocumentId}
+      onPrompt={submitPrompt}
+      busy={Boolean(pending)}
+    />;
+  }
+
   const authPanel = <AuthPanel
     mode={authMode}
     visible={authVisible}
@@ -692,12 +713,12 @@ function App() {
   }
 
   return (
-    <div className="workspace-shell aui-workspace" data-theme={theme} data-shortcut-hints={shortcutHints} data-sidebar-open={sidebarOpen} data-panel-open={panelOpen} data-panel-minimized={panelMinimized} data-sidebar-collapsed={sidebarCollapsed}>
+    <div className="workspace-shell aui-workspace cards-workspace" data-theme={theme} data-shortcut-hints={shortcutHints} data-sidebar-open={sidebarOpen} data-sidebar-collapsed={sidebarCollapsed}>
       {DesktopChrome && <React.Suspense fallback={null}><DesktopChrome /></React.Suspense>}
       <MobileBar
         theme={theme}
         onMenu={() => setSidebarOpen(true)}
-        onPanel={openEvidencePanel}
+        cardsController={cardsController}
         onTheme={() => setTheme(theme === "dark" ? "light" : "dark")}
       />
       <ProjectSidebar
@@ -730,8 +751,7 @@ function App() {
       <main className="workspace-chat" key={activeCandidateId}>
         <ChatHeader
           onSidebar={() => setSidebarCollapsed(value=>!value)}
-          onPanel={() => panelMinimized ? openEvidencePanel() : setPanelOpen(value=>!value)}
-          panelOpen={panelOpen}
+          cardsController={cardsController}
           project={activeProject}
           candidate={activeCandidate}
           conversation={activeConversation}
@@ -768,22 +788,7 @@ function App() {
           aria-label="上传简历文件"
         />
       </main>
-      <Presence visible={panelOpen} className="evidence-presence"><EvidencePanel
-        minimized={panelMinimized}
-        onMinimize={setPanelMinimized}
-        position={panelPosition}
-        onPosition={setPanelPosition}
-        conversation={activeConversation}
-        documents={documents}
-        activeDocument={activeDocument}
-        annotations={annotations}
-        candidateFacts={candidateFacts}
-        variant={resumeVariant}
-        onDocument={setActiveDocumentId}
-        onClose={() => setPanelOpen(false)}
-        onPrompt={submitPrompt}
-        busy={Boolean(pending)}
-      /></Presence>
+      <WorkspaceCards controller={cardsController} sidebarCollapsed={sidebarCollapsed} renderCard={renderWorkspaceCard} />
       <SettingsPanel
         visible={settingsVisible}
         settings={modelSettings}
@@ -851,13 +856,13 @@ function LandingPage({ booting, user, onLogin, onRegister, onStart }) {
   );
 }
 
-function MobileBar({ theme, onMenu, onPanel, onTheme }) {
+function MobileBar({ theme, onMenu, cardsController, onTheme }) {
   return (
     <header className="mobile-bar">
       <button type="button" onClick={onMenu} aria-label="打开项目目录"><Menu size={19} /></button>
-      <strong>Resume Protocol</strong>
+      <strong>Loomi</strong>
       <button type="button" onClick={onTheme} className="theme-toggle" aria-label="切换亮暗模式"><ThemeIcon theme={theme} /></button>
-      <button type="button" onClick={onPanel} aria-label="打开证据面板"><FileText size={18} /></button>
+      <CardToggles controller={cardsController} />
     </header>
   );
 }
@@ -905,7 +910,7 @@ function ProjectSidebar({
       await action();
     } finally { setDeleting(null); }
   }
-  const activeConversations = conversations.filter((conversation) => conversation.candidateId === activeCandidateId && (!activeProjectId || conversation.projectId === activeProjectId));
+  const activeConversations = conversations.filter((conversation) => !conversation.parentId && conversation.candidateId === activeCandidateId && (!activeProjectId || conversation.projectId === activeProjectId));
   const candidateName = candidates.find(candidate => candidate.id === activeCandidateId)?.name || '求职者';
   const initials = candidateName.trim().split(/\s+/).map(part => Array.from(part)[0]).slice(0, 2).join('').toUpperCase();
   return (
@@ -983,7 +988,7 @@ function ThemeIcon({ theme }) {
   return <span className="theme-icon" aria-hidden="true"><Sun size={18} data-visible={theme === 'dark'} /><Moon size={18} data-visible={theme !== 'dark'} /></span>;
 }
 
-function ChatHeader({ project, candidate, conversation, theme, onTheme, onTitle, onSidebar, onPanel, panelOpen }) {
+function ChatHeader({ project, candidate, conversation, theme, onTheme, onTitle, onSidebar, cardsController }) {
   const [titleDraft, setTitleDraft] = useState(conversation?.title || "新会话");
   useEffect(() => {
     setTitleDraft(conversation?.title || "新会话");
@@ -1008,7 +1013,7 @@ function ChatHeader({ project, candidate, conversation, theme, onTheme, onTitle,
       </div>
       <nav className="chat-tools">
         <button type="button" className="header-icon" onClick={onTheme} aria-label={theme === 'dark' ? '亮色' : '暗色'} title="切换亮暗模式"><ThemeIcon theme={theme} /></button>
-        <button type="button" className="header-icon" onClick={onPanel} aria-label="打开简历预览" aria-expanded={panelOpen} title="简历预览"><PanelRight size={19}/></button>
+        <CardToggles controller={cardsController} />
       </nav>
     </header>
   );
@@ -1048,77 +1053,7 @@ function attachmentStatusBadge(status) {
   return "待读取";
 }
 
-function EvidencePanel({ conversation, documents, activeDocument, annotations, candidateFacts, variant, onDocument, onClose, onPrompt, busy, minimized, onMinimize, position, onPosition }) {
-  const [view, setView] = useState('evidence');
-  const panel = useRef(null);
-  const drag = useRef(null);
-  const [dragging, setDragging] = useState(false);
-  const [floating, setFloating] = useState(() => window.matchMedia('(min-width: 1280px)').matches);
-  const minimizeButton = useRef(null);
-  const restoreButton = useRef(null);
-  const focusAfterMinimize = useRef(false);
-  const latestPosition = useRef(position);
-  latestPosition.current = position;
-  function clampPosition(next) {
-    const height = panel.current?.getBoundingClientRect().height || 0;
-    return {
-      x: Math.min(12, Math.max(376 - window.innerWidth, next.x)),
-      y: Math.min(Math.max(-60, window.innerHeight - height - 84), Math.max(-60, next.y)),
-    };
-  }
-  useEffect(() => {
-    const media = window.matchMedia('(min-width: 1280px)');
-    const update = () => {
-      setFloating(media.matches);
-      drag.current = null;
-      setDragging(false);
-      if (media.matches && !minimized) onPosition(clampPosition(latestPosition.current));
-    };
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, [minimized, onPosition]);
-  useEffect(() => {
-    if (floating && !minimized) onPosition(clampPosition(latestPosition.current));
-    if (focusAfterMinimize.current) {
-      (minimized ? restoreButton : minimizeButton).current?.focus();
-      focusAfterMinimize.current = false;
-    }
-  }, [minimized, floating, view, onPosition]);
-  useEffect(() => {
-    if (!floating || minimized || !panel.current) return;
-    const observer = new ResizeObserver(() => {
-      if (drag.current) return;
-      const next = clampPosition(latestPosition.current);
-      if (next.x !== latestPosition.current.x || next.y !== latestPosition.current.y) onPosition(next);
-    });
-    observer.observe(panel.current);
-    return () => observer.disconnect();
-  }, [floating, minimized, onPosition]);
-  function toggleMinimized(value) {
-    focusAfterMinimize.current = true;
-    onMinimize(value);
-  }
-  const dragHandlers = {
-    onPointerDown: event => {
-      if (!floating || event.button !== 0 || event.target.closest('button')) return;
-      drag.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, position };
-      event.currentTarget.setPointerCapture(event.pointerId);
-      setDragging(true);
-      event.preventDefault();
-    },
-    onPointerMove: event => {
-      if (!drag.current || drag.current.pointerId !== event.pointerId) return;
-      const start = drag.current;
-      onPosition(clampPosition({ x: start.position.x + event.clientX - start.x, y: start.position.y + event.clientY - start.y }));
-    },
-    onPointerUp: event => {
-      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-      drag.current = null;
-      setDragging(false);
-    },
-    onPointerCancel: () => { drag.current = null; setDragging(false); },
-    onLostPointerCapture: () => { drag.current = null; setDragging(false); },
-  };
+function EvidencePanel({ conversation, documents, activeDocument, annotations, candidateFacts, variant, onDocument, onPrompt, busy }) {
   // The annotated PDF only exists for PDF originals. A TXT or DOCX preview has to stay
   // on the text endpoint instead of asking for an annotated.pdf that cannot be served.
   const hasAnnotations = activeDocument?.mimeType === 'application/pdf' && annotations.length > 0 && activeDocument?.conversationId === conversation?.id;
@@ -1129,22 +1064,8 @@ function EvidencePanel({ conversation, documents, activeDocument, annotations, c
     : "";
   const annotatedDownloadUrl = activeDocument ? `/api/documents/${encodeURIComponent(activeDocument.id)}/annotated.pdf` : "";
   return (
-    <>
-    <button className="mobile-drawer panel-drawer" type="button" aria-label="关闭证据面板" onClick={onClose} />
-    {minimized ? <button ref={restoreButton} type="button" className="evidence-restore" aria-label="展开证据面板" onClick={() => toggleMinimized(false)}><Maximize2 size={18} /></button> : null}
-    <aside ref={panel} className="evidence-panel" data-minimized={minimized} data-dragging={dragging} inert={floating && minimized || undefined} style={{ '--panel-transform': `translate3d(${position.x}px, ${position.y}px, 0)` }}>
-      <header className="evidence-drag-handle" {...dragHandlers}>
-        <div>
-          <FileText size={14} aria-hidden="true" />
-          <strong title={view === 'application' ? '网申填表 / APPLICATION FORM' : activeDocument?.name}>{view === 'application' ? '网申填表 / APPLICATION FORM' : activeDocument?.name || 'EVIDENCE · 原文与优化稿'}</strong>
-          {view === 'application' ? <span className="application-connection-dot" aria-label="浏览器连接状态" /> : null}
-        </div>
-        <button ref={minimizeButton} type="button" className="header-icon evidence-minimize" aria-label="最小化证据面板" onClick={() => toggleMinimized(true)}><Minimize2 size={15} /></button>
-        <button type="button" className="drawer-close" onClick={onClose} aria-label="关闭证据面板"><X size={18} /><kbd className="shortcut-hint">Esc</kbd></button>
-      </header>
-      <MotionGroup as="nav" className="document-tabs" activeKey={view} aria-label="工作区辅助面板"><button type="button" className={view === 'evidence' ? 'active' : ''} onClick={() => setView('evidence')}>原文与优化稿</button><button type="button" className={view === 'application' ? 'active' : ''} onClick={() => setView('application')}>网申填表</button></MotionGroup>
-      <div className="evidence-content" key={view}>
-      {view === 'application' ? conversation?.candidateId ? <ApplicationPanel key={conversation.id} conversation={conversation} disabled={busy} /> : <p>先开始一次对话，再连接网申网页。</p> : <>
+    <aside className="evidence-panel">
+      <div className="evidence-content">
       <MotionGroup as="section" className="document-tabs" activeKey={activeDocument?.id}>
         {documents.map((document) => (
           <button key={document.id} type="button" className={document.id === activeDocument?.id ? "active" : ""} onClick={() => onDocument(document.id)}>
@@ -1175,10 +1096,8 @@ function EvidencePanel({ conversation, documents, activeDocument, annotations, c
         {variant?.name ? <ResumePreview variant={variant} /> : <div className="panel-empty"><p>生成优化稿后，这里会显示 PDF 和 DOCX 下载。</p><button type="button" onClick={() => onPrompt("生成优化稿")}>生成优化稿</button></div>}
         {conversation?.context?.variantId && <ResumeClaimEvidence key={conversation.context.variantId} conversation={conversation} />}
       </section>
-      </>}
       </div>
     </aside>
-    </>
   );
 }
 
