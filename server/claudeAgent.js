@@ -19,7 +19,8 @@ export function createClaudeAgentModel(config = {}, dependencies = {}) {
   async function runQuery(args) {
     const { signal, session } = args;
     signal?.throwIfAborted();
-    if (!config.apiKey) throw new Error(`Agent 尚未配置服务端 API Key。请设置 ${config.provider === 'minimax' ? 'MINIMAX_API_KEY' : config.provider === 'bigmodel' ? 'BIGMODEL_API_KEY' : 'ANTHROPIC_API_KEY'}。`);
+    if (!config.apiKey) throw new Error(`Agent 尚未配置服务端 API Key。请设置 ${config.provider === 'minimax' ? 'MINIMAX_API_KEY' : config.provider === 'bigmodel' ? 'BIGMODEL_API_KEY' : 'ANTHROPIC_API_KEY'}，或在「模型设置」中选择自定义并填写 Anthropic 兼容端点。`);
+    if (config.provider === 'custom' && (!/^https:\/\//.test(config.baseUrl || '') || !config.model)) throw new Error('自定义 Agent 模型需要 HTTPS Base URL 和模型名称。');
     if (config.provider === 'bigmodel' && config.baseUrl !== 'https://open.bigmodel.cn/api/anthropic') throw new Error('BigModel SDK 仅接受官方 Anthropic 兼容端点。');
     if (config.provider === 'minimax' && !['https://api.minimaxi.com/anthropic', 'https://api.minimax.io/anthropic', 'https://api.minimax.cn/anthropic'].includes(config.baseUrl)) throw new Error('MiniMax SDK 仅接受官方 Anthropic 兼容端点。');
     const idleTimeoutMs = config.idleTimeoutMs ?? config.timeoutMs ?? 180_000;
@@ -361,7 +362,7 @@ function subprocessEnvironment(config, directory, maxTokens) {
   const isolatedHome = path.join(directory, '.runtime-home');
   return { ...env, HOME: isolatedHome, USERPROFILE: isolatedHome, APPDATA: isolatedHome, LOCALAPPDATA: isolatedHome, CLAUDE_CONFIG_DIR: path.join(directory, '.runtime-config'),
     ANTHROPIC_API_KEY: config.apiKey,
-    ...(['minimax', 'bigmodel'].includes(config.provider) ? {
+    ...(['minimax', 'bigmodel', 'custom'].includes(config.provider) ? {
       ANTHROPIC_AUTH_TOKEN: config.apiKey, ANTHROPIC_BASE_URL: config.baseUrl,
       ANTHROPIC_MODEL: config.model,
       ANTHROPIC_DEFAULT_SONNET_MODEL: config.model,

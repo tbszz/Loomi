@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { createDefaultModel, createCustomModel } from './modelClient.js';
+import { createDefaultModel, createCustomModel, createCustomAgentModel, toSdkBaseUrl } from './modelClient.js';
 import { createClaudeAgentModel } from './claudeAgent.js';
 
 await test('BigModel retains SDK runtime and confines credentials to official endpoint', async () => {
@@ -34,6 +34,36 @@ await test('auto routes MiniMax credentials through Claude Agent SDK, not an app
     assert.equal(typeof model.runTools, 'function');
     delete process.env.MINIMAX_API_KEY;
     assert.equal(createDefaultModel().runtime, 'claude-agent-sdk', 'missing credentials must fail honestly at execution');
+  } finally {
+    for (const [key, value] of Object.entries(previous)) if (value === undefined) delete process.env[key]; else process.env[key] = value;
+  }
+});
+
+await test('custom Anthropic-compatible settings drive the primary Agent through the SDK', async () => {
+  const model = createCustomAgentModel({ protocol: 'anthropic', baseUrl: 'https://api.deepseek.com/anthropic/v1', model: 'deepseek-chat', apiKey: 'fixture' });
+  assert.equal(model.runtime, 'claude-agent-sdk');
+  assert.equal(model.provider, 'custom');
+  assert.equal(typeof model.runTools, 'function');
+  assert.equal(toSdkBaseUrl('https://relay.example/v1/messages/'), 'https://relay.example');
+  const sdkModel = createClaudeAgentModel({ provider: 'custom', apiKey: 'fixture', baseUrl: 'https://api.deepseek.com/anthropic', model: 'deepseek-chat' }, { sdk: { query: ({ options }) => (async function* () {
+    assert.equal(options.env.ANTHROPIC_BASE_URL, 'https://api.deepseek.com/anthropic');
+    assert.equal(options.env.ANTHROPIC_AUTH_TOKEN, 'fixture');
+    assert.equal(options.env.ANTHROPIC_DEFAULT_HAIKU_MODEL, 'deepseek-chat');
+    assert.equal(options.model, 'deepseek-chat');
+    yield { type: 'result', subtype: 'success', result: 'ok' };
+  })() } });
+  assert.equal((await sdkModel({ messages: [] })).content[0].text, 'ok');
+  await assert.rejects(createClaudeAgentModel({ provider: 'custom', apiKey: 'fixture', baseUrl: 'http://plain.example', model: 'm' })({ messages: [] }), /HTTPS/);
+  assert.equal(createCustomAgentModel({ protocol: 'openai', baseUrl: 'https://api.example.com', model: 'test', apiKey: 'test' }).runtime, 'compatible-helper');
+});
+
+await test('ANTHROPIC_BASE_URL routes the default runtime to a compatible gateway', () => {
+  const previous = Object.fromEntries(['RESUME_PROTOCOL_AGENT_RUNTIME', 'ANTHROPIC_BASE_URL', 'ANTHROPIC_AUTH_TOKEN'].map(key => [key, process.env[key]]));
+  try {
+    process.env.RESUME_PROTOCOL_AGENT_RUNTIME = 'claude';
+    process.env.ANTHROPIC_BASE_URL = 'https://api.deepseek.com/anthropic';
+    process.env.ANTHROPIC_AUTH_TOKEN = 'fixture';
+    assert.equal(createDefaultModel().provider, 'custom');
   } finally {
     for (const [key, value] of Object.entries(previous)) if (value === undefined) delete process.env[key]; else process.env[key] = value;
   }
