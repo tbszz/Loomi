@@ -35,3 +35,6 @@ competitor-analysis/qiuzhifangzhou/*
 # decisions they record land in docs/component-spec.md once settled, so the
 # tracker itself stays out of the published history.
 .wayfinder/
+
+# Local editor config
+.zcodeignore

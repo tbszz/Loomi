@@ -1,9 +1,0 @@
-# Candidate-oriented job search acceptance
-
-Continue the authorized ingestion/quality work by evaluating the existing unified cache against graduate, career-switch and experienced scenarios, plus an explicitly scoped existing candidate where usable facts exist. Synthetic scenarios are labelled; no acceptance result is a market-wide match-rate claim.
-
-Baseline under ignored `tmp/job-search-acceptance/before.json`: graduate first page is entirely unverified (20/20); switcher page contains 12 known mismatches; experienced page contains one known mismatch. Inspection reproduced repeated same-cohort text treated as multiple cohorts, missed Chinese minimum-degree wording, optional requirements used as mandatory, and candidate checks only after pagination. A shared social-recruitment URL also labels an explicit 27届秋招 position as social.
-
-Reuse `jobKnowledge.search`, `jobEligibility`, the existing Job Data Quality normalization and the single SDK Career Agent. No new model or runtime. Add failing regressions before fixes. Apply the same eligibility inputs before pagination and when forming the chat result; preserve the total pool, rejected results and deterministic pagination. Prefer specific verified postings before incomplete summaries while retaining company diversity within each priority tier. Do not equate unknown evidence with passed eligibility. Keep individual source records and candidate facts unchanged.
-
-Run three synthetic top-20 scenarios before/after, inspect representative requirements and live-check a bounded selection through the installed official adapters. Read existing candidate facts only through the ownership/provenance-checked database service on a temporary database copy; export only anonymized counts and public job evidence. Report unsupported/missing/failed live checks accurately. Finish relevant regressions, full npm tests, build, read-only isolation checks and a durable acceptance report under `data/job-audits/`.
