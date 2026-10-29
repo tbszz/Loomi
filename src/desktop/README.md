@@ -1,5 +1,14 @@
 # Desktop entry components
 
+The production and preview roots wrap these components in `I18nProvider` from
+`src/i18nContext.js`. Renderer copy defaults to English; the login and workspace
+language buttons switch to Simplified Chinese and persist `loomi.locale`.
+The provider also updates the HTML language and the native menu through the
+validated `setLocale` preload method. Desktop preferences restore the locale
+into each launch's new localhost storage origin before React starts.
+Desktop workspace theme defaults to dark, while web defaults to light. A saved
+theme and the in-app toggle take precedence over the OS theme.
+
 Self-contained React components. Import `LoomiIntro` and `LoginScreen` directly;
 each imports its own scoped styles. No web landing CSS, server, Electron or Vite
 configuration is required. `LoomiFigure` mirrors the canonical `LoomiPet.jsx`

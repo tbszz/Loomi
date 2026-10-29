@@ -16,8 +16,9 @@ await test('workspace refactor leaves landing markup, original CSS and document 
   // defines both LandingPage and MobileBar). The constant was simply wrong, and it
   // went unnoticed until commit 29f465f wired this file into `npm test` — before
   // that the guard never actually ran. Corrected to the real value; assertion
-  // strength is unchanged. Re-frozen when the landing copy was renamed to Loomi.
-  assert.equal(hash(main.slice(main.indexOf('function LandingPage('), main.indexOf('function MobileBar('))), 'b4ee0a6d6418587ff26999d2f4bf6bcf90b0cf64f2043f9647d1611c1819ceea');
+  // strength is unchanged. Re-frozen when the landing copy was renamed to Loomi, and again for the
+  // desktop i18n change (localized landing copy and a locale button).
+  assert.equal(hash(main.slice(main.indexOf('function LandingPage('), main.indexOf('function MobileBar('))), 'eeebb9a1e62ee470b28b3604c8f96b4813b5dec28b04484ee4a1151c22979c07');
   // These two digests were re-frozen by commit 1d3b422 ("fix(ui): remove blocking
   // external font dependency"), which deliberately rewrote the document head and the
   // font stacks. The guard keeps its meaning: any later edit to either file still
@@ -25,9 +26,9 @@ await test('workspace refactor leaves landing markup, original CSS and document 
   // scroll fix (min-height -> height on .landing-page), same deliberate path.
   // The pending merge also adds the existing job-note source-link styles;
   // preserve those additions while retaining the landing scroll fix above.
-  // index.html re-frozen when the page title was renamed to Loomi.
+  // index.html re-frozen when the page title was renamed to Loomi, then for lang="en".
   assert.equal(hash(normalizedFile(new URL('./styles.css', import.meta.url))), '292390c244690243bb52c9a71e5a5be7d8445b9afc24ad8775c5b6f1156cbb3d');
-  assert.equal(hash(normalizedFile(new URL('../index.html', import.meta.url))), '745cb6760055f13cb9c66026f78dca6f0741eaa327174fd8224cd6501aa38d97');
+  assert.equal(hash(normalizedFile(new URL('../index.html', import.meta.url))), '6d8c1df09e0c0c094e68108f444b176af52c7b6c836b99bb94c2d383220b4d4c');
 });
 await test('runtime preserves attachment and business result identity without inventing messages', () => {
   const message = { id: 'file-1', role: 'user', content: '简历', kind: 'attachment', data: { documentId: 'doc-1', parseStatus: { status: 'unreadable' } } };

@@ -17,6 +17,8 @@ const shots = [];
 const checks = [];
 async function newPage(options = {}) {
   const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, ...options });
+  // Preserve Chinese regression coverage; default English is checked by test-workspace-ui.
+  await context.addInitScript(() => { try { localStorage?.setItem("loomi.locale", "zh"); } catch {} });
   const page = await context.newPage();
   page.on('pageerror', error => errors.push(error.stack));
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });

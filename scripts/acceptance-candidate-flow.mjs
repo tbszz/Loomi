@@ -244,6 +244,8 @@ try {
   const { chromium } = await import('playwright-core');
   const browser = await chromium.launch({ executablePath: BROWSER, headless: true });
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
+  // Preserve Chinese regression coverage; default English is checked by test-workspace-ui.
+  await context.addInitScript(() => { try { localStorage?.setItem("loomi.locale", "zh"); } catch {} });
   const page = await context.newPage();
   page.on('pageerror', error => pageErrors.push(error.message));
   try {

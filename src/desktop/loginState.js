@@ -1,10 +1,11 @@
+import { createTranslator } from '../i18n.js';
 export const initialLoginState = Object.freeze({
   mode: 'login', email: '', password: '', name: '', focus: null,
   showPassword: false, capsLock: false, status: 'idle', error: '', errors: {}, attempt: 0,
 });
 
 // Mirror server/auth.js at the UI boundary. The server remains authoritative.
-export function validateLogin(input) {
+export function validateLogin(input, t = createTranslator()) {
   const values = {
     mode: input.mode === 'register' ? 'register' : 'login',
     email: String(input.email || '').trim().toLowerCase(),
@@ -12,9 +13,9 @@ export function validateLogin(input) {
     name: String(input.name || '').trim(),
   };
   const errors = {};
-  if (!values.email || values.email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) errors.email = '请填写有效邮箱。';
-  if (values.mode === 'register' && (!values.name || values.name.length > 120)) errors.name = '请填写有效姓名。';
-  if (values.password.length < 10 || values.password.length > 128) errors.password = '密码长度必须为 10-128 个字符。';
+  if (!values.email || values.email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) errors.email = t("login.invalidEmail");
+  if (values.mode === 'register' && (!values.name || values.name.length > 120)) errors.name = t("login.invalidName");
+  if (values.password.length < 10 || values.password.length > 128) errors.password = t("login.invalidPassword");
   return { values, errors };
 }
 

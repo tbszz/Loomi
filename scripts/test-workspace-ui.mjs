@@ -72,6 +72,10 @@ try {
   // so these navigations are the regression check for the font fix.
   await page.goto(base, { waitUntil: 'domcontentloaded' });
   await page.locator('.landing-page').waitFor();
+  assert.equal(await page.locator('html').getAttribute('lang'), 'en');
+  await page.getByRole('button', { name: 'Switch language', exact: true }).click();
+  assert.equal(await page.locator('html').getAttribute('lang'), 'zh-CN');
+  assert.equal(await page.evaluate(() => localStorage.getItem('loomi.locale')), 'zh');
   await capture('landing-unchanged');
   // The landing page must be scrollable when its content is taller than the
   // viewport. min-height let the container grow with the content while body stayed
@@ -135,8 +139,8 @@ try {
   await page.getByRole('button', { name: '停止生成', exact: true }).waitFor();
   const runCancel = page.getByRole('button', { name: '停止当前任务', exact: true });
   await runCancel.waitFor();
-  await page.waitForFunction(() => /^\d+\.\d+S$/.test(document.querySelector('.agent-step-duration')?.textContent || ''));
-  assert.match(await page.locator('.agent-elapsed').innerText(), /STEP \d+ · \d+\.\d+S/);
+  await page.waitForFunction(() => /^\d+\.\d+秒$/.test(document.querySelector('.agent-step-duration')?.textContent || ''));
+  assert.match(await page.locator('.agent-elapsed').innerText(), /步骤 \d+ · \d+\.\d+秒/);
   const elapsedBefore = await page.locator('.agent-step-duration').last().innerText();
   const completedDurations = await page.locator('.agent-run-trail [data-current="false"] .agent-step-duration').allTextContents();
   await page.waitForFunction(previous => {
@@ -301,6 +305,10 @@ try {
   await capture('desktop-dark-empty');
   await page.setViewportSize({ width: 375, height: 844 });
   await capture('mobile-dark-empty');
+  await page.locator('.mobile-bar .language-toggle').click();
+  await page.getByRole('heading', { name: 'Let’s prepare your next step.' }).waitFor();
+  await capture('mobile-dark-english');
+  await page.locator('.mobile-bar .language-toggle').click();
   await page.getByRole('button', { name: '打开项目目录', exact: true }).click();
   await page.locator('.conversation-row').last().locator('button').first().click();
   await page.locator('.attachment-status.parsed').first().waitFor();
@@ -368,10 +376,92 @@ try {
   await offlineCapture('offline-landing');
   await offlinePage.goto(`${base}/#workspace`, { waitUntil: 'domcontentloaded' });
   await offlinePage.reload({ waitUntil: 'domcontentloaded' });
-  await offlinePage.getByRole('heading', { name: '下一步，我们一起准备。' }).waitFor();
+  await offlinePage.getByRole('heading', { name: 'Let’s prepare your next step.' }).waitFor();
   await offlineCapture('offline-workspace');
   assert.deepEqual(offlineErrors, [], 'going offline must not raise script errors');
   await offline.close();
+
+  // Exercise the production desktop entry and workspace at the minimum window
+  // size. Native IPC itself is covered by desktop/main.test.js.
+  const desktopContext = await browser.newContext({ viewport: { width: 1100, height: 700 }, reducedMotion: 'reduce' });
+  await desktopContext.route('**/*', route => new URL(route.request().url()).hostname === '127.0.0.1' ? route.continue() : route.abort());
+  await desktopContext.addInitScript(() => {
+    window.addEventListener('DOMContentLoaded', () => { document.documentElement.dataset.desktop = 'true'; }, { once: true });
+    sessionStorage.setItem('resume-protocol:desktop-intro-played', '1');
+    window.menuLocales = [];
+    window.themeSubscriptions = 0;
+    window.resumeDesktop = {
+      platform: 'win32', version: 'test',
+      setLocale: locale => window.menuLocales.push(locale),
+      onThemeChange: callback => { window.themeSubscriptions++; window.nativeThemeCallback = callback; return () => {}; },
+      getDiagnostics: async () => ({ warnings: [], cloudUrl: 'https://example.test' }),
+      onWarnings: () => () => {},
+      openDataFolder: async () => {}, openLogs: async () => {},
+      sync: { getStatus: async () => ({ state: 'local' }), onStatus: () => () => {} },
+    };
+  });
+  const desktopPage = await desktopContext.newPage();
+  const desktopErrors = [];
+  desktopPage.on('pageerror', error => desktopErrors.push(error.message));
+  await desktopPage.goto(base, { waitUntil: 'domcontentloaded' });
+  await desktopPage.locator('.login-submit').waitFor();
+  assert.equal(await desktopPage.locator('html').getAttribute('lang'), 'en');
+  assert.equal(await desktopPage.locator('html').getAttribute('data-theme'), 'dark');
+  assert.equal(await desktopPage.locator('.login-submit').innerText(), 'Sign in');
+  assert.equal(await desktopPage.evaluate(() => window.menuLocales.at(-1)), 'en');
+  const loginToggle = desktopPage.getByRole('button', { name: 'Switch language', exact: true });
+  assert.ok((await loginToggle.boundingBox()).y >= 40, 'locale toggle clears native overlay and drag region');
+  await desktopPage.locator('.login-submit').click();
+  await desktopPage.getByText('Enter a valid email address.', { exact: true }).waitFor();
+  await loginToggle.click();
+  await desktopPage.getByText('请填写有效邮箱。', { exact: true }).waitFor();
+  assert.equal(await desktopPage.locator('html').getAttribute('lang'), 'zh-CN');
+  assert.equal(await desktopPage.evaluate(() => window.menuLocales.at(-1)), 'zh');
+  await desktopPage.reload({ waitUntil: 'domcontentloaded' });
+  await desktopPage.locator('.login-submit').waitFor();
+  assert.equal(await desktopPage.locator('.login-submit').innerText(), '登录');
+  assert.equal(await desktopPage.evaluate(() => localStorage.getItem('loomi.locale')), 'zh');
+  await desktopPage.getByRole('button', { name: '切换语言', exact: true }).click();
+  await desktopPage.getByRole('textbox', { name: 'Email', exact: true }).fill('ui-fixture@example.test');
+  await desktopPage.locator('input[name=password]').fill('workspace-fixture-password');
+  await desktopPage.locator('.login-submit').click();
+  await desktopPage.locator('.workspace-shell').waitFor();
+  await desktopPage.locator('.aui-thread').waitFor();
+  assert.equal(await desktopPage.locator('html').getAttribute('data-theme'), 'dark');
+  await desktopPage.screenshot({ path: path.join(screenshots, 'desktop-i18n-en-dark-1100x700.png') });
+  await desktopPage.getByRole('button', { name: 'Light', exact: true }).click();
+  assert.equal(await desktopPage.locator('html').getAttribute('data-theme'), 'light');
+  assert.equal(await desktopPage.evaluate(() => window.themeSubscriptions), 0, 'renderer must not subscribe to OS theme changes');
+  await desktopPage.reload({ waitUntil: 'domcontentloaded' });
+  await desktopPage.locator('.workspace-shell').waitFor();
+  await desktopPage.waitForFunction(() => document.documentElement.dataset.theme === 'light');
+  assert.equal(await desktopPage.evaluate(() => localStorage.getItem('resume-protocol.theme')), 'light');
+  for (const locale of ['zh', 'en']) {
+    await desktopPage.locator('.chat-tools .language-toggle').click();
+    await desktopPage.waitForFunction(value => document.documentElement.lang === value, locale === 'zh' ? 'zh-CN' : 'en');
+    assert.equal(await desktopPage.evaluate(() => window.menuLocales.at(-1)), locale);
+    const overflow = await desktopPage.evaluate(() => ({
+      width: innerWidth, scroll: document.documentElement.scrollWidth,
+      buttons: [...document.querySelectorAll('.chat-tools button')].map(button => ({ width: button.clientWidth, scroll: button.scrollWidth })),
+    }));
+    assert.ok(overflow.scroll <= overflow.width, `${locale} desktop layout does not overflow`);
+    assert.ok(overflow.buttons.every(button => button.scroll <= button.width + 1), `${locale} header buttons fit`);
+    await desktopPage.screenshot({ path: path.join(screenshots, `desktop-i18n-${locale}-1100x700.png`) });
+  }
+  assert.deepEqual(desktopErrors, []);
+  const deniedPage = await desktopContext.newPage();
+  const deniedErrors = [];
+  deniedPage.on('pageerror', error => deniedErrors.push(error.message));
+  await deniedPage.addInitScript(() => Object.defineProperty(window, 'localStorage', { get() { throw new Error('Storage denied'); } }));
+  await deniedPage.goto(base, { waitUntil: 'domcontentloaded' });
+  await deniedPage.locator('.workspace-shell').waitFor();
+  assert.equal(await deniedPage.locator('html').getAttribute('lang'), 'en');
+  assert.equal(await deniedPage.locator('html').getAttribute('data-theme'), 'dark');
+  await deniedPage.locator('.chat-tools .language-toggle').click();
+  await deniedPage.waitForFunction(() => document.documentElement.lang === 'zh-CN');
+  assert.equal(await deniedPage.evaluate(() => window.menuLocales.at(-1)), 'zh');
+  assert.deepEqual(deniedErrors, []);
+  await desktopContext.close();
 
   console.log(JSON.stringify({ passed: true, screenshots, checks: ['back-navigation', 'landing-scroll', 'landing', 'no-blocking-external-resource', 'fonts-local', 'offline-render', 'empty-state', 'suggestions', 'send-once', 'copy', 'step-durations', 'run-cancel', 'pending-skeleton', 'cancel-late-snapshot-preserves-upload', 'upload', 'drop-upload', 'preview', 'floating-drag', 'minimize-restore-focus', 'cards-dock-overlay-breakpoints', 'escape-close', 'no-implicit-download', 'application-profile-private', 'application-blank-only', 'application-explicit-owned-attachment', 'application-no-submission', 'settings', 'switch-conversation', 'mobile-no-overflow', 'side-enter-shift-enter', 'side-stop', 'side-new-thread-late-cancel-isolation', 'side-sidebar-filter', 'card-close-focus'], offBoxRequests, downloads, pageErrors: errors, consoleErrors }));
 } catch (error) {

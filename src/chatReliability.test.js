@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { test } from "node:test";
+import { createTranslator } from './i18n.js';
 import {
   ApiError,
   importLocalConversations,
@@ -78,7 +79,7 @@ const baseUrl = `http://127.0.0.1:${server.address().port}`;
 try {
   await test('stream transport may outlive its idle interval while data arrives, but detects silence', async () => {
     assert.equal((await streamConversationMessage('active','test',{baseUrl,timeoutMs:80})).id,'active');
-    await assert.rejects(streamConversationMessage('silent','test',{baseUrl,timeoutMs:40}),/请求超时/);
+    await assert.rejects(streamConversationMessage('silent','test',{baseUrl,timeoutMs:40}),/Request timed out/);
   });
   await test("requestJson keeps credentials, JSON, and server errors readable", async () => {
     const result = await requestJson("/ok", { baseUrl, headers: { Cookie: "sid=test" } });
@@ -89,10 +90,17 @@ try {
 
   await test("requestJson reports invalid responses and timeouts", async () => {
     await assert.rejects(requestJson("/html", { baseUrl }), /HTTP 502/);
-    await assert.rejects(requestJson("/invalid", { baseUrl }), /服务器返回了无效数据/);
-    await assert.rejects(requestJson("/null", { baseUrl }), /服务器返回了无效数据/);
-    await assert.rejects(requestJson("/slow", { baseUrl, timeoutMs: 30 }), /请求超时/);
-    await assert.rejects(requestJson("/slow-body", { baseUrl, timeoutMs: 30 }), /请求超时/);
+    await assert.rejects(requestJson("/invalid", { baseUrl }), /The server returned invalid data/);
+    await assert.rejects(requestJson("/null", { baseUrl }), /The server returned invalid data/);
+    await assert.rejects(requestJson("/slow", { baseUrl, timeoutMs: 30 }), /Request timed out/);
+    await assert.rejects(requestJson("/slow-body", { baseUrl, timeoutMs: 30 }), /Request timed out/);
+  });
+
+  await test('API helpers accept a translator and preserve server errors', async () => {
+    const t = createTranslator('zh');
+    await assert.rejects(requestJson('/invalid', { baseUrl }, t), /服务器返回了无效数据/);
+    await assert.rejects(requestJson('/failure', { baseUrl }, t), /需要先登录/);
+    assert.equal(validateResumeFile(null, t).error, '请选择一个简历文件');
   });
 
   await test("requestJson preserves caller cancellation", async () => {
@@ -123,7 +131,7 @@ try {
   });
 
   await test("streamConversationMessage reports interrupted streams without done or error", async () => {
-    await assert.rejects(streamConversationMessage("c3", "hi", { baseUrl }), /连接中断/);
+    await assert.rejects(streamConversationMessage("c3", "hi", { baseUrl }), /Connection interrupted/);
   });
 } finally {
   server.closeAllConnections();
@@ -131,14 +139,14 @@ try {
 }
 
 await test("unavailable service has a readable error", async () => {
-  await assert.rejects(requestJson("/ok", { baseUrl }), /无法连接服务/);
+  await assert.rejects(requestJson("/ok", { baseUrl }), /Cannot connect to the service/);
 });
 
 await test("resume file validation enforces type and size", () => {
   assert.equal(validateResumeFile({ name: "resume.pdf", size: 8 * 1024 * 1024 }).ok, true);
   assert.equal(validateResumeFile({ name: "resume.md", size: 1 }).ok, true);
   assert.equal(validateResumeFile({ name: "resume.doc", size: 1 }).ok, false);
-  assert.match(validateResumeFile({ name: "resume.exe", size: 1 }).error, /PDF、DOCX、TXT、Markdown 或 JSON/);
+  assert.match(validateResumeFile({ name: "resume.exe", size: 1 }).error, /PDF, DOCX, TXT, Markdown, or JSON/);
   assert.match(validateResumeFile({ name: "resume.pdf", size: 8 * 1024 * 1024 + 1 }).error, /8MB/);
 });
 

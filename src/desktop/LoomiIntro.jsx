@@ -1,3 +1,4 @@
+import { useI18n } from '../i18nContext.js';
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import LoomiFigure from './LoomiFigure.jsx';
 import { borderGeometry, cornerWebPaths, hasPlayedIntro, introDuration, introFrame, markIntroPlayed, shouldSkipIntro } from './introTimeline.js';
@@ -6,6 +7,7 @@ import './desktopTheme.css';
 import './loomiIntro.css';
 
 export default function LoomiIntro({ onDone }) {
+  const { t } = useI18n();
   const reduced = useReducedMotion();
   const [played] = useState(hasPlayedIntro);
   const root = useRef(null), stage = useRef(null), traveler = useRef(null);
@@ -141,7 +143,7 @@ export default function LoomiIntro({ onDone }) {
     <svg className="intro-silk-layer intro-corner-web" aria-hidden="true">
       {Array.from({ length: 11 }, (_, i) => <path key={i} ref={node => { web.current[i] = node; }} pathLength="1" />)}
     </svg>
-    <span className="desktop-sr-only" role="status">Loomi 正在迎接你。按 Esc、Enter 或空格跳过。</span>
-    <button className="intro-skip" type="button" onClick={event => { event.stopPropagation(); finish(); }}>跳过 <span aria-hidden="true">↗</span></button>
+    <span className="desktop-sr-only" role="status">{t("intro.loomiIsWelcomingYouPressEscEnter")}</span>
+    <button className="intro-skip" type="button" onClick={event => { event.stopPropagation(); finish(); }}>{t("intro.skip")}<span aria-hidden="true">↗</span></button>
   </div>;
 }

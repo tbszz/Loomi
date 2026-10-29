@@ -23,6 +23,8 @@ let streamResult;
 try {
   browser = await chromium.launch({ executablePath: findLocalBrowser(), headless: true });
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  // These checks use the Chinese labels; English is covered by test-workspace-ui.mjs.
+  await context.addInitScript(() => { try { localStorage.setItem('loomi.locale', 'zh'); } catch {} });
   await context.route('**/*', route => ['127.0.0.1', 'localhost'].includes(new URL(route.request().url()).hostname) ? route.continue() : route.abort());
   const registered = await context.request.post(`${base}/api/auth/register`, { data: { name: '林同学', email: 'cards@example.test', password: 'Cards-fixture-only-1234' } });
   assert(registered.ok());

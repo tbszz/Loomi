@@ -1,9 +1,11 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { FileText, Globe, MessageSquarePlus, Maximize2, Minimize2, PanelRightClose, X } from 'lucide-react';
 import { activateCard, cardMode, clampFrame, closeCard, columnWidth, contextCards, defaultLayout, readLayout, stackSplit, visibleCards, writeLayout } from '../cardLayout.js';
+import { useI18n } from '../i18nContext.js';
 import './workspaceCards.css';
 
-const cards = { documents: { label: '资料', Icon: FileText }, apply: { label: '网申', Icon: Globe }, sidechat: { label: '旁聊', Icon: MessageSquarePlus } };
+// Labels are i18n keys; translate at render time.
+const cards = { documents: { label: 'cards.documents', Icon: FileText }, apply: { label: 'cards.apply', Icon: Globe }, sidechat: { label: 'cards.sidechat', Icon: MessageSquarePlus } };
 function cardStorage() { try { return window.localStorage; } catch { return null; } }
 export function useWorkspaceCards(userId, conversation) {
   const [saved, setSaved] = useState({ owner: null, layout: defaultLayout() });
@@ -41,7 +43,8 @@ export function useWorkspaceCards(userId, conversation) {
 }
 
 export function CardToggles({ controller }) {
-  return <div className="card-toggles" aria-label="辅助卡片">{Object.entries(cards).map(([id, { label, Icon }]) => <button key={id} type="button" data-card-toggle={id} aria-label={label} aria-pressed={controller.layout.open.includes(id)} title={label} onClick={() => controller.toggle(id)}><Icon size={15} /><span>{label}</span>{controller.dots.includes(id) && <i className="card-notification" aria-label="有新内容" />}</button>)}</div>;
+  const { t } = useI18n();
+  return <div className="card-toggles" aria-label={t('cards.toolbar')}>{Object.entries(cards).map(([id, { label, Icon }]) => <button key={id} type="button" data-card-toggle={id} aria-label={t(label)} aria-pressed={controller.layout.open.includes(id)} title={t(label)} onClick={() => controller.toggle(id)}><Icon size={15} /><span>{t(label)}</span>{controller.dots.includes(id) && <i className="card-notification" aria-label="有新内容" />}</button>)}</div>;
 }
 
 function workspaceBounds() {
@@ -52,6 +55,7 @@ function workspaceBounds() {
 }
 
 export function WorkspaceCards({ controller, renderCard, sidebarCollapsed }) {
+  const { t } = useI18n();
   const { layout, viewport, update, close, open, minimized, setMinimized } = controller;
   const mode = cardMode(viewport.width);
   const visible = visibleCards(layout, viewport.width, viewport.height);
@@ -106,10 +110,10 @@ export function WorkspaceCards({ controller, renderCard, sidebarCollapsed }) {
   }
   const resizeEvents = kind => ({ onPointerDown: event => startResize(event, kind), onPointerMove: resize, onPointerUp: () => { drag.current = null; }, onPointerCancel: () => { drag.current = null; }, onLostPointerCapture: () => { drag.current = null; } });
   const split = stackSplit(layout.split, stackHeight);
-  const tabBar = tabs.length > 0 ? <nav className="cards-tabs" aria-label="收起的卡片">{tabs.map(id => { const { Icon, label } = cards[id]; return <button key={id} onClick={() => open(id)}><Icon size={13} />{label}</button>; })}</nav> : null;
+  const tabBar = tabs.length > 0 ? <nav className="cards-tabs" aria-label={t('cards.collapsed')}>{tabs.map(id => { const { Icon, label } = cards[id]; return <button key={id} onClick={() => open(id)}><Icon size={13} />{t(label)}</button>; })}</nav> : null;
   return <div className="workspace-cards" data-mode={mode} data-has-column={hasColumn} style={{ '--cards-width': `${width}px`, '--stack-split': split, '--sheet-top': `${bounds.top}px` }}>
-    {mode === 'overlay' && visible.length > 0 && <button className="cards-scrim" aria-label="关闭辅助卡片" onClick={() => close(visible[0])} />}
-    {hasColumn && <div className="cards-width-handle" role="separator" tabIndex={0} aria-label="调整卡片列宽" aria-orientation="vertical" aria-valuemin={360} aria-valuemax={640} aria-valuenow={Math.round(width)} {...resizeEvents('width')} onKeyDown={event => { if (['ArrowLeft', 'ArrowRight'].includes(event.key)) { event.preventDefault(); update(current => ({ ...current, width: columnWidth(width + (event.key === 'ArrowLeft' ? 20 : -20), innerWidth, sidebarCollapsed ? 0 : 248) })); } }} />}
+    {mode === 'overlay' && visible.length > 0 && <button className="cards-scrim" aria-label={t('cards.closeAll')} onClick={() => close(visible[0])} />}
+    {hasColumn && <div className="cards-width-handle" role="separator" tabIndex={0} aria-label={t('cards.resizeColumn')} aria-orientation="vertical" aria-valuemin={360} aria-valuemax={640} aria-valuenow={Math.round(width)} {...resizeEvents('width')} onKeyDown={event => { if (['ArrowLeft', 'ArrowRight'].includes(event.key)) { event.preventDefault(); update(current => ({ ...current, width: columnWidth(width + (event.key === 'ArrowLeft' ? 20 : -20), innerWidth, sidebarCollapsed ? 0 : 248) })); } }} />}
     {mode !== 'overlay' && tabBar}
     <div className="cards-stack" ref={column}>
       {layout.open.map(id => {
@@ -120,7 +124,7 @@ export function WorkspaceCards({ controller, renderCard, sidebarCollapsed }) {
         return <React.Fragment key={id}><CardFrame id={id} visible={isVisible} floating={floating} frame={frame} bounds={bounds} tabs={mode === 'overlay' && !floating && isVisible ? tabBar : null} overlay={mode === 'overlay' && !floating} minimized={floating && minimized.includes(id)} onMinimize={value => setMinimized(current => value ? [...current, id] : current.filter(item => item !== id))} onPop={() => pop(id)} onClose={() => close(id)} onFrame={next => update(current => ({ ...current, popped: { ...current.popped, [id]: next } }))} style={{ flex: visible.length === 2 ? (first ? split : 1 - split) : 1 }}>
           {renderCard(id)}
         </CardFrame>
-        {hasColumn && visible.length === 2 && first && <div className="cards-stack-handle" role="separator" tabIndex={0} aria-label="调整卡片高度" aria-orientation="horizontal" aria-valuemin={20} aria-valuemax={80} aria-valuenow={Math.round(split * 100)} {...resizeEvents('stack')} onKeyDown={event => { if (['ArrowUp', 'ArrowDown'].includes(event.key)) { event.preventDefault(); update(current => ({ ...current, split: stackSplit(split + (event.key === 'ArrowUp' ? -.05 : .05), stackHeight) })); } }} />}
+        {hasColumn && visible.length === 2 && first && <div className="cards-stack-handle" role="separator" tabIndex={0} aria-label={t('cards.resizeStack')} aria-orientation="horizontal" aria-valuemin={20} aria-valuemax={80} aria-valuenow={Math.round(split * 100)} {...resizeEvents('stack')} onKeyDown={event => { if (['ArrowUp', 'ArrowDown'].includes(event.key)) { event.preventDefault(); update(current => ({ ...current, split: stackSplit(split + (event.key === 'ArrowUp' ? -.05 : .05), stackHeight) })); } }} />}
         </React.Fragment>;
       })}
     </div>
@@ -128,6 +132,7 @@ export function WorkspaceCards({ controller, renderCard, sidebarCollapsed }) {
 }
 
 function CardFrame({ id, visible, floating, frame, bounds, tabs, overlay, minimized, onMinimize, onPop, onClose, onFrame, children, style }) {
+  const { t } = useI18n();
   const drag = useRef(null);
   const node = useRef(null);
   const minimizeButton = useRef(null);
@@ -166,17 +171,17 @@ function CardFrame({ id, visible, floating, frame, bounds, tabs, overlay, minimi
   }
   const handlers = { onPointerMove: move, onPointerUp: () => { drag.current = null; }, onPointerCancel: () => { drag.current = null; }, onLostPointerCapture: () => { drag.current = null; } };
   return <>
-    {minimized && <button ref={restoreButton} className="card-restore" style={{ left: frame.x, top: frame.y }} aria-label={`展开${label}卡片`} onClick={() => { focusAfterMinimize.current = true; onMinimize(false); }}><Icon size={17} /></button>}
-    <section ref={node} className="workspace-card" data-card-id={id} data-floating={floating} data-overlay={overlay} hidden={!visible || minimized} aria-label={`${label}卡片`} role={overlay ? 'dialog' : 'region'} aria-modal={overlay || undefined} style={{ ...style, ...(floating ? { left: frame.x, top: frame.y, width: frame.width, height: frame.height } : overlay ? { top: bounds.top, height: bounds.bottom - bounds.top } : {}) }}>
+    {minimized && <button ref={restoreButton} className="card-restore" style={{ left: frame.x, top: frame.y }} aria-label={t('cards.expand', { card: t(label) })} onClick={() => { focusAfterMinimize.current = true; onMinimize(false); }}><Icon size={17} /></button>}
+    <section ref={node} className="workspace-card" data-card-id={id} data-floating={floating} data-overlay={overlay} hidden={!visible || minimized} aria-label={t('cards.card', { card: t(label) })} role={overlay ? 'dialog' : 'region'} aria-modal={overlay || undefined} style={{ ...style, ...(floating ? { left: frame.x, top: frame.y, width: frame.width, height: frame.height } : overlay ? { top: bounds.top, height: bounds.bottom - bounds.top } : {}) }}>
       <header className="workspace-card-header evidence-drag-handle" onPointerDown={start} {...handlers}>
-        <Icon size={15} /><strong>{label}</strong>
-        {floating && <button ref={minimizeButton} type="button" title={`最小化${label}卡片`} aria-label={`最小化${label}卡片`} onClick={() => { focusAfterMinimize.current = true; onMinimize(true); }}><Minimize2 size={15} /></button>}
-        <button type="button" title={floating ? '停靠回卡片列' : '弹出为浮窗'} aria-label={floating ? `停靠${label}卡片` : `弹出${label}卡片`} onClick={onPop}>{floating ? <PanelRightClose size={15} /> : <Maximize2 size={15} />}</button>
-        <button type="button" title={`关闭${label}卡片`} aria-label={`关闭${label}卡片`} onClick={onClose}><X size={16} /></button>
+        <Icon size={15} /><strong>{t(label)}</strong>
+        {floating && <button ref={minimizeButton} type="button" title={t('cards.minimize', { card: t(label) })} aria-label={t('cards.minimize', { card: t(label) })} onClick={() => { focusAfterMinimize.current = true; onMinimize(true); }}><Minimize2 size={15} /></button>}
+        <button type="button" title={floating ? t('cards.dockTitle') : t('cards.popTitle')} aria-label={floating ? t('cards.dock', { card: t(label) }) : t('cards.pop', { card: t(label) })} onClick={onPop}>{floating ? <PanelRightClose size={15} /> : <Maximize2 size={15} />}</button>
+        <button type="button" title={t('cards.close', { card: t(label) })} aria-label={t('cards.close', { card: t(label) })} onClick={onClose}><X size={16} /></button>
       </header>
       {tabs}
       <div className="workspace-card-body">{children}</div>
-      {floating && <div className="card-resize-grip" role="separator" tabIndex={0} aria-label={`调整${label}浮窗大小`} onPointerDown={event => start(event, true)} {...handlers} onKeyDown={event => { if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) { event.preventDefault(); onFrame(clampFrame({ ...frame, width: Math.min(640, frame.width + (event.key === 'ArrowRight' ? 20 : event.key === 'ArrowLeft' ? -20 : 0)), height: frame.height + (event.key === 'ArrowDown' ? 20 : event.key === 'ArrowUp' ? -20 : 0) }, bounds)); } }} />}
+      {floating && <div className="card-resize-grip" role="separator" tabIndex={0} aria-label={t('cards.resizeFloating', { card: t(label) })} onPointerDown={event => start(event, true)} {...handlers} onKeyDown={event => { if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) { event.preventDefault(); onFrame(clampFrame({ ...frame, width: Math.min(640, frame.width + (event.key === 'ArrowRight' ? 20 : event.key === 'ArrowLeft' ? -20 : 0)), height: frame.height + (event.key === 'ArrowDown' ? 20 : event.key === 'ArrowUp' ? -20 : 0) }, bounds)); } }} />}
     </section>
   </>;
 }

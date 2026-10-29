@@ -1,3 +1,5 @@
+import { createTranslator, uiMessage, resolveUiMessage } from '../i18n.js';
+import { useI18n } from '../i18nContext.js';
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowUpRight, BriefcaseBusiness, Check, ChevronDown, ChevronLeft, ChevronRight, Copy, Printer, WandSparkles, X } from "lucide-react";
@@ -15,17 +17,19 @@ function ResultStats({ items }) {
 }
 
 export function MessageResult({ message, context, onSelectJob, onCopyResume, onPrintResume }) {
+  const { t } = useI18n();
   const data = message.data || {};
   if (message.kind === "diagnosis") return <DiagnosisResult data={data} context={context} />;
   if (message.kind === "jobs") return <JobsResult data={data} selectedJob={context?.selectedJob} onSelect={onSelectJob} />;
   if (message.kind === "resume") return <ResumeResult variant={data.variant} onCopy={onCopyResume} onPrint={onPrintResume} />;
   if (message.kind === "interview") return <InterviewResult plan={data.plan} />;
   if (message.kind === "target") return <TargetResult job={data.job} />;
-  if (message.kind === "error") return <div className="inline-error">上下文已保留，可以重新发送这条指令。</div>;
+  if (message.kind === "error") return <div className="inline-error">{t("results.contextHasBeenKeptYouCanSend")}</div>;
   return null;
 }
 
 function DiagnosisResult({ data, context }) {
+  const { t } = useI18n();
   const strengths = normalizeResultItems(data.strengths);
   const gaps = normalizeResultItems(data.gaps || data.missing);
   const annotations = Array.isArray(data.annotations) ? data.annotations : [];
@@ -40,15 +44,15 @@ function DiagnosisResult({ data, context }) {
     <div className="result-panel diagnosis-panel result-motion">
       <header>
         <div>
-          <span>RESUME DIAGNOSIS · 资料诊断</span>
-          <small>{diagnosisStatusLabel(materialStatus, hasReadableEvidence)}</small>
+          <span>{t("results.resumeDiagnosis")}</span>
+          <small>{diagnosisStatusLabel(materialStatus, hasReadableEvidence, t)}</small>
         </div>
-        {!hasKnownCompleteness ? <strong className="diagnosis-state">未形成结论</strong> : null}
+        {!hasKnownCompleteness ? <strong className="diagnosis-state">{t("results.noConclusionYet")}</strong> : null}
       </header>
       {hasReadableEvidence ? <ResultStats items={[
-        { label: 'COMPLETENESS · 完整度', value: hasKnownCompleteness ? Math.round(displayCompleteness) : null, suffix: '%' },
-        { label: 'EVIDENCE · 已识别证据', value: Array.isArray(data.strengths) ? strengths.length : null },
-        { label: 'GAPS · 待补充', value: Array.isArray(data.gaps || data.missing) ? gaps.length : null },
+        { label: t("results.completeness"), value: hasKnownCompleteness ? Math.round(displayCompleteness) : null, suffix: '%' },
+        { label: t("results.evidence"), value: Array.isArray(data.strengths) ? strengths.length : null },
+        { label: t("results.gaps"), value: Array.isArray(data.gaps || data.missing) ? gaps.length : null },
       ]} /> : null}
       {!hasReadableEvidence ? <DiagnosisPending gaps={gaps} status={materialStatus} /> : null}
       {hasReadableEvidence ? <DiagnosisEvidence annotations={annotations} strengths={strengths} gaps={gaps} status={materialStatus} /> : null}
@@ -57,58 +61,61 @@ function DiagnosisResult({ data, context }) {
 }
 
 function DiagnosisPending({ gaps, status }) {
+  const { t } = useI18n();
   return (
     <section className="diagnosis-summary pending">
-      <h3>还不能诊断简历内容</h3>
-      <p>{status?.message || "我只确认文件已经进入资料库；在读到姓名、经历、项目或技能等原文证据前，不展示完整度，也不把通用字段清单当作结论。"}</p>
+      <h3>{t("results.cannotAnalyzeResumeContentYet")}</h3>
+      <p>{status?.message || t("results.theFileIsInYourLibraryCompleteness")}</p>
       <div className="diagnosis-next">
-        <span>下一步</span>
-        <p>{gaps.length ? "优先处理可读取文本和关键经历证据。" : "重新上传可复制文本的 PDF/DOCX，或直接粘贴简历正文。"}</p>
+        <span>{t("results.nextStep")}</span>
+        <p>{gaps.length ? t("results.firstMakeTheTextAndKeyExperience") : t("results.uploadAPdfDocxWithSelectableText")}</p>
       </div>
     </section>
   );
 }
 
 function DiagnosisEvidence({ annotations, strengths, gaps, status }) {
+  const { t } = useI18n();
   return (
     <>
       <section className="diagnosis-summary">
-        <h3>已读取到可用证据</h3>
-        <p>{status?.message || (annotations.length ? `已定位 ${annotations.length} 条原文证据批注，后续改写会沿用这些来源。` : "已从原文中识别到简历结构，后续建议会继续以材料为边界。")}</p>
+        <h3>{t("results.usableEvidenceFound")}</h3>
+        <p>{status?.message || (annotations.length ? t("results.locatedSourceEvidenceAnnotationsFutureRevisionsWill", { count: annotations.length }) : t("results.resumeStructureWasIdentifiedInTheSource"))}</p>
       </section>
-      <ResultList title="已识别证据" items={strengths} positive />
-      <ResultList title="下一步补充" items={gaps} />
+      <ResultList title={t("results.identifiedEvidence")} items={strengths} positive />
+      <ResultList title={t("results.addNext")} items={gaps} />
     </>
   );
 }
 
-function diagnosisStatusLabel(status, hasReadableEvidence) {
-  if (status?.status === "parsed") return "基于已读取的简历原文";
-  if (status?.status === "needs_review") return "文件已保存，读取结果需要核对";
-  if (status?.status === "unreadable") return "文件已保存，未读取到可用文本";
-  return hasReadableEvidence ? "基于已读取的简历原文" : "文件已保存，等待可靠读取";
+function diagnosisStatusLabel(status, hasReadableEvidence, t = createTranslator()) {
+  if (status?.status === "parsed") return t("results.basedOnExtractedResumeSourceText");
+  if (status?.status === "needs_review") return t("results.fileSavedExtractedTextNeedsReview");
+  if (status?.status === "unreadable") return t("results.fileSavedNoUsableTextFound");
+  return hasReadableEvidence ? t("results.basedOnExtractedResumeSourceText") : t("results.fileSavedWaitingForReliableExtraction");
 }
 
 function JobsResult({ data, selectedJob, onSelect }) {
+  const { t } = useI18n();
   const jobs = data.jobs || [];
   const uncertainties = data.uncertainties || [];
   const related = data.related || [];
   const rejected = data.rejected || jobs.filter((job) => job.eligibility?.status === "rejected");
   const visibleJobs = jobs.filter((job) => job.eligibility?.status !== "rejected");
-  const poolSummary = formatJobPoolSummary({ ...data, jobs: visibleJobs, uncertainties, related, rejected });
+  const poolSummary = formatJobPoolSummary({ ...data, jobs: visibleJobs, uncertainties, related, rejected }, t);
   if (!visibleJobs.length && !uncertainties.length && !related.length && !rejected.length) return null;
   return (
     <div className="result-panel jobs-panel">
-      <header><span>JOB DISCOVERY · 岗位候选</span><small>{poolSummary || "不符硬性条件的岗位不作为推荐"}</small></header>
+      <header><span>{t("results.jobDiscovery")}</span><small>{poolSummary || t("results.jobsThatFailHardRequirementsAreNot")}</small></header>
       <ResultStats items={[
-        { label: 'JOBS · 本页候选', value: Array.isArray(data.jobs) ? visibleJobs.length : null },
-        { label: 'RELATED · 相关岗位', value: Array.isArray(data.related) ? related.length : null },
-        { label: 'REJECTED · 不符条件', value: Array.isArray(data.rejected) || rejected.length ? rejected.length : null },
+        { label: t("results.jobsThisPage"), value: Array.isArray(data.jobs) ? visibleJobs.length : null },
+        { label: t("results.related"), value: Array.isArray(data.related) ? related.length : null },
+        { label: t("results.rejected"), value: Array.isArray(data.rejected) || rejected.length ? rejected.length : null },
       ]} />
-      {visibleJobs.length ? <JobDeck jobs={visibleJobs} selectedJob={selectedJob} onSelect={onSelect} /> : <p className="job-empty">没有发现硬性条件明确匹配的岗位。</p>}
-      <JobNotes title="待核实" items={uncertainties} />
-      <JobNotes title="仅正文提及关键词（标题非该岗位，仅供参考）" items={related} collapsed />
-      <JobNotes title="不符条件" items={rejected} rejected />
+      {visibleJobs.length ? <JobDeck jobs={visibleJobs} selectedJob={selectedJob} onSelect={onSelect} /> : <p className="job-empty">{t("results.noJobsWithConfirmedMatchingHardRequirements")}</p>}
+      <JobNotes title={t("results.unverified")} items={uncertainties} />
+      <JobNotes title={t("results.keywordsInDescriptionOnlyDifferentJobTitle")} items={related} collapsed />
+      <JobNotes title={t("results.ineligible")} items={rejected} rejected />
     </div>
   );
 }
@@ -119,6 +126,7 @@ function realJobScore(job) {
 }
 
 function JobDeck({ jobs, selectedJob, onSelect }) {
+  const { t } = useI18n();
   const [expanded, setExpanded] = useState(false);
   const [active, setActive] = useState(null);
   const strips = useRef([]);
@@ -146,7 +154,7 @@ function JobDeck({ jobs, selectedJob, onSelect }) {
           <div className="job-deck-more-inner">{jobs.slice(5).map((job, index) => strip(job, index + 5))}</div>
         </div>
         <button type="button" className="job-deck-toggle" aria-controls={moreId} aria-expanded={expanded} onClick={() => setExpanded(value => !value)}>
-          {expanded ? '收起' : `+${jobs.length - 5} MORE · 展开全部`}
+          {expanded ? t("results.collapse") : t("results.moreShowAll", { count: jobs.length - 5 })}
         </button>
       </> : null}
     </div>
@@ -159,17 +167,18 @@ function JobDeck({ jobs, selectedJob, onSelect }) {
 }
 
 function JobCard({ job, index, selected, opened, buttonRef, onOpen, onKeyDown }) {
+  const { t } = useI18n();
   const status = job.eligibility?.status || "verify";
   const score = realJobScore(job);
   return <div className={`job-row job-card ${status}` + (selected ? " selected" : "")}
     data-open={opened} style={{ '--row-index': index }}>
-    <button ref={buttonRef} type="button" className="job-strip" aria-label={`查看岗位：${job.title}`} aria-haspopup="dialog" onClick={onOpen} onKeyDown={onKeyDown}>
-      <span className="job-status-dot" role="img" aria-label={eligibilityLabel(status, job)} title={eligibilityLabel(status, job)} />
-      <span className="job-strip-company">{job.company || "招聘团队"}</span>
+    <button ref={buttonRef} type="button" className="job-strip" aria-label={t("results.viewJob", { title: job.title })} aria-haspopup="dialog" onClick={onOpen} onKeyDown={onKeyDown}>
+      <span className="job-status-dot" role="img" aria-label={eligibilityLabel(status, job, t)} title={eligibilityLabel(status, job, t)} />
+      <span className="job-strip-company">{job.company || t("results.hiringTeam")}</span>
       <strong className="job-strip-title">{job.title}</strong>
       {job.location ? <span className="job-strip-location">{job.location}</span> : null}
-      {score !== null ? <span className="job-strip-score" aria-label={`匹配参考 ${score}`}><b>{score}</b></span> : null}
-      {selected ? <span className="job-strip-selected"><Check size={12} aria-hidden="true" />已选择</span> : null}
+      {score !== null ? <span className="job-strip-score" aria-label={t("results.matchReference", { score: score })}><b>{score}</b></span> : null}
+      {selected ? <span className="job-strip-selected"><Check size={12} aria-hidden="true" />{t("results.selected")}</span> : null}
       <ChevronRight className="job-strip-chevron" size={14} aria-hidden="true" />
     </button>
   </div>;
@@ -188,15 +197,17 @@ function jobWindowOrigin(strip, panel) {
 }
 
 function JobSpacesIndicator({ count, activeIndex, onJump }) {
+  const { t } = useI18n();
   if (count > 9 || count < 1) return null;
-  return <nav className="job-spaces-indicator" aria-label="岗位空间">
+  return <nav className="job-spaces-indicator" aria-label={t("results.jobSpaces")}>
     {Array.from({ length: count }, (_, index) => <button key={index} type="button" className="job-space-dot"
-      aria-label={`切换到岗位 ${index + 1}`} aria-current={index === activeIndex ? 'true' : undefined}
+      aria-label={t("jobs.switchTo", { index: index + 1 })} aria-current={index === activeIndex ? 'true' : undefined}
       onClick={() => onJump(index)} />)}
   </nav>;
 }
 
 function JobDetailWindow({ jobs, active, selectedJob, onSelect, strips, origin, onSwitch, onClose }) {
+  const { t } = useI18n();
   const layer = useRef(null);
   const panel = useRef(null);
   const backdrop = useRef(null);
@@ -668,12 +679,12 @@ function JobDetailWindow({ jobs, active, selectedJob, onSelect, strips, origin, 
     <div ref={backdrop} className="job-window-backdrop" aria-hidden="true" onClick={close} />
     <section ref={panel} className="job-window" role="dialog" aria-modal="true" aria-labelledby={`${titleId}-${active.index}`} data-status={status}>
       <header className="job-window-header">
-        <span data-header-text className="job-window-company">{job.company || '招聘团队'}</span>
-        <span data-header-text className="job-window-status">{eligibilityLabel(status, job)}</span>
+        <span data-header-text className="job-window-company">{job.company || t("results.hiringTeam")}</span>
+        <span data-header-text className="job-window-status">{eligibilityLabel(status, job, t)}</span>
         <span data-header-text className="job-window-counter" aria-live="polite">{active.index + 1} / {jobs.length}</span>
-        <button type="button" aria-label="上一个岗位" disabled={active.index === 0} onClick={() => switchJob(-1)}><ChevronLeft size={16} /></button>
-        <button type="button" aria-label="下一个岗位" disabled={active.index === jobs.length - 1} onClick={() => switchJob(1)}><ChevronRight size={16} /></button>
-        <button ref={closeButton} type="button" className="job-window-close" aria-label="关闭岗位详情" onClick={close}><X size={15} /></button>
+        <button type="button" aria-label={t("results.previousJob")} disabled={active.index === 0} onClick={() => switchJob(-1)}><ChevronLeft size={16} /></button>
+        <button type="button" aria-label={t("results.nextJob")} disabled={active.index === jobs.length - 1} onClick={() => switchJob(1)}><ChevronRight size={16} /></button>
+        <button ref={closeButton} type="button" className="job-window-close" aria-label={t("results.closeJobDetails")} onClick={close}><X size={15} /></button>
       </header>
       <div className="job-window-body">
         <div ref={viewport} className="job-spaces-viewport" onPointerDown={onPointerDown} onPointerMove={onPointerMove}
@@ -689,8 +700,8 @@ function JobDetailWindow({ jobs, active, selectedJob, onSelect, strips, origin, 
                   className="job-window-content job-space" data-space-index={index} aria-hidden={index !== active.index} inert={index !== active.index}
                   style={{ left: `calc(${index * 100}% + ${index * 24}px)` }}>
                   <h2 id={`${titleId}-${index}`}>{spaceJob.title}</h2>
-                  <p className="job-window-meta">{[spaceJob.location || '地点待确认', jobTypeLabel(spaceJob.type || spaceJob.jobType), spaceJob.deadline ? `截止 ${spaceJob.deadline}` : null].filter(Boolean).join(' · ')}</p>
-                  {score !== null ? <div className="job-window-stats"><b>{score}</b><small>参考</small></div> : null}
+                  <p className="job-window-meta">{[spaceJob.location || t("results.locationUnconfirmed"), jobTypeLabel(spaceJob.type || spaceJob.jobType, t), spaceJob.deadline ? t("results.deadline", { date: spaceJob.deadline }) : null].filter(Boolean).join(' · ')}</p>
+                  {score !== null ? <div className="job-window-stats"><b>{score}</b><small>{t("results.reference")}</small></div> : null}
                   <JobRequirements job={spaceJob} />
                 </article>;
               })}
@@ -700,14 +711,15 @@ function JobDetailWindow({ jobs, active, selectedJob, onSelect, strips, origin, 
         <JobSpacesIndicator count={jobs.length} activeIndex={active.index} onJump={jumpTo} />
       </div>
       <footer className="job-window-footer">
-        <button type="button" className="job-window-select" aria-label={`选择岗位：${job.title}`} aria-pressed={selected} onClick={() => onSelect?.(job)}>{selected ? <><Check size={14} aria-hidden="true" />已选择</> : '选择'}</button>
-        {link ? <a href={link} target="_blank" rel="noopener noreferrer">原文<ArrowUpRight size={12} /></a> : null}
+        <button type="button" className="job-window-select" aria-label={t("results.selectJob", { title: job.title })} aria-pressed={selected} onClick={() => onSelect?.(job)}>{selected ? <><Check size={14} aria-hidden="true" />{t("results.selected")}</> : t("results.select")}</button>
+        {link ? <a href={link} target="_blank" rel="noopener noreferrer">{t("results.source")}<ArrowUpRight size={12} /></a> : null}
       </footer>
     </section>
   </div>, document.body);
 }
 
 function JobRequirements({ job }) {
+  const { t } = useI18n();
   const [expanded, setExpanded] = useState(true);
   const disclosureId = useId();
   const requirements = Array.isArray(job.requirements) ? job.requirements.filter((item) => typeof item === "string" && item.trim()) : [];
@@ -717,28 +729,27 @@ function JobRequirements({ job }) {
   const remaining = requirements.length - visibleRequirements.length;
   return (
     <div className="job-requirements">
-      <button type="button" className="job-requirements-toggle" aria-expanded={expanded} aria-controls={disclosureId} onClick={() => setExpanded((value) => !value)}>
-        要求与核验<ChevronDown size={14} aria-hidden="true" />
+      <button type="button" className="job-requirements-toggle" aria-expanded={expanded} aria-controls={disclosureId} onClick={() => setExpanded((value) => !value)}>{t("results.requirementsVerification")}<ChevronDown size={14} aria-hidden="true" />
       </button>
       <div id={disclosureId} className="job-disclosure" data-expanded={expanded} aria-hidden={!expanded} inert={!expanded}>
         <div><div className="job-requirements-body">
-          {job.fullDescriptionVerified === false ? <p className="job-requirements-warning">要求未经企业原文核实</p> : null}
+          {job.fullDescriptionVerified === false ? <p className="job-requirements-warning">{t("results.requirementsNotVerifiedAgainstTheEmployerS")}</p> : null}
           {requirements.length ? <section>
-            <h4>岗位要求</h4>
+            <h4>{t("results.jobRequirements")}</h4>
             <ul className="job-requirements-list">
               {visibleRequirements.map((requirement, index) => <li className="job-requirement-row" style={staggerStyle(index)} key={`${index}-${requirement}`}>{requirement}</li>)}
             </ul>
-            {remaining ? <p className="job-requirement-row" style={staggerStyle(6)}>还有 {remaining} 条</p> : null}
+            {remaining ? <p className="job-requirement-row" style={staggerStyle(6)}>{t("results.moreRequirements", { count: remaining })}</p> : null}
           </section> : null}
           {checks.length ? <section>
-            <h4>条件核验</h4>
+            <h4>{t("results.eligibilityChecks")}</h4>
             <ul className="job-checks-list">
               {checks.map((check, index) => {
                 const status = check.status === "pass" ? "pass" : check.status === "fail" ? "fail" : "verify";
-                const label = status === "pass" ? "通过" : status === "fail" ? "不符" : "待核实";
+                const label = status === "pass" ? t("results.pass") : status === "fail" ? t("results.fail") : t("results.unverified");
                 return <li className="job-requirement-row job-check-row" data-status={status} style={staggerStyle(visibleRequirements.length + (remaining ? 1 : 0) + index)} key={`${index}-${check.dimension}`}>
                   <span className="job-check-icon" role="img" aria-label={label}>{status === "pass" ? <Check size={14} aria-hidden="true" /> : status === "fail" ? <X size={14} aria-hidden="true" /> : <span aria-hidden="true">?</span>}</span>
-                  <div><strong>{check.dimension}</strong><p>{check.message || label}</p>{check.evidence ? <p className="job-check-evidence">核验依据：{check.evidence}</p> : null}</div>
+                  <div><strong>{check.dimension}</strong><p>{check.message || label}</p>{check.evidence ? <p className="job-check-evidence">{t("results.checkEvidence")}{check.evidence}</p> : null}</div>
                 </li>;
               })}
             </ul>
@@ -803,6 +814,7 @@ function JobNotes({ title, items = [], rejected = false, collapsed = false }) {
 }
 
 function JobNote({ item }) {
+  const { t } = useI18n();
   if (typeof item === "string") return <p>{item}</p>;
   const link = safeHttpUrl(item.applyUrl || item.sourceUrl || item.url);
   const checks = item.eligibility?.checks || [];
@@ -810,46 +822,48 @@ function JobNote({ item }) {
   return (
     <div className="job-note-row">
       <JobDisclosure className="job-note" summary={<>
-          <strong>{formatJobTitle(item)}</strong>
-          <small>{formatJobMeta(item, link)}</small>
+          <strong>{formatJobTitle(item, t)}</strong>
+          <small>{formatJobMeta(item, link, t)}</small>
         </>}>
         {reason ? <p>{reason}</p> : null}
         {checks.length ? <ul>{checks.map((check) => <li key={`${check.dimension}-${check.message}`}>{check.dimension}: {check.message || check.status}{check.evidence ? ` · ${check.evidence}` : ""}</li>)}</ul> : null}
       </JobDisclosure>
-      {link ? <a className="job-note-link" href={link} target="_blank" rel="noopener noreferrer">原文</a> : null}
+      {link ? <a className="job-note-link" href={link} target="_blank" rel="noopener noreferrer">{t("results.source")}</a> : null}
     </div>
   );
 }
 
-function formatJobTitle(item) {
-  return [item.company || "招聘团队", item.title || "岗位名称待确认"].filter(Boolean).join(" · ");
+function formatJobTitle(item, t = createTranslator()) {
+  return [item.company || t("results.hiringTeam"), item.title || t("results.jobTitleUnconfirmed")].filter(Boolean).join(" · ");
 }
 
-function formatJobMeta(item, link) {
-  const meta = [item.location || "地点待确认", jobTypeLabel(item.type || item.jobType), link ? "可查看原文" : "原文链接待补充"].filter(Boolean);
+function formatJobMeta(item, link, t = createTranslator()) {
+  const meta = [item.location || t("results.locationUnconfirmed"), jobTypeLabel(item.type || item.jobType, t), link ? t("results.sourceAvailable") : t("results.sourceLinkMissing")].filter(Boolean);
   return meta.join(" · ");
 }
 
-function jobTypeLabel(type) {
-  if (type === "internship") return "实习";
-  if (type === "campus") return "校招";
-  if (type === "social") return "社招";
+function jobTypeLabel(type, t = createTranslator()) {
+  if (type === "internship") return t("results.internship");
+  if (type === "campus") return t("results.campus");
+  if (type === "social") return t("results.experienced");
   return type || "";
 }
 
-function eligibilityLabel(status, job = {}) {
-  if (job.recordKind === 'recruitment_batch') return '招聘公告 · 需确认具体岗位';
-  if (status === "passed") return "硬性条件匹配";
+function eligibilityLabel(status, job = {}, t = createTranslator()) {
+  if (job.recordKind === 'recruitment_batch') return t("results.recruitmentAnnouncementConfirmSpecificRole");
+  if (status === "passed") return t("results.hardRequirementsMatch");
   // Without the employer's requirements nothing was judged; say so instead of implying a check.
-  if (status === "verify" && !job.fullDescriptionVerified && job.detailProvider) return "已读取平台正文 · 要求未经企业原文核实";
-  if (status === "verify" && !job.fullDescriptionVerified) return "要求未读取 · 点原文查看，选中后自动读取";
-  if (status === "verify") return "部分条件待核实";
-  return "条件不符";
+  if (status === "verify" && !job.fullDescriptionVerified && job.detailProvider) return t("results.platformDescriptionReadRequirementsNotVerifiedAgainst");
+  if (status === "verify" && !job.fullDescriptionVerified) return t("results.requirementsNotReadOpenSourceSelectingThe");
+  if (status === "verify") return t("results.someRequirementsNeedVerification");
+  return t("results.requirementsNotMet");
 }
 
 function ResumeResult({ variant, onCopy, onPrint }) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
-  const [copyError, setCopyError] = useState("");
+  const [copyErrorValue, setCopyError] = useState("");
+  const copyError = resolveUiMessage(copyErrorValue, t);
   const [copying, setCopying] = useState(false);
   const copyTimer = useRef(null);
   const copyAttempt = useRef(0);
@@ -860,7 +874,7 @@ function ResumeResult({ variant, onCopy, onPrint }) {
     return () => { clearTimeout(copyTimer.current); copyAttempt.current += 1; };
   }, [variant]);
   if (!variant) return null;
-  const resumeText = formatResumeText(variant);
+  const resumeText = formatResumeText(variant, t);
   const copy = async () => {
     const attempt = ++copyAttempt.current;
     clearTimeout(copyTimer.current);
@@ -874,7 +888,7 @@ function ResumeResult({ variant, onCopy, onPrint }) {
       setCopied(true);
       copyTimer.current = setTimeout(() => setCopied(false), 1500);
     } catch {
-      if (attempt === copyAttempt.current) setCopyError("复制失败，请重试。");
+      if (attempt === copyAttempt.current) setCopyError(uiMessage("results.copyFailedTryAgain"));
     } finally {
       if (attempt === copyAttempt.current) setCopying(false);
     }
@@ -882,36 +896,37 @@ function ResumeResult({ variant, onCopy, onPrint }) {
   return (
     <div className="result-panel resume-panel result-motion">
       <header>
-        <div><span>RESUME CUSTOMIZATION · 岗位版简历</span><h3>{variant.title}</h3></div>
+        <div><span>{t("results.jobSpecificResume")}</span><h3>{variant.title}</h3></div>
       </header>
-      <ResultStats items={[{ label: 'FIT SCORE · 匹配参考', value: variant.fitScore, suffix: '/100' }]} />
+      <ResultStats items={[{ label: t("results.fitReference"), value: variant.fitScore, suffix: '/100' }]} />
       <div className="resume-identity">
-        <strong>{variant.name || "姓名待补充"}</strong>
+        <strong>{variant.name || t("results.nameMissing")}</strong>
         <span>{[variant.targetTitle || variant.title, ...Object.values(variant.contact || {}).filter(Boolean)].filter(Boolean).join(" · ")}</span>
       </div>
       <p className="resume-summary">{variant.summary}</p>
       <div className="result-toolbar">
         <button type="button" onClick={copy} disabled={copying} data-copied={copied}>
-          <span className="result-copy-icon"><Copy size={15} /><Check size={15} /></span>{copied ? "已复制" : "复制"}
+          <span className="result-copy-icon"><Copy size={15} /><Check size={15} /></span>{copied ? t("results.copied") : t("results.copy")}
         </button>
-        <button type="button" onClick={(event) => onPrint ? onPrint(event.currentTarget.closest(".resume-panel")) : window.print()}><Printer size={15} />打印 PDF</button>
-        <span className={copyError ? "result-copy-error" : "result-sr-only"} role="status">{copyError || (copied ? "已复制" : "")}</span>
+        <button type="button" onClick={(event) => onPrint ? onPrint(event.currentTarget.closest(".resume-panel")) : window.print()}><Printer size={15} />{t("results.printPdf")}</button>
+        <span className={copyError ? "result-copy-error" : "result-sr-only"} role="status">{copyError || (copied ? t("results.copied") : "")}</span>
       </div>
-      <ResumeSection title="教育经历" items={variant.education} />
-      <ResumeSection title="技能" items={variant.skills} inline />
-      <ResumeSection title="项目经历" items={variant.projects} numbered />
-      <ResumeSection title="工作与实习经历" items={variant.experience} />
-      <ResumeSection title="荣誉与证书" items={variant.awards} />
-      <footer><WandSparkles size={14} />{variant.interviewPlan ? "已包含针对性面试计划" : "可继续生成针对性面试计划"}</footer>
+      <ResumeSection title={t("resume.education")} items={variant.education} />
+      <ResumeSection title={t("workspace.skills")} items={variant.skills} inline />
+      <ResumeSection title={t("resume.projects")} items={variant.projects} numbered />
+      <ResumeSection title={t("workspace.workInternships")} items={variant.experience} />
+      <ResumeSection title={t("results.awardsCertifications")} items={variant.awards} />
+      <footer><WandSparkles size={14} />{variant.interviewPlan ? t("results.includesATailoredInterviewPlan") : t("results.aTailoredInterviewPlanCanBeGenerated")}</footer>
     </div>
   );
 }
 
 function InterviewResult({ plan }) {
+  const { t } = useI18n();
   if (!plan) return null;
   return (
     <div className="result-panel interview-panel result-motion">
-      <header><span>面试准备</span><small>{plan.roleLabel}</small></header>
+      <header><span>{t("results.interviewPreparation")}</span><small>{plan.roleLabel}</small></header>
       <div className="topic-row">
         {(plan.technicalTopics || []).map((topic, index) => (
           <span key={topic.id || topic.title} style={staggerStyle(index)} tabIndex={0}><b>{topic.priority}</b>{topic.title}</span>
@@ -919,11 +934,11 @@ function InterviewResult({ plan }) {
       </div>
       <div className="interview-columns">
         <section>
-          <h3>项目追问</h3>
+          <h3>{t("results.projectFollowUps")}</h3>
           {(plan.resumeDefense || []).map((question) => <p key={question}>{question}</p>)}
         </section>
         <section>
-          <h3>七天节奏</h3>
+          <h3>{t("results.sevenDayPlan")}</h3>
           {(plan.schedule || []).slice(0, 7).map((item) => (
             <p key={item.day}><b>{item.day}</b><span>{item.title}</span></p>
           ))}
@@ -934,10 +949,11 @@ function InterviewResult({ plan }) {
 }
 
 function TargetResult({ job }) {
+  const { t } = useI18n();
   if (!job) return null;
   return (
     <div className="target-card result-motion">
-      <span><BriefcaseBusiness size={15} />当前目标</span>
+      <span><BriefcaseBusiness size={15} />{t("results.currentTarget")}</span>
       <strong>{job.company} · {job.title}</strong>
     </div>
   );
@@ -976,21 +992,21 @@ function ResumeSection({ title, items = [], inline = false, numbered = false }) 
   );
 }
 
-function formatResumeText(variant) {
+function formatResumeText(variant, t = createTranslator()) {
   const contact = Object.values(variant.contact || {}).filter(Boolean).join(" · ");
   const section = (title, items = []) => items.length ? [`## ${title}`, ...items.map((item) => "- " + item), ""] : [];
   return [
-    "# " + (variant.name || "个人简历"),
+    "# " + (variant.name || t("workspace.resume")),
     variant.targetTitle || variant.title || "",
     contact,
     "",
     variant.summary,
     "",
-    ...section("教育经历", variant.education),
-    ...section("技能", variant.skills),
-    ...section("项目经历", variant.projects),
-    ...section("工作与实习经历", variant.experience),
-    ...section("荣誉与证书", variant.awards)
+    ...section(t("resume.education"), variant.education),
+    ...section(t("workspace.skills"), variant.skills),
+    ...section(t("resume.projects"), variant.projects),
+    ...section(t("workspace.workInternships"), variant.experience),
+    ...section(t("results.awardsCertifications"), variant.awards)
   ].filter(Boolean).join("\n");
 }
 

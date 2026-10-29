@@ -1,11 +1,12 @@
+import { createTranslator } from '../i18n.js';
 /** Phase 2 supplies these contract states through the preload bridge. */
-export function syncStatusLabel(status) {
+export function syncStatusLabel(status, t = createTranslator()) {
   switch (status?.state) {
-    case 'local': case 'local only': return '仅保存在本机';
-    case 'syncing': return '正在同步';
-    case 'synced': return '已同步';
-    case 'offline': return `离线（${Math.max(0, Math.floor(Number(status.pending) || 0))} 项待上传）`;
-    case 'error': return `同步出错（${status.message || '请稍后重试'}）`;
-    default: return '同步出错（无法识别账户状态）';
+    case 'local': case 'local only': return t("sync.storedOnlyOnThisComputer");
+    case 'syncing': return t("sync.syncing");
+    case 'synced': return t("sync.synced");
+    case 'offline': return t("sync.offlinePendingUploads", { count: Math.max(0, Math.floor(Number(status.pending) || 0)) });
+    case 'error': return t("sync.syncError", { message: status.message || t("sync.tryAgainLater") });
+    default: return t("sync.syncErrorUnknownAccountStatus");
   }
 }

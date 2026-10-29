@@ -1,3 +1,4 @@
+import { useI18n } from './i18nContext.js';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motionDuration } from './motionState.js';
 
@@ -104,8 +105,9 @@ export function MotionDetails({ children, className = '' }) {
 }
 
 export function MotionRecord({ children, onRemove }) {
+  const { t } = useI18n();
   const [leaving, setLeaving] = useState(false);
   const timer = useRef(null);
   useEffect(() => () => clearTimeout(timer.current), []);
-  return <div className="motion-record" data-closing={leaving} inert={leaving || undefined}><div><fieldset>{children}<button type="button" onClick={() => { setLeaving(true); timer.current = setTimeout(onRemove, exitDuration()); }}>移除这条经历</button></fieldset></div></div>;
+  return <div className="motion-record" data-closing={leaving} inert={leaving || undefined}><div><fieldset>{children}<button type="button" onClick={() => { setLeaving(true); timer.current = setTimeout(onRemove, exitDuration()); }}>{t("motion.removeThisExperience")}</button></fieldset></div></div>;
 }
