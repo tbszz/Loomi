@@ -1,4 +1,24 @@
-# Resume Protocol
+# Loomi Desktop
+
+Loomi 的 Electron 桌面端（Windows 优先）。本仓库从网页端仓库 `tbszz/Resume-Protocol` 拆分而来（2026-10-28，基于 `feat/workspace-motion` 的 d3ccae1 及当时未提交的动效改动）。`server/`、`src/`、`skills/`、`knowledge/` 等与网页端共用的代码是复制过来的副本，两边需要的修复要分别提交到两个仓库。
+
+```text
+desktop/       Electron main / preload / 本地服务入口 / 打包配置
+src/desktop/   桌面端专属 UI：账户与同步状态、Loomi 开场动画、登录页
+```
+
+```bash
+npm ci
+npm run desktop:dev      # 构建前端并启动 Electron
+npm test                 # 含 npm run test:desktop
+npm run desktop:dist     # 打包 Windows NSIS 安装包到 release/
+```
+
+登录页和开场动画组件已就位，但尚未挂进 Electron 外壳；`desktop-preview.html` 可单独预览。云同步约定见 [`docs/desktop-cloud-sync.md`](docs/desktop-cloud-sync.md)。
+
+---
+
+## 原项目说明（Resume Protocol）
 
 Resume Protocol 是一个长期陪伴式 Personal Career Agent：围绕每个求职者建立可持续积累、可检索、可追溯的个人职业背景库，并在不同 Conversation 中复用这些真实信息完成简历分析、JD 分析、岗位判断、定制简历和面试准备。
 
