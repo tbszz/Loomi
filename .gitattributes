@@ -1,0 +1,17 @@
+# Keep text files LF everywhere. The repo is developed on Windows with
+# core.autocrlf=true, which converts LF to CRLF on checkout. Node tests read the
+# working-tree files directly (server/careerSkills.test.js parses SKILL.md
+# frontmatter with /^---\n/), so a CRLF working copy fails the suite while
+# `git status` still reports clean.
+* text=auto eol=lf
+
+# Binary assets must never be touched by the EOL filter.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary

@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {readableDocumentName} from './documentName.js';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+import {SafeMarkdown} from './components/SafeMarkdown.js';
+const original = '邹子涵简历v3.pdf';
+assert.equal(readableDocumentName(Buffer.from(original).toString('latin1')),original);
+for (const name of [original,'résumé.pdf','resume.pdf']) assert.equal(readableDocumentName(name),name);
+const html=renderToStaticMarkup(React.createElement(SafeMarkdown,{text:'[投递链接](https://example.com/job) **重点** `代码`'}));
+assert.match(html,/>投递链接<\/a>/);
+assert.match(html,/<strong>重点<\/strong>/);
+assert.match(html,/<code>代码<\/code>/);
+assert.doesNotMatch(html,/\[投递链接\]/);
+const unsafe=renderToStaticMarkup(React.createElement(SafeMarkdown,{text:'[链接](javascript:alert(1))'}));
+assert.doesNotMatch(unsafe,/href=/);
+console.log('Filename and Markdown regressions passed');

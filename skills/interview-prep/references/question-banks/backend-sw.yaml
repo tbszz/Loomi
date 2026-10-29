@@ -1,0 +1,189 @@
+family: backend-sw
+source_tier: L4
+license: "方法论人工提炼自公开面试准备资料，非原文复制"
+source_urls:
+  - "https://github.com/Snailclimb/JavaGuide"
+  - "https://github.com/yangshun/tech-interview-handbook"
+unverified: true
+note: "中文语境考察点为人工提炼，标 L4；部分题目参考 O*NET 15-1252.00 critical_tasks (CC BY 4.0)"
+
+questions:
+  - question: 设计一个短链服务，从域名到跳转全过程讲一遍你的方案。
+    type: system
+    evaluation_points:
+      - design-tradeoff
+      - scale-awareness
+    strong_answer_traits:
+      - 先问量级再谈架构，不直接上分布式
+      - 说清发号策略（自增/哈希/预生成）的取舍
+      - 指出缓存位置与失效策略
+      - 承认单点故障并给降级路径
+    common_mistakes:
+      - 不考虑 QPS 直接上微服务
+      - 只讲 happy path，不讲短链碰撞与恶意遍历
+      - 把"用过某框架"当成设计依据
+    family: backend-sw
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 你的服务 P99 延迟突然从 50ms 涨到 500ms，你怎么定位？
+    type: technical
+    evaluation_points:
+      - failure-reasoning
+      - depth-probe
+    strong_answer_traits:
+      - 先分层缩小范围（网关/服务/依赖/DB），不盲猜
+      - 给出要看的三个指标及各自排除的可能
+      - 先止损（回滚/降级/扩容）再深挖根因
+      - 承认当时缺哪个监控所以多花了时间
+    common_mistakes:
+      - 直接猜"是不是 GC/网络"，没有排除顺序
+      - 只谈技术根因，不谈止损动作
+      - 把"加监控"当根因
+    family: backend-sw
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 讲一个你独立负责的项目，说清你做了什么决策、为什么这么选。
+    type: behavioral
+    evaluation_points:
+      - design-tradeoff
+      - code-quality
+    strong_answer_traits:
+      - 每个选择都带"另一个选项为什么不行"
+      - 明确个人角色边界，越界部分主动降级为"我 review / 我提的方案"
+      - Result 带可复核的数字（KB 里能查到 fact_id）
+      - 有一个"我判断错了什么"的细节
+    common_mistakes:
+      - 把"参与"说成"主导"——责任范围通胀，必须依照证据判断
+      - 只有过程没有结果数字
+      - 用"大幅提升"代替具体值
+    family: backend-sw
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 什么情况下你会选择反范式设计？举一个你实际这么做的例子。
+    type: system
+    evaluation_points:
+      - design-tradeoff
+      - code-quality
+    strong_answer_traits:
+      - 从查询模式与读放大出发，不是从空间换时间口号出发
+      - 说清一致性由谁维护、怎么维护
+      - 给出实际表结构变化与收益
+      - 说明后来是否后悔
+    common_mistakes:
+      - 只说空间换时间
+      - 不提一致性成本
+      - 把团队改造讲成个人主导
+    family: backend-sw
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 你的接口被调用方反馈偶发超时，但你这边监控看正常，怎么办？
+    type: case
+    evaluation_points:
+      - failure-reasoning
+      - depth-probe
+    strong_answer_traits:
+      - 先质疑监控口径（采样、分位数、只看均值）
+      - 从调用侧拿证据（客户端耗时分布、trace 对照）
+      - 指出可能的网络/连接池/GC 边界
+      - 修复后补上对应监控
+    common_mistakes:
+      - 认为"我这边正常"就是没问题
+      - 只在自己服务内查，不看端到端 trace
+      - 修完不留监控
+    family: backend-sw
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 团队要你在两周内上线一个新功能，但你的评估是三周，你怎么处理？
+    type: behavioral
+    evaluation_points:
+      - design-tradeoff
+      - code-quality
+    strong_answer_traits:
+      - 先拆分范围找可裁剪的核心路径，而不是直接答应或拒绝
+      - 给出分期方案与各自风险
+      - 明确说清砍掉什么、不砍什么及理由
+      - 保留质量标准（测试、灰度）而不是偷偷省掉
+    common_mistakes:
+      - 直接答应然后默默加班
+      - 直接拒绝不给替代方案
+      - 用砍测试换进度且不声明
+    family: backend-sw
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 你的服务从 100 QPS 涨到 10 万 QPS，设计上要改什么？
+    type: system
+    evaluation_points:
+      - scale-awareness
+      - design-tradeoff
+    strong_answer_traits:
+      - 按演进路径分阶段，每阶段解决具体瓶颈
+      - 逐层指出变化点：连接池、缓存、DB、限流、发布方式
+      - 指出小流量下过度设计本身的代价
+      - 提到压测与容量预估是设计输入
+    common_mistakes:
+      - 只描述终态架构，不谈演进
+      - 认为加了缓存和 MQ 就自动能扛 10 万 QPS
+      - 忽略发布/扩缩容/依赖方限流
+    family: backend-sw
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 讲一次你 review 别人代码时发现的问题，你怎么说服对方改？
+    type: behavioral
+    evaluation_points:
+      - design-tradeoff
+      - code-quality
+    strong_answer_traits:
+      - 反对理由是机制层面的（可复现问题）不是偏好
+      - 给出替代方案与代价，不是只否掉
+      - 区分"我不喜欢"和"这会在 X 条件下坏"
+      - 事后验证判断（真的出问题了吗）
+    common_mistakes:
+      - 把个人技术偏好说成客观标准
+      - 只讲否掉，不讲替代与落地
+      - 无后续验证，故事停在"最后听我的了"
+    family: backend-sw
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 你的消息消费出现了重复消费，可能是什么原因，怎么解决？
+    type: technical
+    evaluation_points:
+      - depth-probe
+      - design-tradeoff
+    strong_answer_traits:
+      - 区分生产侧重试、消费端重试、rebalance 三类来源
+      - 幂等键由业务语义决定，不是随手 hash 请求参数
+      - 幂等与状态机/版本号配合，而不是只加分布式锁
+      - 说清幂等组件本身故障时系统还能不能收单
+    common_mistakes:
+      - 只说"消费端做幂等"，不说幂等键怎么定
+      - 用 Redis setnx 当唯一保证，不谈故障边界
+      - 认为"至少一次"投递是异常而不是常态
+    family: backend-sw
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 你负责的模块线上出了个数据错误，影响了 1000 个用户，你怎么处理？
+    type: case
+    evaluation_points:
+      - failure-reasoning
+      - code-quality
+    strong_answer_traits:
+      - 先止损（停止扩散）再定位再修复，顺序明确
+      - 数据修复讲可逆性与校验（行数、关键字段比对）
+      - 明确影响面口径（1000 是怎么统计的）
+      - 事后加防复发手段（校验、对账、告警）
+    common_mistakes:
+      - 先修 bug 不先止损，错误继续扩散
+      - 数据修复脚本无校验无回滚
+      - 影响面用"大概上千"这种模糊口径
+    family: backend-sw
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"

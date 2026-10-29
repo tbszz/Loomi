@@ -1,0 +1,45 @@
+.application-panel { padding: 20px; font: 13px/1.6 var(--font-sans); color: var(--panel-ink); overflow-wrap: anywhere; }
+.application-panel p { color: var(--muted); }
+.application-panel strong { font: 600 18px/1.4 var(--font-serif); }
+.application-rule { padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.application-panel label { display: grid; gap: 5px; margin: 12px 0; }
+.application-panel input, .application-panel select { width: 100%; min-width: 0; padding: 8px; border: 1px solid var(--line); border-radius: 4px; color: var(--ink); background: var(--paper); }
+.application-panel button { padding: 7px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--soft); color: var(--ink); font: inherit; cursor: pointer; }
+.application-panel button:disabled { opacity: .5; cursor: default; }
+.application-panel :is(button,input,select,summary):focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.application-panel details { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.application-panel summary { cursor: pointer; font-weight: 600; }
+.application-panel fieldset { min-width: 0; padding: 10px; border: 1px solid var(--line); }
+.application-profile > form > fieldset { border: 0; padding: 0; }
+.application-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
+.application-fields { padding: 0; list-style: none; }
+.application-fields li { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.application-fields small { color: var(--muted); }
+.application-fields .application-attachment { grid-column: 1 / -1; margin: 0; }
+.application-panel [role=alert] { border-left: 2px solid var(--accent-reject); color: var(--accent-reject); padding-left: 10px; }
+
+/* F1-F4: disclosures, real request feedback and scanned field state changes. */
+.application-panel .motion-details > summary { display: flex; align-items: center; justify-content: space-between; list-style: none; }
+.application-panel .motion-details > summary::-webkit-details-marker { display: none; }
+.application-panel .motion-details > summary::after { content: '\203a'; transform: rotate(0); transition: transform var(--dur-fast) var(--ease-out); }
+.application-panel .motion-details[data-expanded="true"] > summary::after { transform: rotate(90deg); }
+.application-panel .motion-record { animation: record-enter var(--dur-base) var(--ease-out); }
+.application-panel .motion-record fieldset { margin: 8px 0; }
+.application-panel .motion-disclosure form > fieldset { border: 0; padding: 0; }
+@keyframes record-enter { from { grid-template-rows: 0fr; opacity: 0; } to { grid-template-rows: 1fr; opacity: 1; } }
+.application-panel button { transition: opacity var(--dur-fast), background-color var(--dur-fast), transform var(--dur-instant) var(--ease-out); }
+.application-panel button:not(:disabled):is(:hover, :focus-visible) { background-color: var(--aui-hover, var(--soft)); }
+.application-panel button:not(:disabled):active { transform: var(--press); }
+.application-panel button[aria-busy="true"] { opacity: 1; }
+.application-spinner { display: inline-block; vertical-align: -.1em; width: 12px; height: 12px; margin-right: 6px; border: 1.5px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: application-spin 800ms linear infinite; }
+@keyframes application-spin { to { transform: rotate(360deg); } }
+.application-fields li { animation: motion-enter var(--dur-base) var(--ease-out) var(--enter-delay, 0ms) backwards; }
+.application-field-state { display: grid; align-self: start; }
+.application-field-state > span { grid-area: 1 / 1; padding: 1px 5px; border-radius: 4px; background: var(--aui-surface-soft, var(--soft)); animation: motion-fade var(--dur-base) var(--ease-out); }
+@media (prefers-reduced-motion: reduce) {
+  .application-panel *, .application-panel *::after { animation: none !important; transition: none !important; transform: none !important; }
+  .application-spinner { border-style: dotted; border-right-color: currentColor; }
+}
+
+.application-panel button[type="submit"] { border-color: var(--aui-ink); background: var(--aui-ink); color: var(--aui-on-primary); }
+.application-panel button[type="submit"]:not(:disabled):is(:hover, :focus-visible) { background: var(--aui-accent-strong); }

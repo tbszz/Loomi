@@ -1,0 +1,69 @@
+/* Loomi: decorative companion layered over the thread; it never takes input. */
+.loomi-layer { position: absolute; inset: 0; z-index: 6; overflow: hidden; pointer-events: none; --loomi-body: var(--aui-ink, #ededef); --loomi-eye: var(--aui-bg, #111113); }
+.loomi { position: absolute; left: 0; top: 0; overflow: visible; }
+.loomi[data-phase="travel"] { transition: transform 900ms cubic-bezier(.45, .05, .35, 1); }
+.loomi * { transform-box: view-box; }
+.loomi-fill { fill: var(--loomi-body); }
+.loomi-eye { fill: var(--loomi-eye); }
+.loomi-limb { fill: none; stroke: var(--loomi-body); stroke-width: 4.5; stroke-linecap: round; }
+.loomi-happy { fill: none; stroke: var(--loomi-eye); stroke-width: 2.6; stroke-linecap: round; opacity: 0; }
+.loomi-bubble, .loomi-spark { opacity: 0; }
+
+.loomi-all { transform-origin: 60px 48px; transition: transform 220ms; }
+.loomi-body { transform-origin: 60px 92px; }
+.loomi-upper { transform-origin: 60px 92px; transition: transform 300ms; }
+.loomi-silk { fill: color-mix(in srgb, var(--loomi-body) 30%, transparent); transform-origin: 60px 48px; transform: scaleY(0); transition: transform 350ms; }
+.loomi[data-silk="true"] .loomi-silk { transform: scaleY(1); }
+.loomi-web path { fill: none; stroke: color-mix(in srgb, var(--loomi-body) 22%, transparent); stroke-width: 1; stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 1.2s ease-out; }
+.loomi[data-phase="done"] .loomi-web path { stroke-dashoffset: 0; }
+.loomi-open { transform-origin: 60px 69px; animation: loomi-blink 4.2s infinite; }
+.loomi-pupils { transition: transform 300ms; }
+.loomi-spark { transform-origin: 60px 60px; }
+
+/* idle: sit on the composer edge, breathe, tap the lower feet now and then */
+.loomi[data-phase="idle"] .loomi-body { animation: loomi-breathe 2.6s ease-in-out infinite; }
+.loomi[data-phase="idle"] .loomi-L3 { animation: loomi-tap-l 3.6s infinite; }
+.loomi[data-phase="idle"] .loomi-R3 { animation: loomi-tap-r 3.6s infinite -.3s; }
+/* typing: watch the caret and tap along */
+.loomi[data-phase="typing"] .loomi-pupils { transform: translate(-3px, 1px); }
+.loomi[data-phase="typing"] .loomi-upper { transform: rotate(-6deg); }
+.loomi[data-phase="typing"] .loomi-L3 { animation: loomi-tap-fast-l 500ms infinite; }
+.loomi[data-phase="typing"] .loomi-R3 { animation: loomi-tap-fast-r 500ms infinite -250ms; }
+/* work: crouch, shoot silk, abseil to the run card and dangle there */
+.loomi[data-phase="crouch"] .loomi-all { transform: scale(1.06, .9); }
+.loomi[data-phase="shoot"] .loomi-all { transform: translateY(-8px); }
+.loomi:is([data-phase="travel"], [data-phase="hang"]) .loomi-leg { animation: loomi-paddle-l 360ms ease-in-out infinite alternate; }
+.loomi:is([data-phase="travel"], [data-phase="hang"]) .loomi-R { animation-name: loomi-paddle-r; }
+.loomi:is([data-phase="travel"], [data-phase="hang"]) :is(.loomi-L2, .loomi-R1, .loomi-R3) { animation-delay: -360ms; }
+.loomi[data-phase="hang"] .loomi-leg { animation-duration: 900ms; }
+.loomi[data-phase="hang"] .loomi-all { animation: loomi-dangle 3.2s ease-in-out infinite; }
+.loomi[data-phase="hang"] .loomi-pupils { transform: translateY(2px); }
+/* done: weave a small web, squint and hop */
+.loomi[data-phase="done"] .loomi-open { opacity: 0; animation: none; }
+.loomi[data-phase="done"] .loomi-happy { opacity: 1; }
+.loomi[data-phase="done"] .loomi-upper { animation: loomi-hop 800ms cubic-bezier(.3, .7, .4, 1) 3; }
+.loomi[data-phase="done"] .loomi-spark { animation: loomi-twinkle 1.6s ease-in-out infinite; }
+/* attn: rear up and wave the front legs, like a jumping spider */
+.loomi[data-phase="attn"] .loomi-upper { transform: translateY(-8px); }
+.loomi[data-phase="attn"] .loomi-L1 { animation: loomi-wave-l 300ms ease-in-out infinite alternate; }
+.loomi[data-phase="attn"] .loomi-R1 { animation: loomi-wave-r 300ms ease-in-out infinite alternate; }
+.loomi[data-phase="attn"] .loomi-bubble { opacity: 1; }
+.loomi[data-phase="attn"] .loomi-open { transform: scale(1.15); animation: none; }
+
+@keyframes loomi-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+@keyframes loomi-breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.03, .97); } }
+@keyframes loomi-tap-l { 0%, 70%, 82%, 100% { transform: rotate(0); } 76%, 88% { transform: rotate(-18deg); } }
+@keyframes loomi-tap-r { 0%, 70%, 82%, 100% { transform: rotate(0); } 76%, 88% { transform: rotate(18deg); } }
+@keyframes loomi-tap-fast-l { 50% { transform: rotate(-20deg); } }
+@keyframes loomi-tap-fast-r { 50% { transform: rotate(20deg); } }
+@keyframes loomi-paddle-l { from { transform: rotate(-14deg); } to { transform: rotate(12deg); } }
+@keyframes loomi-paddle-r { from { transform: rotate(14deg); } to { transform: rotate(-12deg); } }
+@keyframes loomi-dangle { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-6px) rotate(6deg); } }
+@keyframes loomi-hop { 0%, 100% { transform: translateY(0) scale(1.05, .95); } 40% { transform: translateY(-9px) scale(.97, 1.03); } }
+@keyframes loomi-twinkle { 0%, 100% { opacity: 0; transform: scale(.6); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes loomi-wave-l { from { transform: rotate(25deg); } to { transform: rotate(55deg); } }
+@keyframes loomi-wave-r { from { transform: rotate(-25deg); } to { transform: rotate(-55deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .loomi, .loomi * { animation: none !important; transition: none !important; }
+}

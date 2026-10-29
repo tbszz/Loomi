@@ -1,0 +1,40 @@
+{
+  "templates": {
+    "campus-project": {
+      "description": "校招/实习：教育、项目在前，项目经历获得最多纵向空间。",
+      "sectionOrder": ["education", "projects", "experience", "skills", "awards"],
+      "margin": { "left": 42, "right": 42, "top": 34, "bottom": 42 },
+      "bodySize": 10.5,
+      "leading": 16,
+      "titleSize": 21,
+      "sectionSize": 12.5,
+      "sectionGap": 8,
+      "itemGap": 5,
+      "paragraphKeepChars": 180
+    },
+    "experienced": {
+      "description": "国内社招：工作经历和项目成果在前，工作模块获得更多纵向空间。",
+      "sectionOrder": ["experience", "projects", "skills", "education", "awards"],
+      "margin": { "left": 40, "right": 40, "top": 32, "bottom": 40 },
+      "bodySize": 10.5,
+      "leading": 16.5,
+      "titleSize": 20,
+      "sectionSize": 12,
+      "sectionGap": 9,
+      "itemGap": 6,
+      "paragraphKeepChars": 190
+    },
+    "minimal": {
+      "description": "内容较少：略放大字号和边距，用舒展留白保持版面清晰。",
+      "sectionOrder": ["education", "experience", "projects", "skills", "awards"],
+      "margin": { "left": 48, "right": 48, "top": 44, "bottom": 46 },
+      "bodySize": 11,
+      "leading": 17.5,
+      "titleSize": 22,
+      "sectionSize": 12.5,
+      "sectionGap": 10,
+      "itemGap": 6,
+      "paragraphKeepChars": 170
+    }
+  }
+}

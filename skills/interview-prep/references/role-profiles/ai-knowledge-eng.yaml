@@ -1,0 +1,237 @@
+source_version: 1.0.0
+family_id: ai-knowledge-eng
+version: 1.0.0
+label: AI 与知识库工程
+soc_code: "15-1299.02"
+source_tier: L2
+license: "O*NET (CC BY 4.0); ESCO (CC BY 4.0); BLS OEWS (public domain)"
+source_urls:
+  - "https://www.onetonline.org/link/summary/15-1299.02"
+  - "https://www.bls.gov/oes/current/oes151299.htm"
+
+job_zones:
+  - id: 3
+    label: 中等准备以上
+    note: 该岗位族多为 2 年+，或强相关项目经验替代
+  - id: 4
+    label: 相当准备
+    note: 资深/负责人，5 年+
+  - id: 5
+    label: 相当准备以上
+    note: 研究型或架构决策岗
+
+hot_technology:
+  required:
+    - name: rag
+      note: 检索增强生成是知识库工程的核心形态
+    - name: embedding-retrieval
+      note: 向量检索与混合检索
+    - name: evaluation-harness
+      note: 无评测集的 AI 系统不可维护
+  emerging:
+    - name: agent-orchestration
+      note: Agent 编排与工具调用
+    - name: context-compression
+      note: 长上下文与压缩策略
+
+required_skills:
+  - id: retrieval-design
+    label: 检索与召回设计
+    note: 分块、向量化、混合检索、rerank
+  - id: evaluation-design
+    label: 评测设计
+    note: 指标定义、评测集构建、badcase 分析
+  - id: data-pipeline
+    label: 数据管道
+    note: 清洗、解析、去重、增量更新
+  - id: prompt-engineering
+    label: 提示工程
+    note: 结构化输出、少样本、约束遵循
+  - id: llm-app-engineering
+    label: LLM 应用工程
+    note: 延迟/成本/失败处理/降级
+  - id: knowledge-modeling
+    label: 知识建模
+    note: 实体、关系、分层、版本与时效
+  - id: experiment-discipline
+    label: 实验纪律
+    note: 改一处量一处，无对照不下结论
+
+preferred_skills:
+  - id: vector-database
+    label: 向量数据库
+    note: 索引选型、召回率/延迟权衡
+  - id: ml-basics
+    label: 机器学习基础
+    note: 不需训练模型，但需懂指标与过拟合
+  - id: observability
+    label: 可观测性
+    note: LLM 应用的 trace 与成本观测
+  - id: information-retrieval-theory
+    label: 信息检索理论
+    note: 召回/精确率/F1，BM25 等经典方法
+  - id: nlp-preprocessing
+    label: 中文文本预处理
+    note: 分词、归一化、标题层级保留
+
+critical_tasks:
+  - id: build-knowledge-base
+    label: 构建与维护知识库
+  - id: tune-retrieval
+    label: 调优检索召回
+  - id: build-evaluation
+    label: 建立评测体系
+  - id: ship-llm-feature
+    label: 上线 LLM 功能
+  - id: analyze-badcase
+    label: 分析并归因 badcase
+  - id: control-cost-latency
+    label: 控制成本与延迟
+
+soft_skills:
+  - id: honesty-about-limits
+    label: 对系统局限的诚实
+    note: 能说清"这个方案在什么情况下会失败"
+  - id: cross-functional
+    label: 跨职能沟通
+    note: 与算法、产品、后端协作
+  - id: skepticism
+    label: 对指标的怀疑精神
+    note: 不轻信单次实验结论
+
+success_factors:
+  - id: evaluation-first
+    label: 评测先行
+    note: 有评测集的人与没有的人是两个物种
+  - id: failure-analysis
+    label: 失败归因能力
+    note: 能把 badcase 归类到检索/生成/数据/提示哪一层
+  - id: production-sense
+    label: 工程落地感
+    note: 延迟预算、成本核算、降级路径
+  - id: data-quality-discipline
+    label: 数据质量纪律
+    note: 脏数据进脏数据出，清洗是核心竞争力
+
+evaluation_focus:
+  - id: retrieval-vs-generation
+    label: 检索层与生成层归因
+    note: 错了先判断是哪一层的问题
+  - id: metric-choice
+    label: 指标选择
+    note: 为什么用这个指标而不是那个，会怎么被刷高
+  - id: failure-mode-analysis
+    label: 失败模式分析
+    note: 召回失败/幻觉/注入/过期知识各自的信号
+  - id: cost-latency-tradeoff
+    label: 成本与延迟权衡
+    note: 模型选型、缓存、批处理的取舍
+  - id: hallucination-control
+    label: 幻觉控制
+    note: 无证据不得声称，来源可追溯
+
+evidence_forms:
+  - form: retrieval-metric-delta
+    label: 检索指标前后对比
+    weight: high
+    note: 召回率/精确率/MRR 的具体数字
+  - form: badcase-taxonomy
+    label: badcase 归类与修复
+    weight: high
+    note: 能说清归类维度和每类的处理
+  - form: eval-harness
+    label: 评测集与工具链
+    weight: high
+    note: 自己建的评测集比用公共集更有说服力
+  - form: production-llm-feature
+    label: 上线 LLM 功能
+    weight: medium
+    note: 需带用量、成本、失败率
+  - form: course-project
+    label: 课程/练习项目
+    weight: low
+    note: 无真实用户与数据规模，需显式说明
+
+frames:
+  - id: retrieval-architecture
+    label: 检索与召回架构
+    signals: [retrieval, rerank, embedding, recall, index, vector, 检索, 召回, 向量, 索引]
+    emphasis:
+      project_types: [search-system, rag-pipeline, index-design]
+      skill_groups: [retrieval-design, vector-database, information-retrieval-theory]
+      bullet_weight:
+        quantified-result: 1.5
+        design-decision: 1.3
+        technical-depth: 1.3
+        delivery-count: 0.6
+    deemphasis: [model-training-detail, ui-work]
+  - id: evaluation-data-quality
+    label: 评估与数据质量
+    signals: [evaluation, benchmark, metric, annotation, data-quality, dataset, 评测, 评估, 标注, 数据质量]
+    emphasis:
+      project_types: [eval-harness, data-cleaning, annotation-pipeline]
+      skill_groups: [evaluation-design, data-pipeline, experiment-discipline]
+      bullet_weight:
+        quantified-result: 1.5
+        methodology-depth: 1.4
+        delivery-count: 0.7
+    deemphasis: [feature-count]
+  - id: application-engineering
+    label: 应用工程落地
+    signals: [agent, orchestration, latency, cost, production, deployment, 应用, 落地, 上线, 编排]
+    emphasis:
+      project_types: [agent-app, llm-feature, serving-infra]
+      skill_groups: [llm-app-engineering, prompt-engineering, observability]
+      bullet_weight:
+        business-impact: 1.4
+        quantified-result: 1.4
+        cost-metric: 1.5
+        paper-count: 0.5
+    deemphasis: [paper-theory]
+
+skill_requirements:
+  retrieval-design: {min_level: deep}
+  evaluation-design: {min_level: deep}
+  data-pipeline: {min_level: working, preferred_level: deep}
+  llm-app-engineering: {min_level: working, preferred_level: deep}
+  knowledge-modeling: {min_level: working, preferred_level: deep}
+  prompt-engineering: {min_level: deep}
+  experiment-discipline: {min_level: deep}
+  vector-database: {min_level: working}
+  observability: {min_level: working}
+  hallucination-control: {min_level: deep}
+
+industry_params:
+  language_style:
+    cn-internet: [落地, 闭环, 中台, 基建]
+    cn-foreign: [ship, production-ready, ownership, measurable]
+    ai-startup: [迭代快, 效果优先, demo 驱动]
+  education_bar:
+    cn-internet: 本科及以上，硕士在评测/算法交叉岗更常见
+    cn-foreign: 本科及以上，相关项目可替代学历
+    ai-startup: 弹性，强项目或论文可破格
+  round_structure:
+    cn-internet: [笔试, 技术一面, 技术二面, 交叉面, HR 面]
+    cn-foreign: [recruiter screen, hiring manager, technical deep dive, team match]
+    ai-startup: [技术深挖, 现场方案设计, 试用期项目]
+  portfolio_form: [GitHub, 技术博客, 开源贡献, 评测工具]
+  salary_band:
+    source: "BLS OEWS (public domain)"
+    note: 仅 L2 可断言；国内薪资无合规第一方来源，留空不猜
+
+keyword_dict:
+  - pattern: 召回
+    intent: retrieval-requirement
+    note: 追问指标口径与基线
+  - pattern: 幻觉
+    intent: hallucination-control
+    note: 追问控制手段与残余风险
+  - pattern: 知识库
+    intent: knowledge-engineering
+    note: 追问规模、更新频率、时效处理
+  - pattern: Agent
+    intent: agent-orchestration
+    note: 追问工具失败与重试策略
+  - pattern: 评测
+    intent: evaluation-requirement
+    note: 追问评测集规模与构成

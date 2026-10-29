@@ -1,0 +1,253 @@
+source_version: 1.0.0
+family_id: backend-sw
+version: 1.0.0
+label: 软件开发-后端
+soc_code: "15-1252.00"
+source_tier: L2
+license: "O*NET (CC BY 4.0); ESCO (CC BY 4.0); BLS OEWS (public domain)"
+source_urls:
+  - "https://www.onetonline.org/link/summary/15-1252.00"
+  - "https://www.bls.gov/oes/current/oes151252.htm"
+
+job_zones:
+  - id: 2
+    label: 中等准备
+    note: 应届/初级，1-2 年
+  - id: 3
+    label: 中等准备以上
+    note: 主力后端，2-5 年
+  - id: 4
+    label: 相当准备
+    note: 高级/资深，5 年+
+
+hot_technology:
+  required:
+    - name: relational-database
+      note: 关系型数据库建模与查询优化，不因 ORM 普及而降权
+    - name: http-api
+      note: REST/RPC 接口设计与版本兼容
+    - name: concurrency
+      note: 并发模型与竞态防护
+  emerging:
+    - name: distributed-tracing
+      note: 可观测性三件套之一，近年权重上升
+    - name: vector-search
+      note: AI 应用带进来的新增需求
+
+required_skills:
+  - id: system-design
+    label: 系统设计
+    note: 容量估算、一致性取舍、服务边界划分
+  - id: api-design
+    label: API 设计
+    note: 幂等、版本兼容、错误模型
+  - id: database-modeling
+    label: 数据建模
+    note: 范式/反范式权衡、迁移策略、索引
+  - id: concurrency-control
+    label: 并发控制
+    note: 锁、事务隔离、竞态与死锁
+  - id: observability
+    label: 可观测性
+    note: 日志/指标/链路，能定位线上问题
+  - id: debugging
+    label: 线上问题定位
+    note: 从现象到根因的排查路径
+  - id: testing
+    label: 测试
+    note: 单测/集成测试覆盖关键路径
+  - id: version-control
+    label: 版本控制与协作
+    note: Git、code review、CI
+
+preferred_skills:
+  - id: performance-optimization
+    label: 性能优化
+    note: P99 延迟、吞吐、资源占用
+  - id: caching
+    label: 缓存策略
+    note: 失效、穿透、一致性
+  - id: message-queue
+    label: 消息队列
+    note: 异步解耦、顺序性、重复消费
+  - id: capacity-planning
+    label: 容量规划
+    note: 压测、扩容、限流降级
+  - id: security-basics
+    label: 安全基础
+    note: 认证授权、注入防护、密钥管理
+
+critical_tasks:
+  - id: design-service
+    label: 设计服务与接口契约
+  - id: model-data
+    label: 设计数据模型与迁移
+  - id: implement-feature
+    label: 实现业务功能
+  - id: debug-production
+    label: 定位并修复线上问题
+  - id: optimize-performance
+    label: 优化性能与稳定性
+  - id: review-code
+    label: 参与 code review 与技术方案评审
+
+soft_skills:
+  - id: tradeoff-communication
+    label: 权衡沟通
+    note: 能讲清为什么选 A 不选 B
+  - id: cross-team
+    label: 跨团队协作
+  - id: ownership
+    label: 责任承担
+  - id: estimation
+    label: 工期与风险估算
+
+success_factors:
+  - id: depth-over-breadth
+    label: 深度优先于广度
+    note: 能把一个模块讲到底层机制，比列一串技术名词有说服力
+  - id: production-experience
+    label: 真实生产环境经验
+    note: 流量规模、故障处理、上线流程是硬通货
+  - id: tradeoff-thinking
+    label: 权衡思维
+    note: 面试官找的是能识别取舍并说明理由的人
+  - id: measurable-impact
+    label: 可量化影响
+    note: 延迟/可用性/成本的具体数字
+
+evaluation_focus:
+  - id: design-tradeoff
+    label: 设计权衡
+    note: 一致性 vs 可用性、延迟 vs 吞吐、范式 vs 反范式
+  - id: failure-reasoning
+    label: 故障推理
+    note: 从现象反推根因，判断边界条件与监控盲区
+  - id: depth-probe
+    label: 深度追问
+    note: 顺着一个点往下挖三层，考察是否真懂还是只会用
+  - id: scale-awareness
+    label: 规模意识
+    note: 100 QPS 和 10 万 QPS 的设计是否不同
+  - id: code-quality
+    label: 代码质量
+    note: 边界处理、错误路径、可测试性
+
+evidence_forms:
+  - form: quantified-system-metric
+    label: 系统级量化指标
+    weight: high
+    note: QPS/P99/可用性/成本，带前后对比
+  - form: incident-ownership
+    label: 故障处理归属
+    weight: high
+    note: 参与过真实故障的定位与修复，需区分参与和负责
+  - form: design-doc
+    label: 技术方案文档
+    weight: medium
+    note: 能体现权衡与取舍
+  - form: open-source
+    label: 开源贡献
+    weight: medium
+  - form: course-project
+    label: 课程/练习项目
+    weight: low
+    note: 无生产量级，需显式说明规模
+
+frames:
+  - id: system-designer
+    label: 系统设计者
+    signals: [architecture, design, scalability, trade-off, distributed, microservice, 架构, 设计, 分布式, 微服务]
+    emphasis:
+      project_types: [platform-design, service-split, capacity-design]
+      skill_groups: [system-design, api-design, concurrency-control]
+      bullet_weight:
+        quantified-result: 1.4
+        design-decision: 1.5
+        technical-depth: 1.2
+        delivery-count: 0.6
+    deemphasis: [crud-features, ui-work, pure-configuration]
+  - id: performance-stability
+    label: 性能与稳定性攻坚
+    signals: [performance, latency, p99, optimization, sre, reliability, stability, 性能, 优化, 稳定性, 可用性]
+    emphasis:
+      project_types: [performance-optimization, stability-engineering, incident-response]
+      skill_groups: [performance-optimization, observability, capacity-planning]
+      bullet_weight:
+        quantified-result: 1.6
+        technical-depth: 1.3
+        incident-ownership: 1.5
+        delivery-count: 0.5
+    deemphasis: [crud-features, feature-count]
+  - id: platform-tooling
+    label: 平台与工具链
+    signals: [platform, tooling, ci-cd, internal, developer-experience, devops, 平台, 工具, 研发效能]
+    emphasis:
+      project_types: [internal-platform, build-system, observability-stack]
+      skill_groups: [observability, version-control, testing]
+      bullet_weight:
+        adoption-metric: 1.5
+        quantified-result: 1.4
+        technical-depth: 1.2
+        domain-depth: 0.6
+    deemphasis: [business-feature-count]
+  - id: business-delivery
+    label: 业务交付主力
+    signals: [delivery, requirement, business, iteration, 交付, 业务, 需求, 迭代]
+    emphasis:
+      project_types: [feature-delivery, cross-team-project]
+      skill_groups: [api-design, database-modeling]
+      bullet_weight:
+        business-impact: 1.5
+        delivery-count: 1.3
+        quantified-result: 1.2
+        technical-depth: 0.8
+    deemphasis: [deep-infra-detail]
+
+skill_requirements:
+  system-design: {min_level: working, preferred_level: deep}
+  database-modeling: {min_level: working, preferred_level: deep}
+  concurrency-control: {min_level: working, preferred_level: deep}
+  observability: {min_level: working, preferred_level: deep}
+  api-design: {min_level: deep}
+  debugging: {min_level: deep}
+  performance-optimization: {min_level: working, preferred_level: deep}
+  caching: {min_level: working}
+  message-queue: {min_level: working}
+  capacity-planning: {min_level: working}
+  security-basics: {min_level: working}
+
+industry_params:
+  language_style:
+    cn-internet: [闭环, 抓手, 对齐, 拉通, 沉淀]
+    cn-foreign: [deliverable, stakeholder, ownership, roadmap]
+    cn-soe: [稳重, 合规, 责任心, 服从安排]
+  education_bar:
+    cn-internet: 本科及以上，专科需强项目弥补
+    cn-foreign: 本科及以上，硕士在系统设计岗更常见
+    cn-soe: 全日制本科，部分要求 985/211
+  round_structure:
+    cn-internet: [笔试, 技术一面, 技术二面, 交叉面, HR 面]
+    cn-foreign: [recruiter screen, hiring manager, system design, team match]
+    ai-startup: [技术深挖, 现场编码, 系统设计, 文化匹配]
+  portfolio_form: [GitHub, 技术博客, 开源贡献]
+  salary_band:
+    source: "BLS OEWS (public domain)"
+    note: 仅 L2 可断言；国内薪资无合规第一方来源，留空不猜
+
+keyword_dict:
+  - pattern: 架构
+    intent: system-design-ownership
+    note: 出现不等于候选人做过架构，需 fact 级证据
+  - pattern: 高并发
+    intent: scale-requirement
+    note: 追问具体量级
+  - pattern: 微服务
+    intent: service-split
+    note: 追问拆分动机与边界
+  - pattern: 性能优化
+    intent: performance-requirement
+    note: 追问指标与手段
+  - pattern: 排查
+    intent: debugging-experience
+    note: 追问故障等级与个人角色

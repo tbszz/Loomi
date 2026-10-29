@@ -1,0 +1,1627 @@
+{
+  "repository": "https://github.com/simonlin1212/Hiring-Radar",
+  "revision": "dae32964f9c3b7289a85eac8693225e5248e7c82",
+  "license": "MIT",
+  "runtimeFiles": {
+    "radar/cli.py": "49ea9cb1bf7525c6d2e1ea76c648f0c1e7875fbd77d645749a2ec75637660ace",
+    "radar/countries.py": "1050909ef6ef307636f233fb8927c737753a56bf62b73704ac947db4ae4fac34",
+    "radar/directory.py": "43dac0fb53cd513b895bef9b311611317f522579cff6d39ef10cb788460ac5aa",
+    "radar/http.py": "8f2532c2ba7636f5869b067a2266632038a104e7ebfaaa6055ff4eb550c6747e",
+    "radar/local.py": "a1514b6560d3ad46cbc1d5aedd63f2316e5c822dded073dae0262781e20076aa",
+    "radar/mcp.py": "73e15ed1dfe7716c4d14a5d1a6716ab8345bc940ce9810329807aa85b17e33d7",
+    "radar/plugins.py": "812e79c747ca8319aa7e56a6cd7a91acee942a50cbd34ee99e5fc61f871afca1",
+    "radar/process.py": "198218ca6e6b6ddf9c60cfc020c1f6fde22456ae224c3369144e854de298233c",
+    "radar/schema.py": "c60d7ad38b71ebf6b687c28ac6b57b378736f2b5300ceae3743b0243850e43cb",
+    "radar/store.py": "367c95fda6dafbe3a436fbef910f162f7f033486737cac5c80cd4afd3b35a815",
+    "radar/sweep.py": "47d98811a289d2721246e70bcb27838ad6bebf47295e64fc8f2389be51059894",
+    "radar/__init__.py": "4db304e8537404e1cca2dfbd88ccd1f2a3fc44a1846f5769c51235b0fa5e943e",
+    "radar/ats/applicantpro.py": "2dc0a026060ea14783bfc90d7ba160c8f51d697a388277dffd69c452a920b170",
+    "radar/ats/ashby.py": "e2bc1c3cd9b380851fb099a209a47afebd009969236bae2b11d5b6508ad8039b",
+    "radar/ats/bamboohr.py": "40fc4c1ad43a2263540aba997b83c2f08d259cdc4b4c4c3f97ad26c07d1ad746",
+    "radar/ats/breezy.py": "0f7e33dd272980c1dfa6b0fbbdfbf0bb3e058b704e0e4d69f4bb42ad31b95a2a",
+    "radar/ats/careerplug.py": "4328ebfe9e12a1c644e698142bc8662b02de30ad5a414e80e6bcc61fce45a0f9",
+    "radar/ats/greenhouse.py": "a9dd3a38919afebbe3768a616b49a44a6792a63bde7e15d7882d33bbaab1348a",
+    "radar/ats/hireology.py": "a142ecca719532b5281c2094586e24d20cd90b528268821fbd72e44f9fe1b335",
+    "radar/ats/icims.py": "a24006324c24e04fe7b393a0dc67b28588aab68fc022f22174739f65ffc314ce",
+    "radar/ats/isolvedhire.py": "b1e4ac9f06a6f5e9e65e11e4c2a2713ca552a298c959e81edbdcd94b75574164",
+    "radar/ats/jazzhr.py": "bf8aa3a6cbcde871c382e131d981ce71501b30f32ee0163d67c583e0f1607e23",
+    "radar/ats/jobvite.py": "420c52284ce3eec9c659b7a8c7a00ce35addcb3ccc15178ace2228078cc5fb35",
+    "radar/ats/lever.py": "2dbdaf74c50f6cdd0dbba19d2ac37a5f229f8efb980dbeb70416695213b0e84d",
+    "radar/ats/manatal.py": "3f4c70022d043492716c7b76852d5862f1f2934621073758c0a53e39e0e22d61",
+    "radar/ats/pageup.py": "577d3740f9601efdab669f049a0dc22142a34795feea9d59ba0cdc016a31f81d",
+    "radar/ats/personio.py": "7b37a7bdf62809155e5cf9ee4e71289bb0929365eb7f6688e146e4831ff86e86",
+    "radar/ats/pinpointhq.py": "b613016f471e8b5c9612bddd89b3ace6bda7a4a563bf634dbc437387e3a5b04f",
+    "radar/ats/recruitee.py": "cab19c1c13b8bfc84ad366180d42cd1943e66dd4ad2e1286dbc031e53fd08fe7",
+    "radar/ats/rippling.py": "ce9ea9d0f71427620aff136da920be77e8da88690bcaebfa90253d5cefbde2ac",
+    "radar/ats/smartrecruiters.py": "b656fd235aff87d45e7f027a804378813ea5e29030da513c6491c7c5910e0e77",
+    "radar/ats/teamtailor.py": "ae820ed6a7049231d44ca5e30019a77d2884f80aeec074d55db07235a988859d",
+    "radar/ats/ultipro.py": "887ad3701f623d8cf98ea5f790796cf8a7c6987a16bc5db27474445d2a24c8aa",
+    "radar/ats/workable.py": "6733f65d83fb5e7d0b1242b67da3fe57a759c3ea7eb1b09b33947bb7b88e04ca",
+    "radar/ats/workday.py": "c918a875fc93e2c1547cace736498263ff45487c676ff57d3a0328be19a32a8c",
+    "radar/ats/zohorecruit.py": "3f4db52d5516bf62a225d5b214eb644ad9051a9367707018f999d6d0be01e6b5",
+    "radar/ats/_jsonld.py": "44d380ff18420ec72bdfcc85afaa60b21a8c49bcc4386098844783a6d561af9d",
+    "radar/ats/__init__.py": "321ec592555cc94953aa58b336a3a27da86711a72f246a8f1994574ae879b457",
+    "radar/boards/adzuna.py": "bef8f2cfdd35319d1c40aa26d001d0f8838c4be5c6b9ddcfe886c6253a6ef53c",
+    "radar/boards/arbeitsagentur.py": "d124eb4dbb5bd3f45ed534050f8ae45b7550bb3a945015f854d24bb55a43ae56",
+    "radar/boards/freehire.py": "351556d565ba56a66a1b3a0498246efe62ad7a972e7b9a48dbc5b43236592880",
+    "radar/boards/jobtech.py": "d2e0068a7ee43c2b5c05b2dfdc612963b72980f584aa14ea943c64d25dd5f757",
+    "radar/boards/mycareersfuture.py": "bf4cb1c277e4bacf0abac29b0422c32b6032f19a2490d49ccafe1d806c5251e6",
+    "radar/boards/reed.py": "da4545824eea39a679bb3a172e97e887ed0782fe2130f6e2a0ba5f9678b78b08",
+    "radar/boards/remoteok.py": "34afc08131c867077eb447a95cb966b0b97e815fda8ce2770bff15ca43ac8ecf",
+    "radar/boards/remotive.py": "f6c1381b2cffac9197ee7725a3e762d71ad35e1350f9c6c7f9e68c4354e6b61e",
+    "radar/boards/usajobs.py": "afb614e0e10cb1b9b465aebe54b8c47a6fbad0e3dc93e400a1bbab352e3b3f21",
+    "radar/boards/weworkremotely.py": "3aa39e54cce38d338f4bd6832cb919e8a5f8925834e13adc97f073e5ec334767",
+    "radar/boards/workable.py": "0f1bfdd3461a9ed6d48f84e28bcd75a10a04b966daf64667291f8757dc1bba7e",
+    "radar/boards/workingnomads.py": "0e0340abd040a07d6675fe3d24afb6e1176f12b92488df28d303438bd38ffc6a",
+    "radar/boards/_keys.py": "c444b4ba953387b230308f7814f6298ecd7cb240e97e91bea2931f7c4853a96d",
+    "radar/boards/__init__.py": "c8ff5ae14e9d2305a29edf2d1e76e0eb5e79af6e114de06984bc496e9fa9399e",
+    "parsers/baidu.py": "979ef6711d84ecc667ebe7ac3b4f26069c256c5ba2bdd6146532487547e4eaa3",
+    "parsers/beisen.py": "decf82cf4ce6fbe845464bc414a7fe1e155c86cfe7d1fb62e0e792423f0e8b56",
+    "parsers/bytedance.py": "f455c797904ee673ed5235a33783ce308d62508fa141aa6291b0f066d88b704b",
+    "parsers/feishu.py": "24e08983ef51b56d9090fc41f3ec2d8f32affdd247e4d84825441d11a944c2be",
+    "parsers/jd.py": "e3c04bf5abb5d5b71decebfad04ea4c790c531713a0a2365d7510bdc0c934bf9",
+    "parsers/moka.py": "3f0e3b6f700c1392b35a0037c512105d1a552cc2a5e2d58654d0f2fa7f744a8b",
+    "parsers/netease.py": "18f89c4e548b61c281cc086630e629922b5863403adcecbb4f7f3513d62a6b28",
+    "parsers/tencent.py": "1d909bef6510bdd413ecbfdf00244629d0ae4f027039f3e57c91ea095035ec80",
+    "parsers/unitree.py": "f32f1c8b7f8df852e004426df8c4df18409eb267ba52a827182ac30e9bddbb06"
+  },
+  "companies": [
+    {
+      "key": "nio",
+      "parser": "feishu",
+      "company": "蔚来",
+      "params": [
+        "nio.jobs.feishu.cn"
+      ],
+      "url": "https://nio.jobs.feishu.cn"
+    },
+    {
+      "key": "xpeng",
+      "parser": "feishu",
+      "company": "小鹏",
+      "params": [
+        "xiaopeng.jobs.feishu.cn"
+      ],
+      "url": "https://xiaopeng.jobs.feishu.cn"
+    },
+    {
+      "key": "bambulab",
+      "parser": "feishu",
+      "company": "拓竹",
+      "params": [
+        "bambulab.jobs.feishu.cn"
+      ],
+      "url": "https://bambulab.jobs.feishu.cn"
+    },
+    {
+      "key": "momenta",
+      "parser": "feishu",
+      "company": "Momenta",
+      "params": [
+        "momenta.jobs.feishu.cn"
+      ],
+      "url": "https://momenta.jobs.feishu.cn"
+    },
+    {
+      "key": "boke",
+      "parser": "feishu",
+      "company": "波克城市",
+      "params": [
+        "boke.jobs.feishu.cn"
+      ],
+      "url": "https://boke.jobs.feishu.cn"
+    },
+    {
+      "key": "yostar",
+      "parser": "moka",
+      "company": "悠星",
+      "params": [
+        "yostar",
+        "145292"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/yostar/145292"
+    },
+    {
+      "key": "tesla-cn",
+      "parser": "moka",
+      "company": "特斯拉中国",
+      "params": [
+        "tesla",
+        "46129"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/tesla/46129"
+    },
+    {
+      "key": "li",
+      "parser": "feishu",
+      "company": "理想汽车",
+      "params": [
+        "li.jobs.feishu.cn"
+      ],
+      "url": "https://li.jobs.feishu.cn"
+    },
+    {
+      "key": "avatr",
+      "parser": "feishu",
+      "company": "阿维塔",
+      "params": [
+        "xcn5vbnquq58.jobs.feishu.cn"
+      ],
+      "url": "https://xcn5vbnquq58.jobs.feishu.cn"
+    },
+    {
+      "key": "zeron",
+      "parser": "feishu",
+      "company": "零一汽车",
+      "params": [
+        "zeron.jobs.feishu.cn"
+      ],
+      "url": "https://zeron.jobs.feishu.cn"
+    },
+    {
+      "key": "ecartech",
+      "parser": "feishu",
+      "company": "易咖智车",
+      "params": [
+        "ecartech.jobs.feishu.cn"
+      ],
+      "url": "https://ecartech.jobs.feishu.cn"
+    },
+    {
+      "key": "ecarx",
+      "parser": "feishu",
+      "company": "亿咖通",
+      "params": [
+        "ecarxgroup.jobs.feishu.cn"
+      ],
+      "url": "https://ecarxgroup.jobs.feishu.cn"
+    },
+    {
+      "key": "desaysv",
+      "parser": "feishu",
+      "company": "德赛西威",
+      "params": [
+        "yesv-desaysv.jobs.feishu.cn"
+      ],
+      "url": "https://yesv-desaysv.jobs.feishu.cn"
+    },
+    {
+      "key": "dcar",
+      "parser": "feishu",
+      "company": "懂车帝",
+      "params": [
+        "dcar.jobs.feishu.cn"
+      ],
+      "url": "https://dcar.jobs.feishu.cn"
+    },
+    {
+      "key": "x2robot",
+      "parser": "feishu",
+      "company": "自变量机器人",
+      "params": [
+        "x2-robot.jobs.feishu.cn"
+      ],
+      "url": "https://x2-robot.jobs.feishu.cn"
+    },
+    {
+      "key": "bjhumanoid",
+      "parser": "feishu",
+      "company": "北京人形机器人创新中心",
+      "params": [
+        "zitd5je6f7j.jobs.feishu.cn"
+      ],
+      "url": "https://zitd5je6f7j.jobs.feishu.cn"
+    },
+    {
+      "key": "agibot",
+      "parser": "feishu",
+      "company": "智元机器人",
+      "params": [
+        "agirobot.jobs.feishu.cn"
+      ],
+      "url": "https://agirobot.jobs.feishu.cn"
+    },
+    {
+      "key": "galbot",
+      "parser": "feishu",
+      "company": "银河通用",
+      "params": [
+        "owm6ymi5v9b.jobs.feishu.cn/870797"
+      ],
+      "url": "https://owm6ymi5v9b.jobs.feishu.cn/870797"
+    },
+    {
+      "key": "robotera",
+      "parser": "feishu",
+      "company": "星动纪元",
+      "params": [
+        "k0fqxcszc9.jobs.feishu.cn"
+      ],
+      "url": "https://k0fqxcszc9.jobs.feishu.cn"
+    },
+    {
+      "key": "spirit",
+      "parser": "feishu",
+      "company": "千寻智能",
+      "params": [
+        "nwd4iy9rd2s.jobs.feishu.cn"
+      ],
+      "url": "https://nwd4iy9rd2s.jobs.feishu.cn"
+    },
+    {
+      "key": "tars",
+      "parser": "feishu",
+      "company": "它石智航",
+      "params": [
+        "tarsrobot.jobs.feishu.cn"
+      ],
+      "url": "https://tarsrobot.jobs.feishu.cn"
+    },
+    {
+      "key": "flexiv",
+      "parser": "feishu",
+      "company": "非夕机器人",
+      "params": [
+        "flexivrobotics.jobs.feishu.cn"
+      ],
+      "url": "https://flexivrobotics.jobs.feishu.cn"
+    },
+    {
+      "key": "sharpa",
+      "parser": "feishu",
+      "company": "Sharpa",
+      "params": [
+        "fcn5hvc5qbfs.jobs.feishu.cn"
+      ],
+      "url": "https://fcn5hvc5qbfs.jobs.feishu.cn"
+    },
+    {
+      "key": "mammotion",
+      "parser": "feishu",
+      "company": "库犸科技",
+      "params": [
+        "mammotion.jobs.feishu.cn"
+      ],
+      "url": "https://mammotion.jobs.feishu.cn"
+    },
+    {
+      "key": "zhipu",
+      "parser": "feishu",
+      "company": "智谱AI",
+      "params": [
+        "zhipu-ai.jobs.feishu.cn"
+      ],
+      "url": "https://zhipu-ai.jobs.feishu.cn"
+    },
+    {
+      "key": "baichuan",
+      "parser": "feishu",
+      "company": "百川智能",
+      "params": [
+        "cq6qe6bvfr6.jobs.feishu.cn"
+      ],
+      "url": "https://cq6qe6bvfr6.jobs.feishu.cn"
+    },
+    {
+      "key": "minimax",
+      "parser": "feishu",
+      "company": "MiniMax",
+      "params": [
+        "vrfi1sk8a0.jobs.feishu.cn"
+      ],
+      "url": "https://vrfi1sk8a0.jobs.feishu.cn"
+    },
+    {
+      "key": "moonshot",
+      "parser": "feishu",
+      "company": "月之暗面",
+      "params": [
+        "moonshot.jobs.feishu.cn"
+      ],
+      "url": "https://moonshot.jobs.feishu.cn"
+    },
+    {
+      "key": "modelbest",
+      "parser": "feishu",
+      "company": "面壁智能",
+      "params": [
+        "modelbest.jobs.feishu.cn"
+      ],
+      "url": "https://modelbest.jobs.feishu.cn"
+    },
+    {
+      "key": "01ai",
+      "parser": "feishu",
+      "company": "零一万物",
+      "params": [
+        "01ai.jobs.feishu.cn"
+      ],
+      "url": "https://01ai.jobs.feishu.cn"
+    },
+    {
+      "key": "infinigence",
+      "parser": "feishu",
+      "company": "无问芯穹",
+      "params": [
+        "infinigence.jobs.feishu.cn"
+      ],
+      "url": "https://infinigence.jobs.feishu.cn"
+    },
+    {
+      "key": "shengshu",
+      "parser": "feishu",
+      "company": "生数科技",
+      "params": [
+        "shengshu.jobs.feishu.cn"
+      ],
+      "url": "https://shengshu.jobs.feishu.cn"
+    },
+    {
+      "key": "aisphere",
+      "parser": "feishu",
+      "company": "爱诗科技",
+      "params": [
+        "aisphere.jobs.feishu.cn"
+      ],
+      "url": "https://aisphere.jobs.feishu.cn"
+    },
+    {
+      "key": "gigaai",
+      "parser": "feishu",
+      "company": "极佳科技",
+      "params": [
+        "gigaai0118.jobs.feishu.cn"
+      ],
+      "url": "https://gigaai0118.jobs.feishu.cn"
+    },
+    {
+      "key": "aibee",
+      "parser": "feishu",
+      "company": "爱笔智能",
+      "params": [
+        "aibee.jobs.feishu.cn"
+      ],
+      "url": "https://aibee.jobs.feishu.cn"
+    },
+    {
+      "key": "juzibot",
+      "parser": "feishu",
+      "company": "句子互动",
+      "params": [
+        "juzihudong.jobs.feishu.cn"
+      ],
+      "url": "https://juzihudong.jobs.feishu.cn"
+    },
+    {
+      "key": "shixiang",
+      "parser": "feishu",
+      "company": "拾象科技",
+      "params": [
+        "shixiangtech.jobs.feishu.cn"
+      ],
+      "url": "https://shixiangtech.jobs.feishu.cn"
+    },
+    {
+      "key": "sii",
+      "parser": "feishu",
+      "company": "上海创智学院",
+      "params": [
+        "sii-czxy.jobs.feishu.cn"
+      ],
+      "url": "https://sii-czxy.jobs.feishu.cn"
+    },
+    {
+      "key": "ponyai",
+      "parser": "feishu",
+      "company": "小马智行",
+      "params": [
+        "ponyai.jobs.feishu.cn"
+      ],
+      "url": "https://ponyai.jobs.feishu.cn"
+    },
+    {
+      "key": "holomatic",
+      "parser": "feishu",
+      "company": "禾多科技",
+      "params": [
+        "holomatic.jobs.feishu.cn"
+      ],
+      "url": "https://holomatic.jobs.feishu.cn"
+    },
+    {
+      "key": "neuehct",
+      "parser": "feishu",
+      "company": "智驾新程",
+      "params": [
+        "neuehct.jobs.feishu.cn"
+      ],
+      "url": "https://neuehct.jobs.feishu.cn"
+    },
+    {
+      "key": "mthreads",
+      "parser": "feishu",
+      "company": "摩尔线程",
+      "params": [
+        "mthreads.jobs.feishu.cn"
+      ],
+      "url": "https://mthreads.jobs.feishu.cn"
+    },
+    {
+      "key": "houmo",
+      "parser": "feishu",
+      "company": "后摩智能",
+      "params": [
+        "houmo.jobs.feishu.cn"
+      ],
+      "url": "https://houmo.jobs.feishu.cn"
+    },
+    {
+      "key": "brightchip",
+      "parser": "feishu",
+      "company": "光明之芯",
+      "params": [
+        "brightchip.jobs.feishu.cn"
+      ],
+      "url": "https://brightchip.jobs.feishu.cn"
+    },
+    {
+      "key": "icleague",
+      "parser": "feishu",
+      "company": "芯盟科技",
+      "params": [
+        "icleague.jobs.feishu.cn"
+      ],
+      "url": "https://icleague.jobs.feishu.cn"
+    },
+    {
+      "key": "carizon",
+      "parser": "feishu",
+      "company": "酷睿程",
+      "params": [
+        "carizon.jobs.feishu.cn"
+      ],
+      "url": "https://carizon.jobs.feishu.cn"
+    },
+    {
+      "key": "hesai",
+      "parser": "feishu",
+      "company": "禾赛科技",
+      "params": [
+        "kwh0jtf778.jobs.feishu.cn"
+      ],
+      "url": "https://kwh0jtf778.jobs.feishu.cn"
+    },
+    {
+      "key": "wanji",
+      "parser": "feishu",
+      "company": "万集科技",
+      "params": [
+        "fpq5u8xh3h.jobs.feishu.cn"
+      ],
+      "url": "https://fpq5u8xh3h.jobs.feishu.cn"
+    },
+    {
+      "key": "vast",
+      "parser": "feishu",
+      "company": "VAST",
+      "params": [
+        "a9ihi0un9c.jobs.feishu.cn"
+      ],
+      "url": "https://a9ihi0un9c.jobs.feishu.cn"
+    },
+    {
+      "key": "anker",
+      "parser": "feishu",
+      "company": "安克创新",
+      "params": [
+        "anker-in.jobs.feishu.cn"
+      ],
+      "url": "https://anker-in.jobs.feishu.cn"
+    },
+    {
+      "key": "insta360",
+      "parser": "feishu",
+      "company": "影石Insta360",
+      "params": [
+        "arashivision.jobs.feishu.cn"
+      ],
+      "url": "https://arashivision.jobs.feishu.cn"
+    },
+    {
+      "key": "xtool",
+      "parser": "feishu",
+      "company": "xTool",
+      "params": [
+        "xtool.jobs.feishu.cn"
+      ],
+      "url": "https://xtool.jobs.feishu.cn"
+    },
+    {
+      "key": "autel",
+      "parser": "feishu",
+      "company": "道通智能",
+      "params": [
+        "iwpirwbutbu.jobs.feishu.cn"
+      ],
+      "url": "https://iwpirwbutbu.jobs.feishu.cn"
+    },
+    {
+      "key": "thundersoft",
+      "parser": "feishu",
+      "company": "中科创达",
+      "params": [
+        "thundersoft.jobs.feishu.cn"
+      ],
+      "url": "https://thundersoft.jobs.feishu.cn"
+    },
+    {
+      "key": "hete",
+      "parser": "feishu",
+      "company": "和而泰",
+      "params": [
+        "salcje7shg.jobs.feishu.cn"
+      ],
+      "url": "https://salcje7shg.jobs.feishu.cn"
+    },
+    {
+      "key": "kengic",
+      "parser": "feishu",
+      "company": "科捷智能",
+      "params": [
+        "kengic.jobs.feishu.cn"
+      ],
+      "url": "https://kengic.jobs.feishu.cn"
+    },
+    {
+      "key": "breo",
+      "parser": "feishu",
+      "company": "倍轻松",
+      "params": [
+        "e0cmewvq7v7.jobs.feishu.cn"
+      ],
+      "url": "https://e0cmewvq7v7.jobs.feishu.cn"
+    },
+    {
+      "key": "lilith",
+      "parser": "feishu",
+      "company": "莉莉丝",
+      "params": [
+        "lilithgames.jobs.feishu.cn"
+      ],
+      "url": "https://lilithgames.jobs.feishu.cn"
+    },
+    {
+      "key": "kurogame",
+      "parser": "feishu",
+      "company": "库洛游戏",
+      "params": [
+        "kurogame.jobs.feishu.cn"
+      ],
+      "url": "https://kurogame.jobs.feishu.cn"
+    },
+    {
+      "key": "moonton",
+      "parser": "feishu",
+      "company": "沐瞳科技",
+      "params": [
+        "moonton.jobs.feishu.cn"
+      ],
+      "url": "https://moonton.jobs.feishu.cn"
+    },
+    {
+      "key": "coconutisland",
+      "parser": "feishu",
+      "company": "椰岛游戏",
+      "params": [
+        "coconutisland.jobs.feishu.cn"
+      ],
+      "url": "https://coconutisland.jobs.feishu.cn"
+    },
+    {
+      "key": "boomingtech",
+      "parser": "feishu",
+      "company": "BoomingTech",
+      "params": [
+        "boomingtech.jobs.feishu.cn"
+      ],
+      "url": "https://boomingtech.jobs.feishu.cn"
+    },
+    {
+      "key": "metaapp",
+      "parser": "feishu",
+      "company": "MetaApp",
+      "params": [
+        "meta.jobs.feishu.cn"
+      ],
+      "url": "https://meta.jobs.feishu.cn"
+    },
+    {
+      "key": "xdinc",
+      "parser": "feishu",
+      "company": "心动网络",
+      "params": [
+        "xd-legacy.jobs.feishu.cn"
+      ],
+      "url": "https://xd-legacy.jobs.feishu.cn"
+    },
+    {
+      "key": "wepie",
+      "parser": "feishu",
+      "company": "微派网络",
+      "params": [
+        "wepie.jobs.feishu.cn"
+      ],
+      "url": "https://wepie.jobs.feishu.cn"
+    },
+    {
+      "key": "hongshan",
+      "parser": "feishu",
+      "company": "红杉中国",
+      "params": [
+        "hongshan.jobs.feishu.cn"
+      ],
+      "url": "https://hongshan.jobs.feishu.cn"
+    },
+    {
+      "key": "dedao",
+      "parser": "feishu",
+      "company": "得到",
+      "params": [
+        "dedao.jobs.feishu.cn"
+      ],
+      "url": "https://dedao.jobs.feishu.cn"
+    },
+    {
+      "key": "maimai",
+      "parser": "feishu",
+      "company": "脉脉",
+      "params": [
+        "maimai.jobs.feishu.cn"
+      ],
+      "url": "https://maimai.jobs.feishu.cn"
+    },
+    {
+      "key": "zego",
+      "parser": "feishu",
+      "company": "即构科技",
+      "params": [
+        "zegocloud.jobs.feishu.cn"
+      ],
+      "url": "https://zegocloud.jobs.feishu.cn"
+    },
+    {
+      "key": "blacklake",
+      "parser": "feishu",
+      "company": "黑湖科技",
+      "params": [
+        "blacklake.jobs.feishu.cn"
+      ],
+      "url": "https://blacklake.jobs.feishu.cn"
+    },
+    {
+      "key": "genki",
+      "parser": "feishu",
+      "company": "元气森林",
+      "params": [
+        "k11pnjpvz1.jobs.feishu.cn"
+      ],
+      "url": "https://k11pnjpvz1.jobs.feishu.cn"
+    },
+    {
+      "key": "ireader",
+      "parser": "feishu",
+      "company": "掌阅科技",
+      "params": [
+        "q7w8vltyes.jobs.feishu.cn"
+      ],
+      "url": "https://q7w8vltyes.jobs.feishu.cn"
+    },
+    {
+      "key": "babycare",
+      "parser": "feishu",
+      "company": "Babycare",
+      "params": [
+        "babycare.jobs.feishu.cn"
+      ],
+      "url": "https://babycare.jobs.feishu.cn"
+    },
+    {
+      "key": "leoao",
+      "parser": "feishu",
+      "company": "乐刻运动",
+      "params": [
+        "leoao-inc.jobs.feishu.cn"
+      ],
+      "url": "https://leoao-inc.jobs.feishu.cn"
+    },
+    {
+      "key": "mediastorm",
+      "parser": "feishu",
+      "company": "影视飓风",
+      "params": [
+        "mediastorm.jobs.feishu.cn"
+      ],
+      "url": "https://mediastorm.jobs.feishu.cn"
+    },
+    {
+      "key": "bluefocus",
+      "parser": "feishu",
+      "company": "蓝色光标",
+      "params": [
+        "bluefocus.jobs.feishu.cn"
+      ],
+      "url": "https://bluefocus.jobs.feishu.cn"
+    },
+    {
+      "key": "cider",
+      "parser": "feishu",
+      "company": "Cider",
+      "params": [
+        "ciderglobal.jobs.feishu.cn"
+      ],
+      "url": "https://ciderglobal.jobs.feishu.cn"
+    },
+    {
+      "key": "molbreeding",
+      "parser": "feishu",
+      "company": "博瑞迪",
+      "params": [
+        "molbreeding.jobs.feishu.cn"
+      ],
+      "url": "https://molbreeding.jobs.feishu.cn"
+    },
+    {
+      "key": "bluepha",
+      "parser": "feishu",
+      "company": "蓝晶微生物",
+      "params": [
+        "bluepha.jobs.feishu.cn"
+      ],
+      "url": "https://bluepha.jobs.feishu.cn"
+    },
+    {
+      "key": "lizhi",
+      "parser": "feishu",
+      "company": "荔枝",
+      "params": [
+        "lizhi2021.jobs.feishu.cn"
+      ],
+      "url": "https://lizhi2021.jobs.feishu.cn"
+    },
+    {
+      "key": "yoka",
+      "parser": "moka",
+      "company": "游卡",
+      "params": [
+        "yokagames",
+        "41939"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/yokagames/41939"
+    },
+    {
+      "key": "eyugame",
+      "parser": "moka",
+      "company": "鳄游",
+      "params": [
+        "eyugame",
+        "47373"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/eyugame/47373"
+    },
+    {
+      "key": "bole",
+      "parser": "moka",
+      "company": "博乐科技",
+      "params": [
+        "bolegames",
+        "37642"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/bolegames/37642"
+    },
+    {
+      "key": "dianhun",
+      "parser": "moka",
+      "company": "电魂网络",
+      "params": [
+        "dianhun",
+        "55952"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/dianhun/55952"
+    },
+    {
+      "key": "pwrd",
+      "parser": "moka",
+      "company": "完美世界",
+      "params": [
+        "pwrd",
+        "140155"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/pwrd/140155"
+    },
+    {
+      "key": "kingnet",
+      "parser": "moka",
+      "company": "恺英网络",
+      "params": [
+        "kingnet",
+        "2247"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/kingnet/2247"
+    },
+    {
+      "key": "shengqu",
+      "parser": "moka",
+      "company": "盛趣游戏",
+      "params": [
+        "shengqu",
+        "4077"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/shengqu/4077"
+    },
+    {
+      "key": "yoozoo",
+      "parser": "moka",
+      "company": "游族网络",
+      "params": [
+        "yoozoo",
+        "91950"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/yoozoo/91950"
+    },
+    {
+      "key": "leyuansu",
+      "parser": "moka",
+      "company": "乐元素",
+      "params": [
+        "leyuansu",
+        "2358"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/leyuansu/2358"
+    },
+    {
+      "key": "lovegames",
+      "parser": "moka",
+      "company": "乐府互娱",
+      "params": [
+        "lovegames",
+        "21946"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/lovegames/21946"
+    },
+    {
+      "key": "micateam",
+      "parser": "moka",
+      "company": "散爆网络",
+      "params": [
+        "micateam",
+        "142158"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/micateam/142158"
+    },
+    {
+      "key": "shiyue",
+      "parser": "moka",
+      "company": "诗悦网络",
+      "params": [
+        "shiyuehr",
+        "72054"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/shiyuehr/72054"
+    },
+    {
+      "key": "shangyou",
+      "parser": "moka",
+      "company": "尚游游戏",
+      "params": [
+        "shangyou",
+        "42165"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/shangyou/42165"
+    },
+    {
+      "key": "hypergryph",
+      "parser": "moka",
+      "company": "鹰角网络",
+      "params": [
+        "hypergryph",
+        "28713"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/hypergryph/28713"
+    },
+    {
+      "key": "ztgame",
+      "parser": "moka",
+      "company": "中手游",
+      "params": [
+        "ztgame",
+        "92438"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/ztgame/92438"
+    },
+    {
+      "key": "bayer",
+      "parser": "moka",
+      "company": "拜耳中国",
+      "params": [
+        "bayer",
+        "148387"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/bayer/148387"
+    },
+    {
+      "key": "ey",
+      "parser": "moka",
+      "company": "安永",
+      "params": [
+        "ey",
+        "102474"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/ey/102474"
+    },
+    {
+      "key": "marriott",
+      "parser": "moka",
+      "company": "万豪",
+      "params": [
+        "marriott",
+        "141002"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/marriott/141002"
+    },
+    {
+      "key": "zeiss",
+      "parser": "moka",
+      "company": "蔡司",
+      "params": [
+        "zeiss",
+        "70004"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/zeiss/70004"
+    },
+    {
+      "key": "prada",
+      "parser": "moka",
+      "company": "PRADA",
+      "params": [
+        "pradagroup",
+        "151069"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/pradagroup/151069"
+    },
+    {
+      "key": "kpmg",
+      "parser": "moka",
+      "company": "毕马威",
+      "params": [
+        "kpmg",
+        "68240"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/kpmg/68240"
+    },
+    {
+      "key": "schneider",
+      "parser": "moka",
+      "company": "施耐德电气",
+      "params": [
+        "se",
+        "98712"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/se/98712"
+    },
+    {
+      "key": "bosch",
+      "parser": "moka",
+      "company": "博世中国",
+      "params": [
+        "bosch",
+        "73873"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/bosch/73873"
+    },
+    {
+      "key": "volvo",
+      "parser": "moka",
+      "company": "沃尔沃汽车",
+      "params": [
+        "volvocars",
+        "56034"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/volvocars/56034"
+    },
+    {
+      "key": "nestle",
+      "parser": "moka",
+      "company": "雀巢大中华",
+      "params": [
+        "nestlezgc",
+        "91898"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/nestlezgc/91898"
+    },
+    {
+      "key": "carlsberg",
+      "parser": "moka",
+      "company": "嘉士伯",
+      "params": [
+        "carlsberg",
+        "37541"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/carlsberg/37541"
+    },
+    {
+      "key": "garena",
+      "parser": "moka",
+      "company": "Garena",
+      "params": [
+        "garena",
+        "147001"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/garena/147001"
+    },
+    {
+      "key": "bigo",
+      "parser": "moka",
+      "company": "BIGO",
+      "params": [
+        "bigo",
+        "37723"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/bigo/37723"
+    },
+    {
+      "key": "shopee",
+      "parser": "moka",
+      "company": "Shopee",
+      "params": [
+        "shopee",
+        "2962"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/shopee/2962"
+    },
+    {
+      "key": "shein",
+      "parser": "moka",
+      "company": "SHEIN希音",
+      "params": [
+        "shein",
+        "2933"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/shein/2933"
+    },
+    {
+      "key": "oocl",
+      "parser": "moka",
+      "company": "东方海外",
+      "params": [
+        "oocl",
+        "44732"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/oocl/44732"
+    },
+    {
+      "key": "biren",
+      "parser": "moka",
+      "company": "壁仞科技",
+      "params": [
+        "biren",
+        "44726"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/biren/44726"
+    },
+    {
+      "key": "tecorigin",
+      "parser": "moka",
+      "company": "太初",
+      "params": [
+        "tecorigin",
+        "47401"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/tecorigin/47401"
+    },
+    {
+      "key": "3peak",
+      "parser": "moka",
+      "company": "思瑞浦",
+      "params": [
+        "3peakic",
+        "67894"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/3peakic/67894"
+    },
+    {
+      "key": "cambricon",
+      "parser": "moka",
+      "company": "寒武纪",
+      "params": [
+        "cambricon",
+        "44201"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/cambricon/44201"
+    },
+    {
+      "key": "huahong",
+      "parser": "moka",
+      "company": "华虹集团",
+      "params": [
+        "huahong",
+        "70000"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/huahong/70000"
+    },
+    {
+      "key": "highflyer",
+      "parser": "moka",
+      "company": "幻方量化",
+      "params": [
+        "high-flyer",
+        "140576"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/high-flyer/140576"
+    },
+    {
+      "key": "stepfun",
+      "parser": "moka",
+      "company": "阶跃星辰",
+      "params": [
+        "step",
+        "94904"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/step/94904"
+    },
+    {
+      "key": "baai",
+      "parser": "moka",
+      "company": "智源研究院",
+      "params": [
+        "baai",
+        "42174"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/baai/42174"
+    },
+    {
+      "key": "smartmore",
+      "parser": "moka",
+      "company": "思谋科技",
+      "params": [
+        "smartmore",
+        "40505"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/smartmore/40505"
+    },
+    {
+      "key": "meshy",
+      "parser": "moka",
+      "company": "Meshy太极图形",
+      "params": [
+        "taichi",
+        "148086"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/taichi/148086"
+    },
+    {
+      "key": "dolphindb",
+      "parser": "moka",
+      "company": "DolphinDB",
+      "params": [
+        "dolphindb",
+        "37785"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/dolphindb/37785"
+    },
+    {
+      "key": "threatbook",
+      "parser": "moka",
+      "company": "微步在线",
+      "params": [
+        "threatbook",
+        "39679"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/threatbook/39679"
+    },
+    {
+      "key": "jiukun",
+      "parser": "moka",
+      "company": "九坤投资",
+      "params": [
+        "jhlfund",
+        "46283"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/jhlfund/46283"
+    },
+    {
+      "key": "lingjun",
+      "parser": "moka",
+      "company": "灵均投资",
+      "params": [
+        "lingjuninvest",
+        "46355"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/lingjuninvest/46355"
+    },
+    {
+      "key": "sixie",
+      "parser": "moka",
+      "company": "思勰投资",
+      "params": [
+        "sixiecapital",
+        "42909"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/sixiecapital/42909"
+    },
+    {
+      "key": "tianyan",
+      "parser": "moka",
+      "company": "天演资本",
+      "params": [
+        "tianyancapital",
+        "98901"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/tianyancapital/98901"
+    },
+    {
+      "key": "alpha2",
+      "parser": "moka",
+      "company": "Alpha2Fund",
+      "params": [
+        "alpha2fund",
+        "151123"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/alpha2fund/151123"
+    },
+    {
+      "key": "voyah",
+      "parser": "moka",
+      "company": "岚图汽车",
+      "params": [
+        "voyah",
+        "146292"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/voyah/146292"
+    },
+    {
+      "key": "geely",
+      "parser": "moka",
+      "company": "吉利",
+      "params": [
+        "geely",
+        "102042"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/geely/102042"
+    },
+    {
+      "key": "qianli",
+      "parser": "moka",
+      "company": "千里科技",
+      "params": [
+        "qianli1",
+        "147197"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/qianli1/147197"
+    },
+    {
+      "key": "ninebot",
+      "parser": "moka",
+      "company": "九号公司",
+      "params": [
+        "ninebot",
+        "45627"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/ninebot/45627"
+    },
+    {
+      "key": "yanfeng",
+      "parser": "moka",
+      "company": "延锋",
+      "params": [
+        "yanfeng",
+        "45086"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/yanfeng/45086"
+    },
+    {
+      "key": "joyson",
+      "parser": "moka",
+      "company": "均胜集团",
+      "params": [
+        "joyson",
+        "94310"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/joyson/94310"
+    },
+    {
+      "key": "hithium",
+      "parser": "moka",
+      "company": "海辰储能",
+      "params": [
+        "hithium",
+        "141287"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/hithium/141287"
+    },
+    {
+      "key": "jinko",
+      "parser": "moka",
+      "company": "晶科能源",
+      "params": [
+        "jinkosolar",
+        "41896"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/jinkosolar/41896"
+    },
+    {
+      "key": "envision",
+      "parser": "moka",
+      "company": "远景能源",
+      "params": [
+        "envisiongroup",
+        "43123"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/envisiongroup/43123"
+    },
+    {
+      "key": "solax",
+      "parser": "moka",
+      "company": "艾罗能源",
+      "params": [
+        "solaxpower",
+        "151400"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/solaxpower/151400"
+    },
+    {
+      "key": "trina",
+      "parser": "moka",
+      "company": "天合光能",
+      "params": [
+        "trinasolar",
+        "39871"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/trinasolar/39871"
+    },
+    {
+      "key": "sanhua",
+      "parser": "moka",
+      "company": "三花智控",
+      "params": [
+        "zjshc",
+        "56208"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/zjshc/56208"
+    },
+    {
+      "key": "synland",
+      "parser": "moka",
+      "company": "时代新安",
+      "params": [
+        "synland",
+        "58041"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/synland/58041"
+    },
+    {
+      "key": "saj",
+      "parser": "moka",
+      "company": "赛智SAJ",
+      "params": [
+        "saj",
+        "54336"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/saj/54336"
+    },
+    {
+      "key": "smoore",
+      "parser": "moka",
+      "company": "思摩尔国际",
+      "params": [
+        "smoore",
+        "126055"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/smoore/126055"
+    },
+    {
+      "key": "sansongshu",
+      "parser": "moka",
+      "company": "三只松鼠",
+      "params": [
+        "3songshu",
+        "457"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/3songshu/457"
+    },
+    {
+      "key": "anta",
+      "parser": "moka",
+      "company": "安踏",
+      "params": [
+        "antahr",
+        "142914"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/antahr/142914"
+    },
+    {
+      "key": "guming",
+      "parser": "moka",
+      "company": "古茗",
+      "params": [
+        "guming",
+        "39377"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/guming/39377"
+    },
+    {
+      "key": "wantai",
+      "parser": "moka",
+      "company": "万泰生物",
+      "params": [
+        "ystwt",
+        "97880"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/ystwt/97880"
+    },
+    {
+      "key": "gstzy",
+      "parser": "moka",
+      "company": "固生堂",
+      "params": [
+        "gstzy",
+        "147395"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/gstzy/147395"
+    },
+    {
+      "key": "didi",
+      "parser": "moka",
+      "company": "滴滴",
+      "params": [
+        "didiglobal",
+        "96064"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/didiglobal/96064"
+    },
+    {
+      "key": "zhihu",
+      "parser": "moka",
+      "company": "知乎",
+      "params": [
+        "zhihu",
+        "68321"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/zhihu/68321"
+    },
+    {
+      "key": "xunlei",
+      "parser": "moka",
+      "company": "迅雷",
+      "params": [
+        "xunlei",
+        "26599"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/xunlei/26599"
+    },
+    {
+      "key": "zuoyebang",
+      "parser": "moka",
+      "company": "作业帮",
+      "params": [
+        "zuoyebang",
+        "41328"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/zuoyebang/41328"
+    },
+    {
+      "key": "sina",
+      "parser": "moka",
+      "company": "新浪微博",
+      "params": [
+        "sina",
+        "43535"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/sina/43535"
+    },
+    {
+      "key": "manbang",
+      "parser": "moka",
+      "company": "满帮集团",
+      "params": [
+        "manbang",
+        "46269"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/manbang/46269"
+    },
+    {
+      "key": "zijin",
+      "parser": "moka",
+      "company": "紫金矿业",
+      "params": [
+        "zijinmining",
+        "140688"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/zijinmining/140688"
+    },
+    {
+      "key": "pg",
+      "parser": "moka",
+      "company": "宝洁",
+      "params": [
+        "pg",
+        "92352"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/pg/92352"
+    },
+    {
+      "key": "zte",
+      "parser": "moka",
+      "company": "中兴",
+      "params": [
+        "zte",
+        "47588"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/zte/47588"
+    },
+    {
+      "key": "eastmoney",
+      "parser": "moka",
+      "company": "东方财富",
+      "params": [
+        "eastmoney",
+        "57970"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/eastmoney/57970"
+    },
+    {
+      "key": "westlake",
+      "parser": "moka",
+      "company": "西湖大学",
+      "params": [
+        "westlake",
+        "43525"
+      ],
+      "url": "https://app.mokahr.com/social-recruitment/westlake/43525"
+    },
+    {
+      "key": "dreame",
+      "parser": "beisen",
+      "company": "追觅",
+      "params": [
+        "dreame"
+      ],
+      "url": "https://dreame.zhiye.com/social/jobs"
+    },
+    {
+      "key": "chery",
+      "parser": "beisen",
+      "company": "奇瑞汽车",
+      "params": [
+        "chery"
+      ],
+      "url": "https://chery.zhiye.com/social/jobs"
+    },
+    {
+      "key": "leapmotor",
+      "parser": "beisen",
+      "company": "零跑汽车",
+      "params": [
+        "leapmotor"
+      ],
+      "url": "https://leapmotor.zhiye.com/social/jobs"
+    },
+    {
+      "key": "boe",
+      "parser": "beisen",
+      "company": "京东方",
+      "params": [
+        "boe"
+      ],
+      "url": "https://boe.zhiye.com/social/jobs"
+    },
+    {
+      "key": "sany",
+      "parser": "beisen",
+      "company": "三一集团",
+      "params": [
+        "sany"
+      ],
+      "url": "https://sany.zhiye.com/social/jobs"
+    }
+  ]
+}

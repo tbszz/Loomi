@@ -1,0 +1,33 @@
+node_modules/
+dist/
+tmp/
+.DS_Store
+.omx/
+.workbuddy/
+data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.log
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+
+# Competitor reverse-engineering materials stay local: proprietary unpacked
+# extension code, scraped site assets and archives must not be published.
+competitor-analysis/*
+!competitor-analysis/qiuzhifangzhou/
+competitor-analysis/qiuzhifangzhou/*
+!competitor-analysis/qiuzhifangzhou/REPORT.md
+
+# .scan/ holds local agent analysis output (unpacked competitor extensions,
+# source dumps, prompts). Same rule as competitor-analysis: never published.
+.scan/
+
+# .wayfinder/ is the local planning tracker for the base-component upgrade.
+# Maps and tickets are working notes for sessions on this machine; the
+# decisions they record land in docs/component-spec.md once settled, so the
+# tracker itself stays out of the published history.
+.wayfinder/

@@ -1,0 +1,188 @@
+family: ai-knowledge-eng
+source_tier: L4
+license: "方法论人工提炼自公开面试准备资料，非原文复制"
+source_urls:
+  - "https://github.com/Snailclimb/JavaGuide"
+  - "https://github.com/yangshun/tech-interview-handbook"
+unverified: true
+note: "中文语境考察点为人工提炼，标 L4；部分题目参考 O*NET 15-1299.02 critical_tasks (CC BY 4.0)"
+
+questions:
+  - question: 用户说你的知识库问答"答错了"，你的第一步是什么？
+    type: technical
+    evaluation_points:
+      - retrieval-vs-generation
+      - failure-mode-analysis
+    strong_answer_traits:
+      - 先判断是检索层还是生成层的问题，不直接改 prompt
+      - 给出区分手段（看召回内容、看引用来源）
+      - 提到知识过期与未覆盖两种不同成因
+      - 有评测集支撑判断而非凭单例
+    common_mistakes:
+      - 直接改 prompt 试运气
+      - 把单例当系统性问题
+      - 不区分检索失败与幻觉
+    family: ai-knowledge-eng
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 你怎么证明一次改动真的让效果变好了？
+    type: technical
+    evaluation_points:
+      - metric-choice
+      - failure-mode-analysis
+    strong_answer_traits:
+      - 有固定评测集与可复现指标
+      - 说清指标口径与被刷高的方式
+      - 区分离线指标与线上体感
+      - 承认指标不能覆盖一切
+    common_mistakes:
+      - 举几个例子说明有效
+      - 只报一个数字不说口径
+      - 没有对照组
+    family: ai-knowledge-eng
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 分块策略你怎么定？块越大越好还是越小越好？
+    type: system
+    evaluation_points:
+      - retrieval-vs-generation
+      - cost-latency-tradeoff
+    strong_answer_traits:
+      - 从查询模式出发而非套默认值
+      - 说清块大小对召回精度与上下文成本的双向影响
+      - 提到重叠与标题层级保留
+      - 给出 A/B 验证方式
+    common_mistakes:
+      - 只会说 512 token
+      - 不提上下文成本
+      - 没有验证手段
+    family: ai-knowledge-eng
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 你的检索召回率上不去，可能有哪些原因，怎么排查？
+    type: technical
+    evaluation_points:
+      - retrieval-vs-generation
+      - failure-mode-analysis
+    strong_answer_traits:
+      - 分层归因：查询理解、向量质量、索引、rerank
+      - 给出 badcase 归类方法
+      - 提到混合检索与查询改写
+      - 用指标验证每一步改动
+    common_mistakes:
+      - 只说"换个 embedding 模型"
+      - 不归因直接堆手段
+      - 没有 badcase 分析
+    family: ai-knowledge-eng
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 怎么防止模型编造知识库里没有的内容？
+    type: technical
+    evaluation_points:
+      - hallucination-control
+      - failure-mode-analysis
+    strong_answer_traits:
+      - 无证据不得声称，来源可追溯
+      - 说清"未找到"是一等输出状态而非失败
+      - 提到引用校验与置信度门槛
+      - 承认无法完全消除，给出残余风险
+    common_mistakes:
+      - 认为加一句 prompt 就能解决
+      - 把"未找到"当成系统故障
+      - 声称能 100% 消除幻觉
+    family: ai-knowledge-eng
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 评测集怎么建？规模多大合适？
+    type: system
+    evaluation_points:
+      - metric-choice
+      - failure-mode-analysis
+    strong_answer_traits:
+      - 从真实 badcase 与线上查询分布采样
+      - 说清标注一致性与争议处理
+      - 承认规模不是唯一因素，覆盖度更关键
+      - 有版本管理与防泄漏意识
+    common_mistakes:
+      - 只说"越多越好"
+      - 用公开集冒充自己的
+      - 不提标注一致性
+    family: ai-knowledge-eng
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 你的方案延迟太高，从哪些地方砍？
+    type: system
+    evaluation_points:
+      - cost-latency-tradeoff
+    strong_answer_traits:
+      - 给延迟预算分解（检索/重排/生成/后处理）
+      - 说清缓存、批处理、流式、模型降级的取舍
+      - 提到质量损失的量化
+      - 区分 P50 与 P99 的优化手段差异
+    common_mistakes:
+      - 只说"换小模型"
+      - 不提质量代价
+      - 没有延迟预算概念
+    family: ai-knowledge-eng
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 团队做了一个 AI 功能，Leader 问"到底有没有用"，你怎么答？
+    type: case
+    evaluation_points:
+      - metric-choice
+      - failure-mode-analysis
+    strong_answer_traits:
+      - 用上线前后的可对比指标回答
+      - 区分采用率、任务完成率、留存
+      - 承认无法归因的部分
+      - 提出下一步验证方式
+    common_mistakes:
+      - 只讲技术多复杂
+      - 用 demo 效果当结论
+      - 回避归因难题
+    family: ai-knowledge-eng
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 知识库里的文档更新了，你的系统怎么知道要重新处理？
+    type: system
+    evaluation_points:
+      - retrieval-vs-generation
+      - failure-mode-analysis
+    strong_answer_traits:
+      - 说清增量更新与失效传播
+      - 提到版本与时效字段
+      - 处理更新期间的查询一致性
+      - 有重跑与校验机制
+    common_mistakes:
+      - 只说"定时全量重建"
+      - 不提失效范围
+      - 没有版本概念
+    family: ai-knowledge-eng
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 讲一个你自己建的评测集，它怎么随时间演进？
+    type: behavioral
+    evaluation_points:
+      - metric-choice
+      - failure-mode-analysis
+    strong_answer_traits:
+      - 说明初始来源与扩展触发条件
+      - 有 badcase 入库流程
+      - 说清指标变更时的历史可比处理
+      - 承认集子的偏差
+    common_mistakes:
+      - 讲成一次性工作
+      - 没有 badcase 回流机制
+      - 忽略集合偏差
+    family: ai-knowledge-eng
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"

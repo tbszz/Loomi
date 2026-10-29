@@ -1,0 +1,237 @@
+family_id: database
+version: 1.0.0
+label: 数据库 / DBA
+soc_code: "15-1243.00"
+source_tier: L2
+license: "O*NET (CC BY 4.0); ESCO (CC BY 4.0); BLS OEWS (public domain)"
+source_urls:
+  - "https://www.onetonline.org/link/summary/15-1243.00"
+  - "https://www.bls.gov/oes/current/oes151243.htm"
+
+job_zones:
+  - id: 3
+    label: 中等准备以上
+    note: 初级 DBA / 数据库开发
+  - id: 4
+    label: 相当准备
+    note: 资深 DBA，独立负责生产库
+  - id: 5
+    label: 相当准备以上
+    note: 数据库架构师 / 数据平台负责人
+
+hot_technology:
+  required:
+    - name: query-optimizer
+      note: 执行计划是核心竞争力
+    - name: replication
+      note: 主从、半同步、逻辑复制
+    - name: backup-recovery
+      note: RPO/RTO 与演练
+  emerging:
+    - name: cloud-native-database
+      note: 托管实例与自建的权衡
+    - name: vector-database
+      note: AI 应用带来的新增需求
+    - name: htap
+      note: 混合事务分析处理
+
+required_skills:
+  - id: schema-design
+    label: Schema 设计
+    note: ER 设计、范式与反范式、迁移
+  - id: query-optimization
+    label: 查询优化
+    note: 执行计划、索引、统计信息
+  - id: indexing
+    label: 索引策略
+    note: 选型、代价、维护开销
+  - id: transaction-internals
+    label: 事务与隔离级别
+    note: MVCC、锁、死锁
+  - id: backup-recovery
+    label: 备份与恢复
+    note: 策略、演练、RPO/RTO
+  - id: replication-ha
+    label: 复制与高可用
+    note: 主从切换、脑裂、一致性
+  - id: capacity-monitoring
+    label: 容量与监控
+    note: 慢查询、连接池、资源水位
+  - id: migration-strategy
+    label: 迁移策略
+    note: 在线变更、回滚、双写
+
+preferred_skills:
+  - id: sharding
+    label: 分库分表
+    note: 分片键选择与再平衡
+  - id: distributed-database
+    label: 分布式数据库
+    note: NewSQL 与一致性模型
+  - id: data-governance
+    label: 数据治理
+    note: 分级、脱敏、留存
+  - id: performance-modeling
+    label: 容量建模
+    note: 从增长曲线推资源需求
+
+critical_tasks:
+  - id: design-schema
+    label: 设计数据模型
+  - id: tune-slow-query
+    label: 治理慢查询
+  - id: handle-incident
+    label: 处理数据库故障
+  - id: plan-capacity
+    label: 规划容量与扩容
+  - id: run-migration
+    label: 执行在线变更
+  - id: review-sql
+    label: SQL 评审
+
+soft_skills:
+  - id: caution
+    label: 谨慎与风险意识
+    note: 数据不可逆，改之前想回滚
+  - id: cross-team
+    label: 跨团队协作
+    note: 推动业务方改 SQL
+  - id: oncall-discipline
+    label: 值班纪律
+
+success_factors:
+  - id: production-ownership
+    label: 生产库归属
+    note: 独立负责过有真实流量的库
+  - id: optimizer-literacy
+    label: 执行计划素养
+    note: 能读计划并解释代价来源
+  - id: incident-experience
+    label: 故障处理经验
+    note: 主从延迟、脑裂、数据修复
+  - id: change-safety
+    label: 变更安全性
+    note: 在线 DDL 与回滚预案
+
+evaluation_focus:
+  - id: index-reasoning
+    label: 索引推理
+    note: 为什么这个查询走不了索引，复合索引列序
+  - id: isolation-reasoning
+    label: 隔离级别推理
+    note: 脏读/不可重复读/幻读的实际后果
+  - id: failure-scenario
+    label: 故障场景推演
+    note: 主库挂了会发生什么，怎么恢复
+  - id: schema-tradeoff
+    label: 建模权衡
+    note: 范式 vs 反范式，什么时候该拆表
+  - id: capacity-reasoning
+    label: 容量推理
+    note: 数据量增长对查询路径的影响
+
+evidence_forms:
+  - form: slow-query-metric-delta
+    label: 慢查询治理前后对比
+    weight: high
+    note: 具体 SQL 的耗时与优化手段
+  - form: incident-handling
+    label: 故障处理归属
+    weight: high
+    note: 需区分参与和主导
+  - form: migration-execution
+    label: 在线变更执行
+    weight: high
+    note: 数据量级、停机窗口、回滚预案
+  - form: schema-design-doc
+    label: 建模方案
+    weight: medium
+  - form: course-project
+    label: 课程/练习项目
+    weight: low
+    note: 无生产数据量与并发，需显式说明
+
+frames:
+  - id: data-modeling
+    label: 数据建模与 Schema 设计
+    signals: [modeling, schema, er, normalization, migration, 建模, 模型, 设计, 迁移]
+    emphasis:
+      project_types: [schema-redesign, data-model-migration]
+      skill_groups: [schema-design, migration-strategy, transaction-internals]
+      bullet_weight:
+        design-decision: 1.5
+        technical-depth: 1.3
+        quantified-result: 1.2
+        query-count: 0.6
+    deemphasis: [app-framework-detail]
+  - id: performance-tuning
+    label: 性能调优
+    signals: [performance, slow-query, tuning, index, execution-plan, 性能, 调优, 慢查询, 索引]
+    emphasis:
+      project_types: [slow-query-governance, index-optimization]
+      skill_groups: [query-optimization, indexing, performance-modeling]
+      bullet_weight:
+        quantified-result: 1.6
+        technical-depth: 1.4
+        design-decision: 1.2
+    deemphasis: [governance-process]
+  - id: data-platform-reliability
+    label: 数据平台与可靠性
+    signals: [reliability, backup, recovery, replication, ha, dr, capacity, 可靠性, 备份, 恢复, 高可用, 容灾]
+    emphasis:
+      project_types: [ha-setup, disaster-recovery, capacity-planning]
+      skill_groups: [backup-recovery, replication-ha, capacity-monitoring]
+      bullet_weight:
+        incident-ownership: 1.5
+        quantified-result: 1.4
+        design-decision: 1.3
+        sql-trick: 0.6
+    deemphasis: [single-query-trick]
+
+skill_requirements:
+  schema-design: {min_level: deep}
+  query-optimization: {min_level: deep}
+  indexing: {min_level: deep}
+  transaction-internals: {min_level: deep}
+  backup-recovery: {min_level: working, preferred_level: deep}
+  replication-ha: {min_level: working, preferred_level: deep}
+  capacity-monitoring: {min_level: working}
+  migration-strategy: {min_level: deep}
+  sharding: {min_level: working}
+  distributed-database: {min_level: working}
+  data-governance: {min_level: working}
+
+industry_params:
+  language_style:
+    cn-internet: [治理, 中台, 稳定性, 闭环]
+    cn-foreign: [ownership, reliability, production-grade]
+    cn-finance: [合规, 审计, 稳妥, 风险可控]
+  education_bar:
+    cn-internet: 本科及以上
+    cn-foreign: 本科及以上，认证（OCP/AWS DBA）加分
+    cn-finance: 全日制本科，部分要求 211/985
+  round_structure:
+    cn-internet: [笔试, 技术一面, 技术二面, 交叉面, HR 面]
+    cn-foreign: [recruiter screen, hiring manager, technical deep dive]
+    cn-finance: [笔试, 技术面, 合规面, HR 面]
+  portfolio_form: [技术博客, 开源贡献, 认证]
+  salary_band:
+    source: "BLS OEWS (public domain)"
+    note: 仅 L2 可断言；国内薪资无合规第一方来源，留空不猜
+
+keyword_dict:
+  - pattern: 慢查询
+    intent: query-optimization
+    note: 追问具体 SQL 与优化前后耗时
+  - pattern: 主从
+    intent: replication-requirement
+    note: 追问延迟处理与切换方案
+  - pattern: 分库分表
+    intent: sharding-requirement
+    note: 追问分片键与再平衡
+  - pattern: 备份
+    intent: recovery-requirement
+    note: 追问 RPO/RTO 与演练频率
+  - pattern: 执行计划
+    intent: optimizer-literacy
+    note: 追问代价估算来源

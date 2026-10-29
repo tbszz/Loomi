@@ -1,0 +1,188 @@
+family: database
+source_tier: L4
+license: "方法论人工提炼自公开面试准备资料，非原文复制"
+source_urls:
+  - "https://github.com/Snailclimb/JavaGuide"
+  - "https://github.com/yangshun/tech-interview-handbook"
+unverified: true
+note: "中文语境考察点为人工提炼，标 L4；部分题目参考 O*NET 15-1243.00 critical_tasks (CC BY 4.0)"
+
+questions:
+  - question: 一条 SQL 突然变慢，你的排查步骤是什么？
+    type: technical
+    evaluation_points:
+      - index-reasoning
+      - capacity-reasoning
+    strong_answer_traits:
+      - 先拿执行计划，再看统计信息是否过期
+      - 区分索引失效、回表过多、隐式转换、排序与临时表
+      - 给出验证手段（EXPLAIN ANALYZE、强制索引对照）
+      - 说清改动的风险评估
+    common_mistakes:
+      - 直接加索引，不问查询模式
+      - 不提统计信息
+      - 把别人的案例讲成自己处理的
+    family: database
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 复合索引 (a, b, c)，哪些查询能用上它？
+    type: technical
+    evaluation_points:
+      - index-reasoning
+      - schema-tradeoff
+    strong_answer_traits:
+      - 说清最左前缀与范围查询截断
+      - 解释列序为什么按选择性与排序需求排
+      - 提到覆盖索引减少回表
+      - 说明索引的写放大代价
+    common_mistakes:
+      - 只说"最左前缀"不讲为什么
+      - 认为索引越多越好
+      - 不提范围查询对后续列的影响
+    family: database
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: MySQL 的默认隔离级别是什么，它解决了什么问题、没解决什么？
+    type: technical
+    evaluation_points:
+      - isolation-reasoning
+    strong_answer_traits:
+      - 准确说出 RR 及 MVCC 实现
+      - 说清幻读在 RR 下靠间隙锁部分解决
+      - 区分脏读、不可重复读、幻读的实际后果
+      - 知道 RC 与 RR 在 binlog 格式下的取舍
+    common_mistakes:
+      - 背定义但说不清实际后果
+      - 不知道 MVCC 与锁是并用的
+      - 把"读已提交"说成默认
+    family: database
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 主库挂了，从库提升为主，可能出现什么问题？
+    type: system
+    evaluation_points:
+      - failure-scenario
+      - isolation-reasoning
+    strong_answer_traits:
+      - 数据丢失窗口（异步复制）
+      - 脑裂与旧主恢复处理
+      - 连接层与应用的感知方式
+      - 说清 RPO/RTO 的取舍
+    common_mistakes:
+      - 认为切换即无损
+      - 不提脑裂
+      - 没有数据校验步骤
+    family: database
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 你在一张 2 亿行的表上加字段，怎么做？
+    type: case
+    evaluation_points:
+      - schema-tradeoff
+      - failure-scenario
+    strong_answer_traits:
+      - 说清在线 DDL 与锁的影响
+      - 给出灰度/影子表/双写等方案及取舍
+      - 备份与回滚预案
+      - 明确停机窗口与业务沟通
+    common_mistakes:
+      - 直接 ALTER TABLE
+      - 没有回滚方案
+      - 不说数据量对时长的影响
+    family: database
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 什么时候你会主动选择反范式？举一个你实际做的改造。
+    type: system
+    evaluation_points:
+      - schema-tradeoff
+      - capacity-reasoning
+    strong_answer_traits:
+      - 从查询模式出发
+      - 说清一致性由谁维护、怎么维护
+      - 给出实际表结构变化与收益
+      - 说明后来是否后悔
+    common_mistakes:
+      - 只说空间换时间
+      - 不提一致性成本
+      - 把团队改造讲成个人主导
+    family: database
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 主从延迟突然变大，你怎么查？
+    type: technical
+    evaluation_points:
+      - failure-scenario
+      - capacity-reasoning
+    strong_answer_traits:
+      - 区分大事务、慢 SQL、从库配置、网络
+      - 给出并行回放的判断方法
+      - 说清读走从库时的业务影响
+      - 止血方案（强制读主、限流）
+    common_mistakes:
+      - 只说"等它追上"
+      - 不区分原因类型
+      - 忽略业务侧读一致性要求
+    family: database
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 你的备份策略是什么，怎么证明它真的能恢复？
+    type: technical
+    evaluation_points:
+      - failure-scenario
+      - capacity-reasoning
+    strong_answer_traits:
+      - 明确 RPO/RTO 数字
+      - 定期演练而非只做备份
+      - 说清备份集校验与恢复时长
+      - 区分全量与增量、日志归档
+    common_mistakes:
+      - 只答"每天备份"
+      - 没有演练
+      - 不给 RPO/RTO
+    family: database
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 分库分表的分片键你怎么选？
+    type: system
+    evaluation_points:
+      - schema-tradeoff
+      - capacity-reasoning
+    strong_answer_traits:
+      - 从查询分布出发而不是均匀出发
+      - 说清热点与再平衡难题
+      - 给出跨分片查询的处理
+      - 承认分布式事务的代价
+    common_mistakes:
+      - 只求均匀
+      - 不提跨分片查询
+      - 认为分片后就没有一致性问题
+    family: database
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
+
+  - question: 业务方写了一条烂 SQL 把库打满了，除了骂他你还能做什么？
+    type: case
+    evaluation_points:
+      - capacity-reasoning
+      - schema-tradeoff
+    strong_answer_traits:
+      - 机制层面：SQL 评审、慢查询拦截、资源隔离
+      - 应急层面：限流、kill、降级
+      - 协作层面：给出替代写法与教育材料
+      - 事后：接入规范与监控
+    common_mistakes:
+      - 只答"让他改"
+      - 没有任何机制性方案
+      - 把沟通当成主要手段
+    family: database
+    source_tier: L4
+    license: "方法论人工提炼自公开面试准备资料，非原文复制；原作见 source_urls，开源许可以原作为准；本文为衍生摘要"
