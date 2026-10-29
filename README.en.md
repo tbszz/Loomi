@@ -1,10 +1,8 @@
-# Loomi Desktop
+# Loomi
 
 [中文](README.md) | **English**
 
 Loomi is a long-term personal career agent. It builds a growing, searchable, source-traceable background profile for each job seeker, then reuses those verified facts across conversations for resume analysis, job description analysis, tailored resumes and interview prep.
-
-This repository is the Loomi Electron desktop app (Windows first). It was split from the web repository `tbszz/Resume-Protocol` on 2026-10-28. `server/`, `src/`, `skills/` and `knowledge/` are copies of the code shared with the web app, so fixes needed on both sides must be committed to each repository separately.
 
 ## Features
 
@@ -21,7 +19,7 @@ Requires Node.js 22.13 or newer.
 ```bash
 npm ci
 cp .env.example .env     # fill in model settings as needed
-npm run desktop:dev      # build the frontend and launch Electron
+npm run desktop:dev      # build the frontend and launch the app
 ```
 
 Without model credentials the app reports the error honestly instead of inventing answers. To run the web version in a browser only:
@@ -32,7 +30,7 @@ npm run app              # build and start the local server, default http://127.
 
 For development, run `npm run server` and `npm run dev` separately (Vite, default http://127.0.0.1:5173).
 
-Build the Windows installer (NSIS, output in `release/`, bundles Python and the export dependencies):
+Build the installer (output in `release/`, bundles Python and the export dependencies):
 
 ```bash
 npm run desktop:dist
@@ -47,9 +45,9 @@ Semantic retrieval (Ollama, Qwen or Google embeddings) is optional. Without it, 
 ## Project layout
 
 ```text
-desktop/      Electron main process, preload, local server entry, packaging config
+desktop/      App shell: main process, preload, local server entry, packaging config
 server/       Express server, agent runtime, candidate knowledge base, job sources, form filling, export
-src/          React workspace; src/desktop/ holds desktop-only UI (intro animation, login, account sync)
+src/          React workspace; src/desktop/ holds the intro animation, login and account sync UI
 skills/       First-party career Skills
 knowledge/    Career method material used to migrate into Skills
 scripts/      Acceptance, online checks, job sync and UI automation scripts
@@ -86,13 +84,13 @@ Project documents are written in Chinese.
 | [`DEVELOPMENT_RULES.md`](DEVELOPMENT_RULES.md) | Development rules and anti-duplication principles |
 | [`DESIGN.md`](DESIGN.md) | Workspace UI / UX constraints |
 | [`AGENTS.md`](AGENTS.md) | Entry rules for coding agents |
-| [`docs/desktop-cloud-sync.md`](docs/desktop-cloud-sync.md) | Desktop cloud sync contract |
+| [`docs/desktop-cloud-sync.md`](docs/desktop-cloud-sync.md) | Cloud sync contract |
 | [`docs/job-sources.md`](docs/job-sources.md) | Official job source adapters and reconciliation |
 | [`docs/job-ingestion.md`](docs/job-ingestion.md) | Hiring Radar setup, sync and cleanup |
 | [`docs/eligibility.md`](docs/eligibility.md) | Job eligibility contract |
 | [`docs/pdf-reading.md`](docs/pdf-reading.md) | PDF reading and OCR |
 | [`docs/resume-layout.md`](docs/resume-layout.md) | Resume layouts and export |
-| [`docs/cloud-deployment.md`](docs/cloud-deployment.md) | Web deployment |
+| [`docs/cloud-deployment.md`](docs/cloud-deployment.md) | Server deployment |
 
 ## Security principles
 

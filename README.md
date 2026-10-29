@@ -1,10 +1,8 @@
-# Loomi Desktop
+# Loomi
 
 **中文** | [English](README.en.md)
 
 Loomi 是一个长期陪伴式的个人求职 Agent：为每位求职者建立可积累、可检索、可追溯来源的职业背景库，并在不同对话中复用这些真实信息，完成简历分析、JD 分析、定制简历和面试准备。
-
-本仓库是 Loomi 的 Electron 桌面端（Windows 优先），2026-10-28 从网页端仓库 `tbszz/Resume-Protocol` 拆分而来。`server/`、`src/`、`skills/`、`knowledge/` 与网页端共用同一份代码的副本，两边都需要的修复要分别提交。
 
 ## 功能
 
@@ -21,7 +19,7 @@ Loomi 是一个长期陪伴式的个人求职 Agent：为每位求职者建立�
 ```bash
 npm ci
 cp .env.example .env     # 按需填写模型配置
-npm run desktop:dev      # 构建前端并启动 Electron
+npm run desktop:dev      # 构建前端并启动应用
 ```
 
 没有模型凭据时应用会如实报错，不会编造回答。只想在浏览器里跑网页版：
@@ -32,7 +30,7 @@ npm run app              # 构建并启动本地服务，默认 http://127.0.0.1
 
 开发时可分开运行 `npm run server` 和 `npm run dev`（Vite，默认 http://127.0.0.1:5173）。
 
-打包 Windows 安装包（NSIS，输出到 `release/`，内置 Python 与导出依赖）：
+打包安装包（输出到 `release/`，内置 Python 与导出依赖）：
 
 ```bash
 npm run desktop:dist
@@ -47,9 +45,9 @@ npm run desktop:dist
 ## 目录结构
 
 ```text
-desktop/      Electron 主进程、preload、本地服务入口、打包配置
+desktop/      应用外壳：主进程、preload、本地服务入口、打包配置
 server/       Express 服务、Agent 运行时、候选人知识库、岗位源、网申、导出
-src/          React 工作区；src/desktop/ 是桌面端专属 UI（开场动画、登录、账户同步）
+src/          React 工作区；src/desktop/ 是开场动画、登录和账户同步界面
 skills/       第一方求职 Skill
 knowledge/    Skill 迁移用的求职方法素材
 scripts/      验收、联网检查、岗位同步和 UI 自动化脚本
@@ -84,13 +82,13 @@ npm run build
 | [`DEVELOPMENT_RULES.md`](DEVELOPMENT_RULES.md) | 开发规则与反重复原则 |
 | [`DESIGN.md`](DESIGN.md) | 工作区 UI / UX 约束 |
 | [`AGENTS.md`](AGENTS.md) | 给 coding agent 的入口规则 |
-| [`docs/desktop-cloud-sync.md`](docs/desktop-cloud-sync.md) | 桌面端云同步约定 |
+| [`docs/desktop-cloud-sync.md`](docs/desktop-cloud-sync.md) | 云同步约定 |
 | [`docs/job-sources.md`](docs/job-sources.md) | 官方岗位源适配与对账 |
 | [`docs/job-ingestion.md`](docs/job-ingestion.md) | Hiring Radar 安装、同步与清理 |
 | [`docs/eligibility.md`](docs/eligibility.md) | 岗位资格判断契约 |
 | [`docs/pdf-reading.md`](docs/pdf-reading.md) | PDF 读取与 OCR |
 | [`docs/resume-layout.md`](docs/resume-layout.md) | 简历版式与导出 |
-| [`docs/cloud-deployment.md`](docs/cloud-deployment.md) | 网页版部署 |
+| [`docs/cloud-deployment.md`](docs/cloud-deployment.md) | 服务端部署 |
 
 ## 安全原则
 
