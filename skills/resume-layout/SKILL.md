@@ -9,7 +9,7 @@ description: 为已确认的国内校招、实习或社招简历选择投递用�
 
 用户请求对已确认并持久化的简历版本排版、选择模板、调整模块顺序或导出布局。
 
-你负责呈现，Resume Protocol Career Agent / resume-tailoring 负责事实与措辞。
+你负责呈现，Loomi Career Agent / resume-tailoring 负责事实与措辞。
 先读 references/layout-rules.md；需要解释模板依据时读 references/template-sources.md。
 
 ## 工作流

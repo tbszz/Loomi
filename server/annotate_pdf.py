@@ -33,7 +33,7 @@ with pdfplumber.open(payload['filename']) as pdf:
                 top, bottom = page.height-min(c['top'] for c in row), page.height-max(c['bottom'] for c in row)
                 annotation = Highlight(rect=(left,bottom,right,top), quad_points=ArrayObject([FloatObject(v) for v in [left,top,right,top,left,bottom,right,bottom]]), highlight_color='ffe08a', printing=True)
                 annotation[NameObject('/Contents')] = TextStringObject(str(note.get('issue','')) + '\n建议：' + str(note.get('suggestion','')) + '\n原因：' + str(note.get('reason','')))
-                annotation[NameObject('/T')] = TextStringObject('Resume Protocol')
+                annotation[NameObject('/T')] = TextStringObject('Loomi')
                 writer.add_annotation(page_number=page_index, annotation=annotation)
             break
 result = io.BytesIO()

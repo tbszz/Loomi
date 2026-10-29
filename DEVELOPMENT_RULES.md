@@ -1,8 +1,8 @@
-# Resume Protocol Development Rules
+# Loomi Development Rules
 
 Updated: 2026-09-17
 
-这份文档是 Resume Protocol 的中心开发规则。做产品规划、架构调整、Agent 行为设计和代码重构时都先看这里。
+这份文档是 Loomi 的中心开发规则。做产品规划、架构调整、Agent 行为设计和代码重构时都先看这里。
 
 优先级：最新明确需求 > `PRD.md` > `ARCHITECTURE.md` > 本文 > `DESIGN.md` / 专项技术文档。
 
@@ -36,7 +36,7 @@ P0 只有一个 Primary Career Agent。
 
 语义理解、步骤规划、何时使用 Skill、何时调用 Tool，由 Primary Career Agent 自己决定。
 
-Resume Protocol 自己负责提供：
+Loomi 自己负责提供：
 
 - Candidate Knowledge Base。
 - Career Skills。

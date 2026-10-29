@@ -834,7 +834,7 @@ function LandingPage({ booting, user, onLogin, onRegister, onStart }) {
   return (
     <div className="landing-page">
       <nav className="landing-nav">
-        <div className="landing-logo">Resume Protocol<sup>®</sup></div>
+        <div className="landing-logo">Loomi<sup>®</sup></div>
         <div className="landing-links">
           <a href="#home">首页</a>
           <button type="button" onClick={onStart}>工作区</button>
@@ -862,13 +862,13 @@ function LandingPage({ booting, user, onLogin, onRegister, onStart }) {
           <button type="button" onClick={onStart}>{booting ? "Loading" : "Get Started"}</button>
         </div>
       </section>
-      <section className="landing-info" id="how-it-works" aria-label="How Resume Protocol helps">
+      <section className="landing-info" id="how-it-works" aria-label="How Loomi helps">
         <div className="info-copy">
           <div>
             <span>How do we help?</span>
             <h2>Evidence that<br />moves forward</h2>
           </div>
-          <p>Resume Protocol 把简历、岗位和对话放在同一个工作区。每一次改写都连接原始资料、AI 证据批注和可下载优化稿。</p>
+          <p>Loomi 把简历、岗位和对话放在同一个工作区。每一次改写都连接原始资料、AI 证据批注和可下载优化稿。</p>
         </div>
         <div className="info-divider" />
         <div className="info-pills">

@@ -13,7 +13,7 @@ export function createMailer(env = process.env) {
     secure: env.RESUME_PROTOCOL_SMTP_SECURE ? env.RESUME_PROTOCOL_SMTP_SECURE === "true" : port === 465,
     auth: { user, pass },
   });
-  const from = env.RESUME_PROTOCOL_SMTP_FROM || `Resume Protocol <${user}>`;
+  const from = env.RESUME_PROTOCOL_SMTP_FROM || `Loomi <${user}>`;
   return {
     configured: true,
     async send({ to, subject, text }) {
@@ -28,7 +28,7 @@ export function createMailer(env = process.env) {
 
 export function passwordResetEmail(code, minutes) {
   return {
-    subject: `Resume Protocol 重置密码验证码：${code}`,
+    subject: `Loomi 重置密码验证码：${code}`,
     text: `你的重置密码验证码是 ${code}，${minutes} 分钟内有效。\n\n如果不是你本人操作，请忽略这封邮件，你的密码不会改变。`,
   };
 }

@@ -1,17 +1,17 @@
-# Resume Protocol PRD — P0
+# Loomi PRD — P0
 
 Updated: 2026-09-22
 Status: P0 implementation baseline
 
 ## 1. Product definition
 
-Resume Protocol is a long-term Personal Career Agent, not a one-shot resume generator.
+Loomi is a long-term Personal Career Agent, not a one-shot resume generator.
 
 For each candidate, the product builds a private, continuously growing background library and reuses it across conversations for resume analysis, JD analysis, job evaluation, tailored resumes, and interview preparation.
 
 The P0 promise is simple:
 
-> Upload your materials once; Resume Protocol should remember the candidate through a traceable Candidate Knowledge Base and use those real facts again whenever the user asks for career help.
+> Upload your materials once; Loomi should remember the candidate through a traceable Candidate Knowledge Base and use those real facts again whenever the user asks for career help.
 
 ## 2. P0 goals
 
@@ -187,7 +187,7 @@ P0 has one Primary Career Agent powered by `@anthropic-ai/claude-agent-sdk`.
 
 Claude Agent SDK is responsible for the generic agent runtime capabilities: multi-step agent loop, planning, Skill use, Tool/MCP use, session continuity, streaming/abort, and supported permission/hook mechanisms.
 
-Resume Protocol supplies the career-domain layer: Candidate KB, Career Skills, Career Tools, Job Knowledge, Candidate isolation, and factual verification.
+Loomi supplies the career-domain layer: Candidate KB, Career Skills, Career Tools, Job Knowledge, Candidate isolation, and factual verification.
 
 Do not implement a second Brain LLM, custom Agent Loop, or P0 Workflow Engine.
 

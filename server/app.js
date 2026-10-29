@@ -381,7 +381,7 @@ export function createApp({ database = createDatabase(), mailer, model, search, 
     const format = req.query.format || "markdown";
     if (!["markdown", "json"].includes(format)) return res.status(400).json({ error: "支持 Markdown 或 JSON 导出。" });
     const output = format === "json" ? JSON.stringify(req.conversation, null, 2) : exportMarkdown(req.conversation);
-    res.set("Content-Disposition", `attachment; filename="resume-protocol.${format === "json" ? "json" : "md"}"`);
+    res.set("Content-Disposition", `attachment; filename="loomi.${format === "json" ? "json" : "md"}"`);
     res.type(format === "json" ? "application/json" : "text/markdown").send(output);
   });
   const exporting = new Set();

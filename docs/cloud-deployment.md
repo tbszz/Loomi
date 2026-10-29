@@ -7,7 +7,7 @@ This document describes the reusable production deployment contract. Do not comm
 ```text
 HTTPS reverse proxy
         ↓
-Resume Protocol Node service
+Loomi Node service
         ↓
 Persistent data directory
 ├ SQLite database

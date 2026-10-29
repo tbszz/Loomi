@@ -1,4 +1,4 @@
-# Resume Protocol Design
+# Loomi Design
 
 Updated: 2026-09-17
 Scope: UI / UX contract only
@@ -7,7 +7,7 @@ Scope: UI / UX contract only
 
 ## 1. Product experience
 
-Resume Protocol 的体验应像一个长期工作的个人 Career Workspace，而不是传统 Dashboard，也不是“填写表单 → 点生成”的一次性简历工具。
+Loomi 的体验应像一个长期工作的个人 Career Workspace，而不是传统 Dashboard，也不是“填写表单 → 点生成”的一次性简历工具。
 
 主入口保持 AI Conversation；Files、Jobs、Resume Preview、Settings 是辅助工作区。
 
