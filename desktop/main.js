@@ -12,6 +12,11 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = app.isPackaged ? path.join(process.resourcesPath, 'app.asar.unpacked') : path.dirname(here);
 // A separate profile is useful for QA and portable development; never the repository data/.
 if (process.env.RESUME_PROTOCOL_DESKTOP_USER_DATA) app.setPath('userData', path.resolve(process.env.RESUME_PROTOCOL_DESKTOP_USER_DATA));
+// Installs from before the Loomi rename keep their profile under the old product name.
+else {
+  const legacy = path.join(app.getPath('appData'), 'Resume Protocol');
+  if (existsSync(legacy) && !existsSync(app.getPath('userData'))) app.setPath('userData', legacy);
+}
 app.setAppUserModelId('com.resumeprotocol.desktop');
 const userData = app.getPath('userData');
 const dataDir = path.join(userData, 'data');
@@ -88,7 +93,7 @@ async function start() {
   await saveLocalAccount(accountPath, { ...account, registered: true }, codec);
   if (quitting) return;
   const bounds = windowBounds(saved, screen.getAllDisplays().map(display => display.workArea));
-  mainWindow = new BrowserWindow({ ...bounds, minWidth: 1100, minHeight: 700, show: false, autoHideMenuBar: true, title: 'Resume Protocol', titleBarStyle: 'hidden', titleBarOverlay: overlay(saved.theme), backgroundColor: saved.theme === 'dark' ? '#262624' : '#faf9f6', icon: path.join(here, 'assets/icon.png'), webPreferences: { preload: path.join(here, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, webviewTag: false, additionalArguments: [`--resume-version=${app.getVersion()}`] } });
+  mainWindow = new BrowserWindow({ ...bounds, minWidth: 1100, minHeight: 700, show: false, autoHideMenuBar: true, title: 'Loomi', titleBarStyle: 'hidden', titleBarOverlay: overlay(saved.theme), backgroundColor: saved.theme === 'dark' ? '#262624' : '#faf9f6', icon: path.join(here, 'assets/icon.png'), webPreferences: { preload: path.join(here, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, webviewTag: false, additionalArguments: [`--resume-version=${app.getVersion()}`] } });
   const session = mainWindow.webContents.session;
   const pair = authenticated.cookie.split(';')[0];
   const separator = pair.indexOf('=');
@@ -153,12 +158,12 @@ function makeMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: '编辑', submenu: [{ role: 'undo' }, { role: 'redo' }, { type: 'separator' }, { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' }] },
     ...(!app.isPackaged ? [{ label: '视图', submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }] }] : []),
-    { label: '帮助', submenu: [{ label: '打开数据文件夹', click: () => openPath(dataDir).catch(showFailure) }, { label: '打开日志', click: () => openPath(logPath).catch(showFailure) }, { label: `Resume Protocol ${app.getVersion()}`, enabled: false }, { type: 'separator' }, { role: 'quit', label: '退出' }] },
+    { label: '帮助', submenu: [{ label: '打开数据文件夹', click: () => openPath(dataDir).catch(showFailure) }, { label: '打开日志', click: () => openPath(logPath).catch(showFailure) }, { label: `Loomi ${app.getVersion()}`, enabled: false }, { type: 'separator' }, { role: 'quit', label: '退出' }] },
   ]));
 }
 
 function shellPage(title, detail, failed) {
-  return `data:text/html;charset=utf-8,${encodeURIComponent(`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>Resume Protocol</title><style>body{margin:0;padding:48px;background:#faf9f6;color:#292722;font:14px/1.7 'Segoe UI','Microsoft YaHei',sans-serif}.mark{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:#b66d51;color:#fff;font-weight:700;font-size:20px}small{display:block;letter-spacing:2px;color:#756f64;margin:20px 0 8px}h1{font-size:22px;font-weight:600;margin:0 0 12px}p{color:#756f64;overflow-wrap:anywhere;user-select:text}.pulse{width:28px;height:3px;background:#b66d51;margin-top:24px;animation:pulse 1.3s ease-in-out infinite alternate}@keyframes pulse{to{opacity:.2;transform:scaleX(2)}}@media(prefers-reduced-motion:reduce){.pulse{animation:none}}</style><div class="mark">RP</div><small>RESUME PROTOCOL</small><h1>${escape(title)}</h1><p>${escape(detail)}</p>${failed ? '' : '<div class="pulse"></div>'}</html>`)}`;
+  return `data:text/html;charset=utf-8,${encodeURIComponent(`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>Loomi</title><style>body{margin:0;padding:48px;background:#faf9f6;color:#292722;font:14px/1.7 'Segoe UI','Microsoft YaHei',sans-serif}.mark{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:#b66d51;color:#fff;font-weight:700;font-size:20px}small{display:block;letter-spacing:2px;color:#756f64;margin:20px 0 8px}h1{font-size:22px;font-weight:600;margin:0 0 12px}p{color:#756f64;overflow-wrap:anywhere;user-select:text}.pulse{width:28px;height:3px;background:#b66d51;margin-top:24px;animation:pulse 1.3s ease-in-out infinite alternate}@keyframes pulse{to{opacity:.2;transform:scaleX(2)}}@media(prefers-reduced-motion:reduce){.pulse{animation:none}}</style><div class="mark">L</div><small>LOOMI</small><h1>${escape(title)}</h1><p>${escape(detail)}</p>${failed ? '' : '<div class="pulse"></div>'}</html>`)}`;
 }
 
 async function showFailure(error) {

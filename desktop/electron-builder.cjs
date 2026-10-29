@@ -1,6 +1,6 @@
 module.exports = {
   appId: 'com.resumeprotocol.desktop',
-  productName: 'Resume Protocol',
+  productName: 'Loomi',
   directories: { output: 'release', buildResources: 'desktop/assets' },
   asar: true,
   // Server resources and every dependency are real files: SDK native CLI,
@@ -12,6 +12,6 @@ module.exports = {
     '!**/*.test.*', '!**/__tests__/**', '!**/test/**', '!**/tests/**', '!**/*.map', '!**/__pycache__/**', '!**/*.pyc',
     '!data/**', '!tmp/**', '!output/**', '!competitor-analysis/**', '!.scan/**', '!release/**', '!**/.env*',
   ],
-  win: { target: [{ target: 'nsis', arch: ['x64'] }], icon: 'desktop/assets/icon.ico', artifactName: 'Resume-Protocol-${version}-Setup-${arch}.${ext}' },
+  win: { target: [{ target: 'nsis', arch: ['x64'] }], icon: 'desktop/assets/icon.ico', artifactName: 'Loomi-${version}-Setup-${arch}.${ext}' },
   nsis: { oneClick: false, perMachine: false, allowToChangeInstallationDirectory: true, createDesktopShortcut: true, deleteAppDataOnUninstall: false },
 };
