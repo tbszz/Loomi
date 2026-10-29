@@ -58,37 +58,12 @@ async function start() {
   log.on('error', error => { console.error('Desktop log unavailable:', error.message); app.quit(); });
   try { saved = JSON.parse(await readFile(path.join(userData, 'window.json'), 'utf8')); } catch { /* defaults */ }
   makeMenu();
-  loadingWindow = new BrowserWindow({ width: 520, height: 360, resizable: false, autoHideMenuBar: true, backgroundColor: '#faf9f6', icon: path.join(here, 'assets/icon.png'), webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false } });
-  await loadingWindow.loadURL(shellPage('你的下一步，从这里开始。', '正在打开本机工作区', false));
-  loadingWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-  loadingWindow.webContents.on('will-navigate', event => event.preventDefault());
 
   const port = await findFreePort();
   origin = `http://127.0.0.1:${port}`;
-  python = await detectPython();
-  pythonExecutable = python.executable;
-  warnings = python.warnings;
-  const env = { ...process.env, RESUME_PROTOCOL_PORT: String(port), RESUME_PROTOCOL_HOST: '127.0.0.1', RESUME_PROTOCOL_DATA_DIR: dataDir, RESUME_PROTOCOL_SECURE_COOKIES: 'false', ...(python.executable ? { RESUME_PROTOCOL_PYTHON: python.executable } : {}) };
-  // PDF.js classifies Electron utility processes as renderers (no DOMMatrix).
-  // A regular fork in Node mode preserves its real Node detection and sqlite.
-  env.ELECTRON_RUN_AS_NODE = '1';
-  child = fork(path.join(root, 'desktop/server-entry.js'), [], { execPath: process.execPath, execArgv: [], cwd: root, env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
-  child.stdout.on('data', bytes => log.write(bytes));
-  child.stderr.on('data', bytes => log.write(bytes));
-  child.on('error', error => { serverExited = true; log.write(`[desktop] Server process: ${error.message}\n`); });
-  child.on('exit', code => {
-    serverExited = true;
-    log.write(`\n[desktop] Local server exited (${code})\n`);
-    if (quitting) { log.end(() => app.quit()); }
-    else if (mainWindow && !mainWindow.isDestroyed()) {
-      warnings = [...warnings, '本机服务已停止。请保存当前内容并重启应用；可从帮助菜单打开日志。'];
-      mainWindow.webContents.send('desktop:warnings', warnings);
-    }
-  });
-  await waitUntilReady();
-  if (quitting) return;
+  // Open the dark main window at once; the intro plays here as soon as the server answers.
   const bounds = windowBounds(saved, screen.getAllDisplays().map(display => display.workArea));
-  mainWindow = new BrowserWindow({ ...bounds, minWidth: 1100, minHeight: 700, show: false, autoHideMenuBar: true, title: 'Loomi', titleBarStyle: 'hidden', titleBarOverlay: overlay('dark'), backgroundColor: '#121211', icon: path.join(here, 'assets/icon.png'), webPreferences: { preload: path.join(here, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, webviewTag: false, additionalArguments: [`--resume-version=${app.getVersion()}`] } });
+  mainWindow = new BrowserWindow({ ...bounds, minWidth: 1100, minHeight: 700, autoHideMenuBar: true, title: 'Loomi', titleBarStyle: 'hidden', titleBarOverlay: overlay('dark'), backgroundColor: '#121211', icon: path.join(here, 'assets/icon.png'), webPreferences: { preload: path.join(here, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, webviewTag: false, additionalArguments: [`--resume-version=${app.getVersion()}`] } });
   const session = mainWindow.webContents.session;
   session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
   session.setPermissionCheckHandler(() => false);
@@ -112,10 +87,30 @@ async function start() {
     // A tiny local preference file; synchronous close acknowledgement is unnecessary.
     writeFile(path.join(userData, 'window.json'), JSON.stringify(saved)).catch(error => log.write(`[desktop] Window preferences: ${error.message}\n`));
   });
-  await mainWindow.loadURL(`${origin}/`);
   if (saved.maximized) mainWindow.maximize();
-  mainWindow.show();
-  loadingWindow?.destroy(); loadingWindow = null;
+  python = await detectPython();
+  pythonExecutable = python.executable;
+  warnings = python.warnings;
+  const env = { ...process.env, RESUME_PROTOCOL_PORT: String(port), RESUME_PROTOCOL_HOST: '127.0.0.1', RESUME_PROTOCOL_DATA_DIR: dataDir, RESUME_PROTOCOL_SECURE_COOKIES: 'false', ...(python.executable ? { RESUME_PROTOCOL_PYTHON: python.executable } : {}) };
+  // PDF.js classifies Electron utility processes as renderers (no DOMMatrix).
+  // A regular fork in Node mode preserves its real Node detection and sqlite.
+  env.ELECTRON_RUN_AS_NODE = '1';
+  child = fork(path.join(root, 'desktop/server-entry.js'), [], { execPath: process.execPath, execArgv: [], cwd: root, env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
+  child.stdout.on('data', bytes => log.write(bytes));
+  child.stderr.on('data', bytes => log.write(bytes));
+  child.on('error', error => { serverExited = true; log.write(`[desktop] Server process: ${error.message}\n`); });
+  child.on('exit', code => {
+    serverExited = true;
+    log.write(`\n[desktop] Local server exited (${code})\n`);
+    if (quitting) { log.end(() => app.quit()); }
+    else if (mainWindow && !mainWindow.isDestroyed()) {
+      warnings = [...warnings, '本机服务已停止。请保存当前内容并重启应用；可从帮助菜单打开日志。'];
+      mainWindow.webContents.send('desktop:warnings', warnings);
+    }
+  });
+  await waitUntilReady();
+  if (quitting) return;
+  await mainWindow.loadURL(`${origin}/`);
   nativeTheme.on('updated', () => mainWindow?.webContents.send('desktop:theme-changed', nativeTheme.shouldUseDarkColors ? 'dark' : 'light'));
 }
 
