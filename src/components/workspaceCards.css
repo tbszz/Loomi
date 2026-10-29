@@ -50,7 +50,7 @@
 .cards-workspace .side-chat .aui-viewport { display: block; }
 .cards-workspace .side-chat .aui-thread[data-empty="true"] .aui-messages { padding: 12px; }
 .cards-workspace .side-chat .aui-composer-dock { position: static; padding: 8px; margin: 0; background: transparent; }
-.cards-workspace .side-chat .aui-composer { width: 100%; padding: 8px; border-radius: 10px; }
+.cards-workspace .side-chat .aui-composer { width: 100%; padding: 8px; border-radius: 10px; grid-template-columns: 4px minmax(0, 1fr) 36px; }
 .cards-workspace .side-chat :is(.aui-message-body, .aui-composer-input) { font-size: 12px; line-height: 1.7; }
 .cards-workspace .side-chat .aui-message.assistant { grid-template-columns: minmax(0, 1fr); margin: 16px 0; }
 .cards-workspace .side-chat .aui-assistant-avatar { display: none; }

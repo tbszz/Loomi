@@ -189,6 +189,8 @@ export function createApp({ database = createDatabase(), mailer, model, search, 
     try {
     // Candidate documents and facts outlive an individual work thread.
     database.deleteConversation(req.user.id, req.params.id);
+    // Side chats are hidden from the list, so they go with their parent.
+    for (const side of database.listConversations(req.user.id).filter(item => item.parentId === req.params.id)) database.deleteConversation(req.user.id, side.id);
     res.json({ ok: true });
     } finally { active.delete(req.params.id); }
   });

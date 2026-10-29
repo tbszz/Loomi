@@ -122,7 +122,7 @@ try {
   await page.getByRole('combobox', { name: '切换求职者' }).waitFor();
   await page.getByRole('button', { name: '诊断简历', exact: true }).click();
   assert.match(await page.locator('.aui-composer-input').inputValue(), /诊断简历/);
-  const input = page.getByRole('textbox', { name: '给 Resume Protocol 发消息' });
+  const input = page.getByRole('textbox', { name: '给 Loomi 发消息' });
   await input.fill('你好，我想准备求职。');
   await page.getByRole('button', { name: '发送消息', exact: true }).click();
   await page.getByText('可以，我们先从你的真实经历和求职目标开始。', { exact: true }).waitFor();

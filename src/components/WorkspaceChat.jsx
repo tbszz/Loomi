@@ -239,7 +239,7 @@ function CareerComposer({ busy, canCancel, onAttach, catalogUserId, compact }) {
         {catalogUserId ? <button type="button" onMouseDown={event => event.preventDefault()} onClick={() => { setCatalogAttempt(attempt => attempt + 1); input.current?.focus(); }}>重试加载 Skills</button> : null}
       </p> : !matches.length ? <p role="status">没有匹配的 Skill。</p> : null}
     </div></Presence>
-    <ComposerPrimitive.Input ref={input} disabled={busy} className="aui-composer-input" placeholder={compact ? '在旁聊中提问…' : '今天想推进哪一步？输入 / 选择 Skill'} aria-label={compact ? '给旁聊发消息' : '给 Resume Protocol 发消息'} aria-autocomplete="list" aria-haspopup="listbox" aria-expanded={open} aria-controls={open ? listId : undefined} aria-activedescendant={open && matches.length ? `${listId}-${activeIndex}` : undefined} minRows={1} maxRows={7} submitMode="enter" addAttachmentOnPaste={false} cancelOnEscape={false}
+    <ComposerPrimitive.Input ref={input} disabled={busy} className="aui-composer-input" placeholder={compact ? '在旁聊中提问…' : '今天想推进哪一步？输入 / 选择 Skill'} aria-label={compact ? '给旁聊发消息' : '给 Loomi 发消息'} aria-autocomplete="list" aria-haspopup="listbox" aria-expanded={open} aria-controls={open ? listId : undefined} aria-activedescendant={open && matches.length ? `${listId}-${activeIndex}` : undefined} minRows={1} maxRows={7} submitMode="enter" addAttachmentOnPaste={false} cancelOnEscape={false}
       onChange={event => {
         // Recover when an IME drops compositionend but resumes ordinary input,
         // matching assistant-ui's own composition recovery without losing focus.

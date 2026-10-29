@@ -122,6 +122,11 @@ try {
   assert.deepEqual(database.getConversation(parentUser, parent.id), parent);
   database.saveConversation(parentUser, { ...parent, context: { ...parent.context, material: 'changed later' } });
   assert.equal(database.getConversation(parentUser, side.id).context.material, 'parent material');
+  const doomed = (await (await request('/api/conversations', one, {method:'POST',body:JSON.stringify({candidateId:zhang.id})})).json()).conversation;
+  const doomedSide = (await (await request('/api/conversations', one, {method:'POST',body:JSON.stringify({parentId:doomed.id})})).json()).conversation;
+  assert.equal((await request(`/api/conversations/${doomed.id}`, one, {method:'DELETE'})).status, 200);
+  assert.equal(database.getConversation(parentUser, doomedSide.id), null);
+  assert.ok(database.getConversation(parentUser, side.id));
   assert.throws(() => database.saveConversation(database.getUserByEmail('one@example.com').id, {...zhangFirst,candidateId:li.id}), /不能切换求职者/);
   const candidateUpload = new FormData();
   candidateUpload.append('file', new Blob([ZHANG_RESUME_TEXT], {type:'text/plain'}), 'zhang-resume.txt');
