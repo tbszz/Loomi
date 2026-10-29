@@ -182,7 +182,7 @@ try {
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   assert.equal(await page.locator('.attachment-status.parsed').count(), 1, 'a late cancellation GET must preserve the completed upload');
   const consoleErrorsBefore = consoleErrors.length;
-  await page.getByRole('button', { name: '打开简历预览', exact: true }).click();
+  await page.getByRole('button', { name: '资料', exact: true }).click();
   await page.locator('.evidence-panel').waitFor();
   await page.getByText('长期背景事实', { exact: true }).waitFor();
   // The panel previews a TXT resume, so the embedded endpoint has to answer with the
@@ -195,10 +195,13 @@ try {
   assert.deepEqual(downloads, [], 'opening the evidence panel must not download the uploaded file');
   assert.equal(consoleErrors.length, consoleErrorsBefore, `opening the panel must not log console errors: ${JSON.stringify(consoleErrors.slice(consoleErrorsBefore))}`);
   await capture('desktop-light-candidate-evidence');
-  const panel = page.locator('.evidence-panel');
+  const panel = page.locator('[data-card-id="documents"]');
+  assert.equal(await panel.evaluate(node => getComputedStyle(node).position), 'static');
+  assert.equal(Math.round((await panel.boundingBox()).width), 448);
+  assert((await page.locator('.workspace-chat').boundingBox()).width >= 480);
+  await page.getByRole('button', { name: '弹出资料卡片', exact: true }).click();
   assert.equal(await panel.evaluate(node => getComputedStyle(node).position), 'fixed');
-  assert.equal(Math.round((await panel.boundingBox()).width), 340);
-  const handle = page.locator('.evidence-drag-handle');
+  const handle = panel.locator('.workspace-card-header');
   const initialPanel = await panel.boundingBox();
   const handleBox = await handle.boundingBox();
   await page.mouse.move(handleBox.x + 30, handleBox.y + 15);
@@ -206,19 +209,20 @@ try {
   await page.mouse.move(handleBox.x - 80, handleBox.y + 60, { steps: 5 });
   await page.mouse.up();
   assert((await panel.boundingBox()).x < initialPanel.x, 'header dragging moves the floating panel');
-  await page.getByRole('button', { name: '最小化证据面板', exact: true }).click();
+  await page.getByRole('button', { name: '最小化资料卡片', exact: true }).click();
   assert.equal(await panel.isVisible(), false);
-  assert.equal(await page.getByRole('button', { name: '展开证据面板', exact: true }).evaluate(node => node === document.activeElement), true);
-  await page.getByRole('button', { name: '展开证据面板', exact: true }).click();
+  assert.equal(await page.getByRole('button', { name: '展开资料卡片', exact: true }).evaluate(node => node === document.activeElement), true);
+  await page.getByRole('button', { name: '展开资料卡片', exact: true }).click();
   assert.equal(await panel.isVisible(), true);
-  assert.equal(await page.getByRole('button', { name: '最小化证据面板', exact: true }).evaluate(node => node === document.activeElement), true);
-  await page.getByRole('button', { name: '最小化证据面板', exact: true }).click();
-  await page.getByRole('button', { name: '打开简历预览', exact: true }).click();
-  assert.equal(await panel.isVisible(), true, 'the existing preview action restores a minimized card');
-  // Preserve the existing drawer below the floating-card breakpoint.
+  assert.equal(await page.getByRole('button', { name: '最小化资料卡片', exact: true }).evaluate(node => node === document.activeElement), true);
+  await page.getByRole('button', { name: '停靠资料卡片', exact: true }).click();
   await page.setViewportSize({ width: 1200, height: 1000 });
-  assert.equal(await page.getByRole('button', { name: '最小化证据面板', exact: true }).isVisible(), false);
-  assert.equal(await page.locator('.panel-drawer').isVisible(), true);
+  assert.equal(await panel.evaluate(node => getComputedStyle(node).position), 'static');
+  await page.setViewportSize({ width: 1024, height: 680 });
+  assert.equal(await panel.getAttribute('role'), 'dialog');
+  assert.equal(await page.locator('.cards-scrim').isVisible(), true);
+  await page.keyboard.press('Escape');
+  assert.equal(await panel.count(), 0);
   await page.setViewportSize({ width: 1440, height: 1000 });
   // 拖拽上传与回形针必须走同一条 uploadResumeFile 链路。合成 DataTransfer 走完整
   // dragenter → dragover → drop 序列，覆盖遮罩层出现、消失和真实解析状态。
@@ -249,7 +253,7 @@ try {
   const recruitment = await browser.newContext();
   applicationPage = await recruitment.newPage();
   await applicationPage.route('https://recruit.example.test/**', route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: '<form onsubmit="window.submits++;return false"><label>姓名<input name="name"></label><label>手机号<input name="phone" value="13000000000"></label><label>期望薪资<input name="salary" value="0"></label><label>身份证号码<input name="identityNumber"></label><label>邮箱<input name="email"></label><label>简历附件<input type="file" name="resume" accept=".txt"></label><button>提交申请</button></form><script>window.submits=0</script>' }));
-  await page.getByRole('button', { name: '网申填表', exact: true }).click();
+  await page.getByRole('button', { name: '网申', exact: true }).click();
   await page.getByText('只填空白，已有内容保留', { exact: true }).waitFor();
   await page.getByText('本地申请资料', { exact: true }).click();
   const applicationPanel = page.getByRole('region', { name: '网申填表', exact: true });
@@ -280,11 +284,10 @@ try {
   assert.equal((await applicationPanel.innerText()).includes(privateId), false);
   await capture('desktop-light-application');
   await applicationPanel.getByRole('button', { name: '断开浏览器', exact: true }).click();
-  await page.getByRole('button', { name: '原文与优化稿', exact: true }).click();
-  await page.locator('.evidence-panel').getByRole('button', { name: '关闭证据面板', exact: true }).click();
+  await page.getByRole('button', { name: '关闭网申卡片', exact: true }).click();
   await page.getByRole('button', { name: '暗色', exact: true }).click();
   await capture('desktop-dark-chat');
-  await page.getByRole('button', { name: '打开简历预览', exact: true }).click();
+  await page.getByRole('button', { name: '资料', exact: true }).click();
   await capture('desktop-dark-floating-evidence');
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('.evidence-panel').count(), 0);
@@ -302,6 +305,45 @@ try {
   await page.locator('.conversation-row').last().locator('button').first().click();
   await page.locator('.attachment-status.parsed').first().waitFor();
   await capture('mobile-dark-chat');
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const mainBeforeSide = await page.locator('.workspace-chat .aui-message').allTextContents();
+  const sidebarCount = await page.locator('.conversation-row').count();
+  await page.getByRole('button', { name: '旁聊', exact: true }).click();
+  const side = page.locator('[data-card-id="sidechat"]');
+  const sideInput = side.getByRole('textbox', { name: '给旁聊发消息' });
+  await sideInput.fill('请慢一点');
+  await sideInput.press('Shift+Enter');
+  await sideInput.pressSequentially('side question');
+  assert.match(await sideInput.inputValue(), /\nside question$/);
+  await sideInput.press('Enter');
+  await side.getByRole('button', { name: '停止生成', exact: true }).waitFor();
+  assert.equal(await page.locator('.workspace-chat .aui-composer-input').isEnabled(), true);
+  assert.deepEqual(await page.locator('.workspace-chat .aui-message').allTextContents(), mainBeforeSide);
+  let releaseSideSnapshot, markSideSnapshot, completeSideSnapshot;
+  const sideSnapshotHeld = new Promise(resolve => { markSideSnapshot = resolve; });
+  const sideSnapshotRelease = new Promise(resolve => { releaseSideSnapshot = resolve; });
+  const sideSnapshotComplete = new Promise(resolve => { completeSideSnapshot = resolve; });
+  await page.route('**/api/conversations/*', async route => {
+    if (route.request().method() !== 'GET' || !/^\/api\/conversations\/[^/]+$/.test(new URL(route.request().url()).pathname)) return route.continue();
+    const response = await route.fetch();
+    markSideSnapshot();
+    await sideSnapshotRelease;
+    await route.fulfill({ response });
+    completeSideSnapshot();
+  });
+  await side.getByRole('button', { name: '停止生成', exact: true }).click();
+  await sideSnapshotHeld;
+  await side.getByRole('button', { name: '新建旁聊', exact: true }).click();
+  await side.locator('.side-chat-empty h3').waitFor();
+  releaseSideSnapshot();
+  await sideSnapshotComplete;
+  await settleSideSnapshot();
+  await page.unroute('**/api/conversations/*');
+  assert.equal(await side.locator('.aui-message').count(), 0, 'late cancellation cannot overwrite a newly created side chat');
+  assert.equal(await page.locator('.conversation-row').count(), sidebarCount, 'side chats never join sidebar');
+  assert.deepEqual(await page.locator('.workspace-chat .aui-message').allTextContents(), mainBeforeSide);
+  await page.getByRole('button', { name: '关闭旁聊卡片', exact: true }).click();
+  assert.equal(await page.getByRole('button', { name: '旁聊', exact: true }).evaluate(element => document.activeElement === element), true);
   assert.deepEqual(errors, []);
   assert.deepEqual(blockingOffBoxRequests, [], 'no render-blocking resource may be external');
 
@@ -331,7 +373,7 @@ try {
   assert.deepEqual(offlineErrors, [], 'going offline must not raise script errors');
   await offline.close();
 
-  console.log(JSON.stringify({ passed: true, screenshots, checks: ['back-navigation', 'landing-scroll', 'landing', 'no-blocking-external-resource', 'fonts-local', 'offline-render', 'empty-state', 'suggestions', 'send-once', 'copy', 'step-durations', 'run-cancel', 'pending-skeleton', 'cancel-late-snapshot-preserves-upload', 'upload', 'drop-upload', 'preview', 'floating-drag', 'minimize-restore-focus', 'evidence-drawer-breakpoint', 'escape-close', 'no-implicit-download', 'application-profile-private', 'application-blank-only', 'application-explicit-owned-attachment', 'application-no-submission', 'settings', 'switch-conversation', 'mobile-no-overflow'], offBoxRequests, downloads, pageErrors: errors, consoleErrors }));
+  console.log(JSON.stringify({ passed: true, screenshots, checks: ['back-navigation', 'landing-scroll', 'landing', 'no-blocking-external-resource', 'fonts-local', 'offline-render', 'empty-state', 'suggestions', 'send-once', 'copy', 'step-durations', 'run-cancel', 'pending-skeleton', 'cancel-late-snapshot-preserves-upload', 'upload', 'drop-upload', 'preview', 'floating-drag', 'minimize-restore-focus', 'cards-dock-overlay-breakpoints', 'escape-close', 'no-implicit-download', 'application-profile-private', 'application-blank-only', 'application-explicit-owned-attachment', 'application-no-submission', 'settings', 'switch-conversation', 'mobile-no-overflow', 'side-enter-shift-enter', 'side-stop', 'side-new-thread-late-cancel-isolation', 'side-sidebar-filter', 'card-close-focus'], offBoxRequests, downloads, pageErrors: errors, consoleErrors }));
 } catch (error) {
   await page.screenshot({ path: path.join(screenshots, 'failure.png') });
   console.error(JSON.stringify({ error: error.message, pageErrors: errors, apiResponses,
@@ -344,4 +386,11 @@ try {
   await new Promise(resolve => server.close(resolve));
   db.close();
   await rm(directory, { recursive: true, force: true });
+}
+
+// Full cards matrix, isolated from the deterministic model fixtures above.
+await import('./test-desktop-cards.mjs');
+
+async function settleSideSnapshot() {
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
 }
