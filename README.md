@@ -1,5 +1,7 @@
 # Loomi Desktop
 
+**中文** | [English](README.en.md)
+
 Loomi 是一个长期陪伴式的个人求职 Agent：为每位求职者建立可积累、可检索、可追溯来源的职业背景库，并在不同对话中复用这些真实信息，完成简历分析、JD 分析、定制简历和面试准备。
 
 本仓库是 Loomi 的 Electron 桌面端（Windows 优先），2026-10-28 从网页端仓库 `tbszz/Resume-Protocol` 拆分而来。`server/`、`src/`、`skills/`、`knowledge/` 与网页端共用同一份代码的副本，两边都需要的修复要分别提交。
