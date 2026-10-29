@@ -42,23 +42,58 @@ shows rejection messages verbatim, then calls `onSuccess` once after its 750ms
 success reaction (150ms with reduced motion). It does not call auth endpoints,
 store credentials or own session/workspace navigation.
 
-The intro lasts 3300ms, or 400ms with reduced motion. Click, Escape, Enter,
+The intro lasts 7100ms, or a static 400ms fade with reduced motion. Click, Escape, Enter,
 Space and the skip button finish it. `sessionStorage` key
 `resume-protocol:desktop-intro-played` suppresses another intro in the same window
 session; storage denial is harmless. The parent should unmount it on `onDone`.
 Both screens reserve a fixed 40px native drag region. Controls are `no-drag`.
 
-Theme follows `<html data-theme="light|dark">`, otherwise the OS preference.
-The scoped palette mirrors `workspace.css`; no external fonts or assets load.
-`introTimeline.js` controls phase boundaries and `loginState.js` mirrors the
+Desktop entry defaults to dark, regardless of OS preference: background `#121211`,
+surface `#1c1c1a`, ink `#f1eee6`, muted `#a6a398`, line `#3a3935`. Only
+`<html data-theme="light">` selects the original light palette. Loomi uses the
+same ink/surface tokens automatically; no external fonts or assets load.
+`introTimeline.js` exports the pure, seekable `introFrame(time, layout)` and
+controls phase boundaries. `loginState.js` mirrors the
 current server validation contract. Server validation remains authoritative.
+
+## Launch choreography
+
+The approved reference is `tmp/loomi-intro-spec.dc.html`. Its prototype time
+maps from real elapsed time as `t = real < 500 ? real : real + 500`.
+Every pose uses the existing `LoomiFigure`; the prototype's character drawing
+is not copied. One `requestAnimationFrame` loop writes transforms, opacity and
+SVG attributes through refs, without React state updates on each frame.
+
+| Real elapsed ms | Motion |
+| --- | --- |
+| 0–500 | Large bottom-right peek, gentle bob, one blink at 200–290ms |
+| 500–1550 | Immediate ease-out pull-back, fading bob, landing squash and shadow |
+| 1550–2750 | Tuck, exactly two full rolls, untuck upright |
+| 2750–3400 | Shoot silk to the top, then climb to the card |
+| 3400–5200 | Trace only the measured 20px rounded card border |
+| 5200–7100 | Hop to the measured resting pet; draw eight spokes, then three rings; wave |
+
+The continuous camera follows the prototype zoom curve and clamps to the
+viewport. It transforms only the silk/traveler stage, never the real login.
+It returns to scale 1 at real 5600ms. The reference starts revealing its painted
+card sooner; here the real card begins its staggered reveal at 5600ms, after
+the camera resets, so the border aligns throughout the reveal. Heading, email,
+password and button then fade and slide in separately.
+
+At mount, window resize and element resize, the intro measures `.login-card`,
+`.login-loomi` and `.login-corner-web`. Border geometry is cached per layout;
+there are no per-frame layout reads. The small web shares its eleven path
+definitions with LoginScreen. The final pet position and SVG size match the
+resting figure. Skip/completion/unmount restore every borrowed login style;
+the parent still owns the `inert`/`aria-hidden` handoff.
 
 ## Preview and verification
 
 ```sh
 npm run dev -- --port 5178
+# On Windows with PowerShell script execution disabled, use npm.cmd instead.
 # http://127.0.0.1:5178/desktop-preview.html
-# Add ?skipIntro=1 or ?theme=dark (or combine with &).
+# Add ?skipIntro=1 or ?theme=light (or combine with &).
 node scripts/test-desktop-login.mjs
 node --test src/desktop/introTimeline.test.js src/desktop/loginState.test.js
 ```
@@ -72,20 +107,27 @@ not a production build entry.
 The browser script uses local Chrome/Edge through `playwright-core`. Override
 `DESKTOP_TEST_BROWSER` or `DESKTOP_PREVIEW_URL` if needed. It checks keyboard
 skipping/submission, cover/peek, Caps Lock, error/retry/success, registration
-validation, sessionStorage denial, reduced motion, theme preference/override and
-viewport overflow. Intro screenshots freeze CSS animations at exact times and
-advance component timers with the Playwright clock. Screenshots and the full
+validation, sessionStorage denial, reduced motion, default dark/light override and
+viewport overflow. Intro screenshots advance the production rAF loop with the
+Playwright clock. Checks also cover blink/tuck, border alignment, camera reset,
+pet/web handoff, inert cleanup and a resize to 390px during the intro. Browser checks
+also verify a reduced-motion preference change while the camera is zoomed. Unit tests
+sample every 8ms and immediately around phase boundaries at multiple viewport
+sizes to catch position, scale, rotation, tuck, squash and camera jumps. Screenshots and the full
 check manifest are in `output/desktop-login/`.
 
 Captured screenshots:
 
-- `intro-{0.3,1.0,1.7,2.4,3.2}s-1920x1080.png`
+- `intro-{240,1000,2200,3000,4000,5500,6000,6800,7050}ms-1920x1080.png`
+- `intro-resized-6000ms-390x844.png`
 - `intro-reduced-motion-dark.png`
 - `login-idle-{light,dark}-{960x640,1920x1080,2560x1440}.png`
 - `login-register-light-960x640.png`
 - `login-password-{covered,peek}-1920x1080.png`
 - `login-{submitting,error,success}-1920x1080.png`
 
-Verified with `npm test`, `npm run build`, and the browser script. Actual Electron
+Verify with the targeted unit command above, `npm run build`, and the browser
+script (23 screenshots). The production build excludes this dev-only preview;
+the browser script exercises the desktop components through Vite directly. Actual Electron
 session routing, frameless window dragging, a physical 60fps display and spoken
 screen-reader output require shell/device verification after integration.

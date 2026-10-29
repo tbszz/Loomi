@@ -33,34 +33,103 @@ async function loginPage(theme = 'light', viewport) {
   return page;
 }
 try {
-  // Freeze CSS animations at precise times; advance the real component timers
-  // using Playwright's clock. This exercises the same timeline as production.
-  const intro = await newPage();
+  // Advance production rAF with a virtual clock. There are no traveler CSS
+  // keyframes to seek: the pure timeline drives refs, SVG and the real card.
+  const intro = await newPage({ colorScheme: 'light' });
   const clockStart = new Date('2026-10-28T00:00:00Z');
   await intro.clock.install({ time: clockStart });
   await intro.clock.pauseAt(clockStart);
-  await intro.goto(`${base}?theme=light`);
+  await intro.goto(base);
   await intro.locator('.loomi-intro').waitFor();
+  assert.equal(await intro.locator('.desktop-login').evaluate(node => getComputedStyle(node).colorScheme), 'dark', 'desktop defaults dark even on a light OS');
+  assert.deepEqual(await intro.locator('.loomi-intro').evaluate(node => {
+    const style = getComputedStyle(node);
+    return ['bg', 'surface', 'ink', 'muted', 'line'].map(name => style.getPropertyValue(`--dt-${name}`).trim());
+  }), ['#121211', '#1c1c1a', '#f1eee6', '#a6a398', '#3a3935']);
+  assert.equal(await intro.locator('.intro-traveler .lf-fill').first().evaluate(node => getComputedStyle(node).fill), 'rgb(241, 238, 230)', 'canonical Loomi inherits light ink');
+  assert.equal(await intro.locator('.loomi-intro .desktop-drag-region').evaluate(node => node.getBoundingClientRect().height), 40);
+  assert.equal(await intro.locator('.login-card').evaluate(node => node.closest('[inert]') !== null), true);
+  assert.equal(await intro.locator('.login-loomi').evaluate(node => getComputedStyle(node).visibility), 'hidden');
+  assert.equal(await intro.getByRole('textbox').count(), 0, 'login fields stay out of the accessibility tree');
   let elapsed = 0;
-  for (const time of [300, 1000, 1700, 2400, 3200]) {
+  for (const [time, phase] of [[240, 'peek'], [1000, 'pull-back'], [2200, 'roll'], [3000, 'climb'], [4000, 'weave'], [5500, 'rest'], [6000, 'rest'], [6800, 'rest'], [7050, 'rest']]) {
     await intro.clock.runFor(time - elapsed);
     elapsed = time;
-    await intro.evaluate(time => {
-      const phaseStart = { silk: 0, arrival: 600, hello: 1400, weave: 2000, handoff: 2800 }[document.querySelector('.loomi-intro').dataset.phase];
-      for (const animation of document.getAnimations()) {
-        animation.pause();
-        animation.currentTime = animation.effect.target.closest('.loomi-figure') ? time - phaseStart : time;
-      }
-    }, time);
-    await shot(intro, `intro-${(time / 1000).toFixed(1)}s-1920x1080`);
+    assert.equal(await intro.locator('.loomi-intro').getAttribute('data-phase'), phase);
+    await shot(intro, `intro-${time}ms-1920x1080`);
+    if (time === 240) {
+      const eyeScale = await intro.locator('.intro-traveler .loomi-figure').evaluate(node => Number(node.style.getPropertyValue('--lf-eye-scale')));
+      // rAF samples at frame boundaries, so allow the opening/closing part of
+      // the blink as well as its minimum. The unit test counts the whole blink.
+      assert(eyeScale < 1, `single peek blink (eye scale ${eyeScale})`);
+    }
+    if (time === 2200) {
+      assert.equal(await intro.locator('.intro-traveler svg').getAttribute('data-mood'), 'roll');
+      assert(await intro.locator('.intro-traveler svg').evaluate(node => Number(node.style.getPropertyValue('--lf-tuck')) > .9));
+    }
+    if (time === 6000) {
+      const aligned = await intro.evaluate(() => {
+        const card = document.querySelector('.login-card').getBoundingClientRect();
+        const path = document.querySelector('.intro-border');
+        const bounds = path.getBoundingClientRect();
+        const camera = new DOMMatrix(getComputedStyle(document.querySelector('.intro-stage')).transform);
+        return { card: [card.left, card.top, card.width, card.height], border: [bounds.left, bounds.top, bounds.width, bounds.height], scale: camera.a, dash: Number(path.style.strokeDashoffset) };
+      });
+      assert.equal(aligned.scale, 1, 'camera is reset at real-card reveal');
+      assert.equal(aligned.dash, 0, 'border finishes drawing');
+      aligned.card.forEach((value, i) => assert(Math.abs(value - aligned.border[i]) < .01, 'silk matches actual card'));
+    }
+    if (time === 7050) {
+      const handoff = await intro.evaluate(() => {
+        const traveler = document.querySelector('.intro-traveler');
+        const pose = new DOMMatrix(getComputedStyle(traveler).transform);
+        const rest = document.querySelector('.login-loomi').getBoundingClientRect();
+        const web = document.querySelector('.login-corner-web').getBoundingClientRect();
+        const animatedWeb = document.querySelector('.intro-corner-web').getBBox();
+        return { x: pose.e, y: pose.f, width: pose.a * traveler.offsetWidth,
+          targetX: rest.left + rest.width / 2, targetY: rest.top + rest.height * 70 / 120, targetWidth: rest.width,
+          webX: web.left + web.width / 2, webY: web.top + web.height / 2,
+          drawnX: animatedWeb.x + animatedWeb.width / 2, drawnY: animatedWeb.y + animatedWeb.height / 2,
+          webProgress: [...document.querySelectorAll('.intro-corner-web path')].map(path => Number(path.style.strokeDashoffset)) };
+      });
+      assert(Math.abs(handoff.x - handoff.targetX) < .01 && Math.abs(handoff.y - handoff.targetY) < .01, 'pet shared-element position');
+      assert(Math.abs(handoff.width - handoff.targetWidth) < .5, 'pet shared-element size');
+      assert(Math.abs(handoff.webX - handoff.drawnX) < .01 && Math.abs(handoff.webY - handoff.drawnY) < .01, 'small web shared-element position');
+      assert(handoff.webProgress.every(value => value === 0), 'eight spokes and three complete rings');
+      assert.equal(await intro.locator('.intro-traveler svg').getAttribute('data-mood'), 'hello');
+    }
   }
-  await intro.clock.runFor(200);
+  await intro.clock.runFor(100);
   assert.equal(await intro.locator('.loomi-intro').count(), 0);
+  assert.equal(await intro.locator('[inert]').count(), 0);
+  assert.equal(await intro.locator('.desktop-login').evaluate(node => node.style.opacity), '');
+  assert.equal(await intro.locator('.login-corner-web').evaluate(node => node.style.opacity), '');
   await intro.reload();
   await intro.locator('.login-card').waitFor();
   assert.equal(await intro.locator('.loomi-intro').count(), 0);
-  checks.push('3300ms completion and once-per-session reload');
+  checks.push('7100ms rAF choreography; canonical pet; single blink; tucked roll; measured border; camera reset; pet/web handoff; inert cleanup; once-per-session reload; default dark on light OS');
   await intro.context().close();
+
+  const resized = await newPage();
+  await resized.clock.install({ time: clockStart });
+  await resized.clock.pauseAt(clockStart);
+  await resized.goto(base);
+  await resized.locator('.loomi-intro').waitFor();
+  await resized.clock.runFor(4000);
+  await resized.setViewportSize({ width: 390, height: 844 });
+  await resized.clock.runFor(2000);
+  const resizedBorder = await resized.evaluate(() => {
+    const card = document.querySelector('.login-card').getBoundingClientRect();
+    const border = document.querySelector('.intro-border').getBoundingClientRect();
+    return { card: [card.left, card.top, card.width, card.height], border: [border.left, border.top, border.width, border.height], overflow: document.documentElement.scrollWidth > innerWidth };
+  });
+  resizedBorder.card.forEach((value, i) => assert(Math.abs(value - resizedBorder.border[i]) < .01, 'resize remeasures real card'));
+  assert.equal(resizedBorder.overflow, false);
+  await shot(resized, 'intro-resized-6000ms-390x844');
+  await resized.keyboard.press('Escape');
+  assert.equal(await resized.locator('.login-heading').evaluate(node => node.style.transform), '', 'skip restores borrowed reveal styles');
+  await resized.context().close();
+  checks.push('resize during intro remeasures border and resting anchors; 390px viewport; skip restores DOM styles');
 
   for (const theme of ['light', 'dark']) {
     for (const viewport of [{ width: 960, height: 640 }, { width: 1920, height: 1080 }, { width: 2560, height: 1440 }]) {
@@ -147,13 +216,31 @@ try {
   await reduced.locator('.loomi-intro').waitFor();
   await shot(reduced, 'intro-reduced-motion-dark');
   assert.equal(await reduced.locator('.intro-traveler').evaluate(node => getComputedStyle(node).transform), 'none');
-  await reduced.clock.runFor(450);
+  await reduced.clock.runFor(200);
+  const midFade = await reduced.locator('.intro-wash').evaluate(node => Number(getComputedStyle(node).opacity));
+  assert(midFade > .4 && midFade < .6, 'reduced motion is a simple 400ms fade');
+  await reduced.clock.runFor(250);
   assert.equal(await reduced.locator('.loomi-intro').count(), 0);
   assert.equal(await reduced.locator('.desktop-login').evaluate(node => getComputedStyle(node).colorScheme), 'dark');
   await reduced.goto(`${base}?skipIntro=1&theme=light`);
   assert.equal(await reduced.locator('.desktop-login').evaluate(node => getComputedStyle(node).colorScheme), 'light');
-  checks.push('400ms static reduced-motion intro; OS dark preference and explicit light override');
+  checks.push('400ms static reduced-motion fade; default dark and explicit light override');
   await reduced.context().close();
+
+  const motionChange = await newPage();
+  await motionChange.clock.install({ time: clockStart });
+  await motionChange.clock.pauseAt(clockStart);
+  await motionChange.goto(base);
+  await motionChange.locator('.loomi-intro').waitFor();
+  await motionChange.clock.runFor(3500);
+  await motionChange.emulateMedia({ reducedMotion: 'reduce' });
+  await motionChange.locator('.loomi-intro[data-reduced="true"]').waitFor();
+  assert.equal(await motionChange.locator('.intro-stage').evaluate(node => getComputedStyle(node).transform), 'none', 'changing motion preference cancels zoom');
+  assert.equal(await motionChange.locator('.intro-traveler').evaluate(node => getComputedStyle(node).transform), 'none', 'changing motion preference cancels travel');
+  await motionChange.clock.runFor(450);
+  assert.equal(await motionChange.locator('.loomi-intro').count(), 0);
+  await motionChange.context().close();
+  checks.push('changing reduced-motion preference mid-intro cancels travel/zoom and completes the static fade');
 
   const blocked = await newPage();
   await blocked.addInitScript(() => Object.defineProperty(window, 'sessionStorage', { get() { throw new DOMException('Denied', 'SecurityError'); } }));

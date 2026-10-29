@@ -46,6 +46,17 @@
 .lf-cover { filter: drop-shadow(0 1.5px 0 var(--loomi-eye)); }
 .lf-cover-left { transform-origin: 37px 64px; transition: transform 180ms; }
 [data-mood="peek"] .lf-cover-left { transform: rotate(-35deg); }
+/* Intro poses retain the canonical drawing. The pure timeline supplies tuck,
+   squash and blink instead of the ambient loops. */
+[data-mood="roll"] { --lf-tuck: 1; }
+[data-mood="roll"] .lf-leg { transform: scale(calc(1 - var(--lf-tuck) * .85)); }
+.intro-figure .loomi-figure :is(.lf-all, .lf-body, .lf-upper, .lf-leg, .lf-open, .lf-spark) { animation: none; transition: none; }
+.intro-figure .loomi-figure .lf-upper { transform: none; }
+.intro-figure .loomi-figure .lf-body { transform-origin: 60px 70px; transform: scale(calc(1 + var(--lf-squash, 0)), calc(1 - var(--lf-squash, 0))); }
+.intro-figure .loomi-figure .lf-leg { transform: rotate(var(--lf-crawl, 0deg)) scale(calc(1 - var(--lf-tuck, 0) * .85)); }
+.intro-figure .loomi-figure .lf-open { transform: scaleY(var(--lf-eye-scale, 1)); }
+.intro-figure [data-mood="hello"] .lf-L1 { animation: lf-wave-l 200ms ease-in-out infinite alternate; }
+.intro-figure [data-mood="hello"] .lf-R1 { animation: lf-wave-r 200ms ease-in-out infinite alternate; }
 @keyframes lf-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
 @keyframes lf-breathe { 50% { transform: scale(1.03,.97); } }
 @keyframes lf-tap-l { 0%,70%,82%,100% { transform: rotate(0); } 76%,88% { transform: rotate(-18deg); } }
