@@ -47,6 +47,7 @@ const WorkspaceChat = React.lazy(() => import('./components/WorkspaceChat.jsx').
 
 const LANDING_VIDEO_URL = "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260715_112512_f3b7a972-83dd-4401-9c4b-f08d3733f5ca.mp4";
 const THEME_STORAGE_KEY = "resume-protocol.theme";
+const NEW_CANDIDATE = "__new_candidate__";
 const AUTH_ENDPOINTS = {
   login: "/api/auth/login",
   register: "/api/auth/register"
@@ -928,6 +929,8 @@ function ProjectSidebar({
 }) {
   const { t } = useI18n();
   const [candidateEditorOpen, setCandidateEditorOpen] = useState(false);
+  const candidateNameRef = useRef(null);
+  useEffect(() => { if (candidateEditorOpen) candidateNameRef.current?.focus(); }, [candidateEditorOpen]);
   const [mobile, setMobile] = useState(() => window.matchMedia('(max-width: 860px)').matches);
   useEffect(() => {
     const media = window.matchMedia('(max-width: 860px)');
@@ -954,21 +957,22 @@ function ProjectSidebar({
           <div className="candidate-header-context">
             <span className="candidate-initials" aria-hidden="true">{initials}</span>
             <strong>{candidateName}</strong><ChevronDown size={12} aria-hidden="true" />
-            {candidates.length ? <select aria-label={t("workspace.switchCandidate")} value={activeCandidateId} onChange={event => onSelectCandidate(event.target.value)}>
+            <select aria-label={t("workspace.switchCandidate")} value={candidates.length ? activeCandidateId : ''} onChange={event => event.target.value === NEW_CANDIDATE ? setCandidateEditorOpen(true) : onSelectCandidate(event.target.value)}>
+              {!candidates.length ? <option value="" disabled hidden>{candidateName}</option> : null}
               {candidates.map(candidate => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}
-            </select> : null}
+              <option value={NEW_CANDIDATE}>{t("workspace.newCandidateOption")}</option>
+            </select>
           </div>
           <button className="primary-action sidebar-new-conversation" type="button" aria-label={t("workspace.newConversation")} title={t("workspace.newConversation")} onClick={onNewConversation}><Plus size={17} /></button>
           <button type="button" onClick={onClose} className="drawer-close" aria-label={t("workspace.closeProjectDirectory")}><X size={18} /><kbd className="shortcut-hint">Esc</kbd></button>
         </header>
-        <section className="candidate-switcher" aria-label={t("workspace.currentCandidate")}>
-          <div className="section-title"><span>{t("workspace.currentCandidate")}</span><button type="button" data-expanded={candidateEditorOpen} onClick={() => setCandidateEditorOpen(value => !value)} aria-label={t("workspace.createCandidate")}><Plus size={14} /></button></div>
+        <section className="candidate-switcher" aria-label={t("workspace.createCandidate")}>
           <div className="candidate-create-reveal" data-open={candidateEditorOpen} inert={!candidateEditorOpen || undefined}><div><form className="candidate-create" onSubmit={async event => {
             event.preventDefault();
             const name = String(new FormData(event.currentTarget).get('name') || '').trim();
             if (await onCreateCandidate(name)) setCandidateEditorOpen(false);
           }}>
-            <input name="name" maxLength={120} aria-label={t("workspace.candidateName")} placeholder={t("workspace.candidateName")} required />
+            <input ref={candidateNameRef} name="name" maxLength={120} aria-label={t("workspace.candidateName")} placeholder={t("workspace.candidateName")} required onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); setCandidateEditorOpen(false); } }} />
             <button type="submit">{t("workspace.create")}</button>
           </form></div></div>
           {!candidates.length ? <p>{t("workspace.startAConversationOrUploadAResume")}</p> : null}

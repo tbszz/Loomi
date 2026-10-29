@@ -120,7 +120,7 @@ try {
   assert.equal(fonts.status, 'loaded', `no font may still be downloading: ${JSON.stringify(fonts)}`);
   assert.doesNotMatch(fonts.body, /Mackinac/i, 'the body must not wait on a downloaded webfont');
   assert.match(fonts.body, /Georgia|Songti|SimSun|Times|Arial|Segoe|YaHei|PingFang|sans-serif|serif/i);
-  await page.getByRole('button', { name: '新建求职者' }).click();
+  await page.getByRole('combobox', { name: '切换求职者' }).selectOption('__new_candidate__');
   await page.getByRole('textbox', { name: '求职者名称' }).fill('林同学');
   await page.getByRole('button', { name: '创建', exact: true }).click();
   await page.getByRole('combobox', { name: '切换求职者' }).waitFor();

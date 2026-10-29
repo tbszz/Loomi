@@ -1123,9 +1123,8 @@
 .aui-workspace :is(.project-row, .conversation-row)[data-closing="true"] { opacity: 0; transform: scale(.98); pointer-events: none; }
 .aui-workspace :is(.project-row, .conversation-row) > :is(button:not(:first-child), select) { opacity: 0; transform: translateX(4px); transition: opacity var(--dur-fast), transform var(--dur-fast) var(--ease-out); }
 .aui-workspace :is(.project-row, .conversation-row):is(:hover, :focus-within) > :is(button:not(:first-child), select) { opacity: 1; transform: none; }
-.aui-workspace .sidebar-chevron svg, .candidate-switcher [aria-label="?????"] svg { transition: transform var(--dur-base) var(--ease-spring); }
+.aui-workspace .sidebar-chevron svg { transition: transform var(--dur-base) var(--ease-spring); }
 .aui-workspace[data-sidebar-collapsed="true"] .sidebar-chevron svg { transform: rotate(180deg); }
-.candidate-switcher [data-expanded="true"] svg { transform: rotate(45deg); }
 .candidate-create-reveal { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows var(--dur-base) var(--ease-out), opacity var(--dur-base); }
 .candidate-create-reveal > div { overflow: hidden; min-height: 0; }
 .candidate-create-reveal[data-open="true"] { grid-template-rows: 1fr; opacity: 1; }
@@ -1362,9 +1361,9 @@
 .aui-workspace .candidate-initials { width: 24px; height: 24px; flex: 0 0 24px; display: grid; place-items: center; border: 1px solid var(--aui-line-strong); border-radius: 50%; background: var(--aui-hover); font: 10px var(--font-mono); }
 .aui-workspace .project-sidebar .sidebar-new-conversation { width: 28px; min-height: 28px; padding: 0; margin: 0; flex-shrink: 0; justify-content: center; border: 0; border-radius: 6px; background: transparent; color: var(--aui-muted); }
 .aui-workspace .project-sidebar .sidebar-new-conversation:hover { background: var(--aui-hover); color: var(--aui-heading); }
-.aui-workspace .candidate-switcher { margin: 0; padding: 12px 14px 0; border: 0; border-radius: 0; background: transparent; }
-.aui-workspace .candidate-switcher .section-title { font-size: 9px; }
-.aui-workspace .candidate-switcher > p { font-size: 11px; color: var(--aui-muted); }
+.aui-workspace .candidate-switcher { margin: 0; padding: 0 14px; border: 0; border-radius: 0; background: transparent; }
+.aui-workspace .candidate-switcher .candidate-create { margin: 10px 0 0; }
+.aui-workspace .candidate-switcher > p { margin-top: 10px; font-size: 11px; color: var(--aui-muted); }
 .aui-workspace :is(.project-row, .conversation-row) { border: 1px solid transparent; border-radius: 6px; font-size: 12px; }
 .aui-workspace :is(.project-row, .conversation-row).active { background: var(--aui-hover); border-color: var(--aui-line); }
 .aui-workspace :is(.project-row, .conversation-row):hover { background: var(--aui-hover); }

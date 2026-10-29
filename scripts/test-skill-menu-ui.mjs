@@ -44,7 +44,7 @@ try {
   assert(catalogRequests > 0, 'catalog loads when authenticated user resolves without a reload');
   await page.unroute('**/api/auth/me');
   await input.fill('');
-  await page.getByRole('button', { name: '新建求职者' }).click();
+  await page.getByRole('combobox', { name: '切换求职者' }).selectOption('__new_candidate__');
   await page.getByRole('textbox', { name: '求职者名称' }).fill('Skill 测试候选人');
   await page.getByRole('button', { name: '创建', exact: true }).click();
   await page.getByRole('combobox', { name: '切换求职者' }).waitFor();
