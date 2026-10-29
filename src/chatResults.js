@@ -1,3 +1,4 @@
+import { createTranslator } from './i18n.js';
 export function normalizeResultItems(items = []) {
   return items
     .map((item) => {
@@ -11,19 +12,19 @@ export function normalizeResultItems(items = []) {
     .filter(Boolean);
 }
 
-export function formatJobPoolSummary(data = {}) {
+export function formatJobPoolSummary(data = {}, t = createTranslator()) {
   const shown = countShownJobs(data);
   const total = finiteNonNegative(data.total);
   const offset = finiteNonNegative(data.offset) ?? 0;
   const hasMore = data.hasMore === true;
-  if(Number(data.mergedSearches)>1) return `已汇总 ${shown} 条岗位线索${hasMore ? " · 可换一批" : ""}`;
+  if(Number(data.mergedSearches)>1) return t("jobs.collectedJobLeads", { count: shown, more: hasMore ? t("jobs.moreAvailable") : "" });
   if (total !== null && shown > 0) {
     const start = Math.min(offset + 1, total);
     const end = Math.min(offset + shown, total);
-    return `本页 ${start}-${end} / ${total}${hasMore ? " · 可换一批" : ""}`;
+    return t("jobs.thisPage", { start: start, end: end, total: total, more: hasMore ? t("jobs.moreAvailable") : "" });
   }
-  if (total !== null) return `岗位池 ${total} 条${hasMore ? " · 可换一批" : ""}`;
-  return hasMore ? "还有更多来源结果" : "";
+  if (total !== null) return t("jobs.jobPool", { total: total, more: hasMore ? t("jobs.moreAvailable") : "" });
+  return hasMore ? t("jobs.moreSourceResultsAvailable") : "";
 }
 
 function countShownJobs(data) {

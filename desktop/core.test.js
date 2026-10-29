@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { findFreePort, navigationAction, detectPython, pythonDependencyInstall, pythonResult, loadLocalAccount, authenticateLocalAccount, windowBounds } from './core.js';
 import { syncStatusLabel } from '../src/desktop/sync-status.js';
+import { createTranslator } from '../src/i18n.js';
 
 test('free port is bound only on loopback and is available after selection', async () => {
   const port = await findFreePort();
@@ -82,10 +83,10 @@ test('dependency warnings identify repairable modules and disappear only after a
   const missing = pythonResult({ executable: 'python.exe', missing: ['reportlab', 'docx'] });
   assert.deepEqual(missing.missing, ['reportlab', 'docx']);
   assert.equal(missing.warnings[0].code, 'python-deps');
-  assert.match(missing.warnings[0].message, /reportlab、python-docx/);
+  assert.deepEqual(missing.warnings[0].packages, ['reportlab', 'python-docx']);
   assert.deepEqual(pythonResult({ executable: 'python.exe', missing: [] }).warnings, []);
   assert.equal(pythonResult(null).executable, null);
-  assert.match(pythonResult(null).warnings[0], /未找到 Python/);
+  assert.equal(pythonResult(null).warnings[0].code, 'python-missing');
   assert.throws(() => pythonResult({ executable: 'python.exe' }), /Python/);
 });
 
@@ -107,11 +108,12 @@ test('remembered bounds from a removed monitor are restored to a visible display
   assert.equal(windowBounds({ x: 20, y: 20, width: 1400, height: 900 }, [area]).x, 20);
 });
 
-test('contract states have honest Chinese labels', () => {
-  assert.equal(syncStatusLabel({ state: 'local' }), '仅保存在本机');
-  assert.equal(syncStatusLabel({ state: 'syncing' }), '正在同步');
-  assert.equal(syncStatusLabel({ state: 'synced' }), '已同步');
-  assert.equal(syncStatusLabel({ state: 'offline', pending: 3 }), '离线（3 项待上传）');
-  assert.equal(syncStatusLabel({ state: 'error', message: '连接超时' }), '同步出错（连接超时）');
-  assert.equal(syncStatusLabel({ state: 'unknown' }), '同步出错（无法识别账户状态）');
+test('contract states have honest localized labels', () => {
+  assert.equal(syncStatusLabel({ state: 'offline', pending: 3 }, createTranslator('zh')), '离线（3 项待上传）');
+  assert.equal(syncStatusLabel({ state: 'local' }), "Stored only on this computer");
+  assert.equal(syncStatusLabel({ state: 'syncing' }), "Syncing");
+  assert.equal(syncStatusLabel({ state: 'synced' }), "Synced");
+  assert.equal(syncStatusLabel({ state: 'offline', pending: 3 }), 'Offline (3 pending uploads)');
+  assert.equal(syncStatusLabel({ state: 'error', message: '连接超时' }), 'Sync error (连接超时)');
+  assert.equal(syncStatusLabel({ state: 'unknown' }), "Sync error (unknown account status)");
 });

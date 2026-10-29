@@ -1,32 +1,36 @@
+import { uiMessage, resolveUiMessage } from '../i18n.js';
+import { useI18n } from '../i18nContext.js';
 import React, { useEffect, useRef, useState } from 'react';
 import { requestJson } from '../api.js';
 import { Crossfade, MotionDetails, MotionRecord } from '../motionHooks.jsx';
 import './applicationPanel.css';
 
-const PROFILE_FIELDS = [
-  ['name', '姓名'], ['phone', '手机号'], ['email', '邮箱'],
-  ['identityNumber', '身份证号码', true], ['address', '通讯地址', true],
-  ['householdRegistration', '户籍', true], ['birthDate', '出生日期', true],
-  ['ethnicity', '民族', true], ['politicalStatus', '政治面貌', true],
-  ['nationality', '国籍'], ['gender', '性别'], ['degree', '最高学历'],
-  ['expectedSalary', '期望薪资'], ['availableDate', '可到岗日期'],
-  ['preferredLocation', '意向城市'], ['leaveReason', '离职原因'], ['website', '作品链接'],
-  ['nativePlace', '籍贯', true], ['studentNumber', '学号', true], ['degreeName', '学位'],
-  ['preferredRoleCategory', '意向岗位大类'], ['preferredRoles', '意向岗位'], ['preferredTeams', '意向团队'],
-  ['languages', '语言特长'], ['recruitmentChannel', '获知招聘的渠道'], ['referralCode', '内推码']
-];
-const BOOLEAN_FIELDS = [['willingToRelocate','接受异地工作'],['acceptRoleAdjustment','接受岗位调剂'],['referred','是否内推'],['hasAwards','是否有获奖经历'],['hasCampusLeadership','是否有社团干部经历'],['hasInternship','是否有实习经历']];
 const MULTI_FIELDS = new Set(['preferredRoles','preferredTeams','preferredLocation','languages']);
-const RECORDS = [
-  ['education', '教育经历', [['school','学校'],['major','专业'],['degree','学历'],['startDate','入学日期'],['endDate','毕业日期'],['ranking','成绩排名'],['description','说明']]],
-  ['employment', '工作与实习', [['company','公司'],['title','职位'],['startDate','开始日期'],['endDate','结束日期'],['description','真实职责']]],
-  ['projects', '项目经历', [['name','项目名称'],['role','个人角色'],['startDate','开始日期'],['endDate','结束日期'],['description','真实项目描述']]],
-  ['awards', '获奖经历', [['type','获奖类型'],['level','奖项级别'],['name','奖项名称'],['date','获奖日期']]],
-  ['campusLeadership', '社团干部经历', [['organization','社团名称'],['title','职位'],['startDate','开始日期'],['endDate','结束日期'],['description','真实职责']]]
-];
-const RESULT_LABELS = { filled: '已填写', preserved: '保留已有内容', missing: '资料缺失', missing_evidence: '缺少事实依据', unsupported: '需手动填写', manual_required: '需本人操作', failed: '填写失败', changed: '字段已变化', attachment_uploaded: '网站已接收原文件', attachment_selected: '已选择原文件，待确认网站接收', attachment_required: '请明确选择附件或手动上传', attachment_mismatch: '附件格式不符合网页要求', attachment_too_large: '附件超过网页限制', too_large: '附件超过网页限制', no_match: '网页没有对应选项', options_unavailable: '选项尚未加载或联动条件未满足', too_long: '超出字数限制' };
 
 export function ApplicationPanel({ conversation, disabled = false }) {
+  const { t } = useI18n();
+  const PROFILE_FIELDS = [
+    ['name', t("workspace.name")], ['phone', t("application.phoneNumber")], ['email', t("login.email")],
+    ['identityNumber', t("application.nationalIdNumber"), true], ['address', t("application.mailingAddress"), true],
+    ['householdRegistration', t("application.householdRegistration"), true], ['birthDate', t("application.dateOfBirth"), true],
+    ['ethnicity', t("application.ethnicity"), true], ['politicalStatus', t("application.politicalAffiliation"), true],
+    ['nationality', t("application.nationality")], ['gender', t("application.gender")], ['degree', t("application.highestQualification")],
+    ['expectedSalary', t("application.expectedSalary")], ['availableDate', t("application.availableStartDate")],
+    ['preferredLocation', t("application.preferredCities")], ['leaveReason', t("application.reasonForLeaving")], ['website', t("application.portfolioUrl")],
+    ['nativePlace', t("application.placeOfOrigin"), true], ['studentNumber', t("application.studentId"), true], ['degreeName', t("application.degreeName")],
+    ['preferredRoleCategory', t("application.preferredRoleCategory")], ['preferredRoles', t("application.preferredRoles")], ['preferredTeams', t("application.preferredTeams")],
+    ['languages', t("application.languages")], ['recruitmentChannel', t("application.recruitmentChannel")], ['referralCode', t("application.referralCode")]
+  ];
+  const BOOLEAN_FIELDS = [['willingToRelocate',t("application.willingToRelocate")],['acceptRoleAdjustment',t("application.acceptRoleReassignment")],['referred',t("application.referredBySomeone")],['hasAwards',t("application.haveAwards")],['hasCampusLeadership',t("application.haveCampusLeadershipExperience")],['hasInternship',t("application.haveInternshipExperience")]];
+  const RECORDS = [
+    ['education', t("resume.education"), [['school',t("application.school")],['major',t("application.major")],['degree',t("application.qualification")],['startDate',t("application.enrollmentDate")],['endDate',t("application.graduationDate")],['ranking',t("application.academicRanking")],['description',t("application.description")]]],
+    ['employment', t("application.workInternships"), [['company',t("application.company")],['title',t("application.jobTitle")],['startDate',t("application.startDate")],['endDate',t("application.endDate")],['description',t("application.actualResponsibilities")]]],
+    ['projects', t("resume.projects"), [['name',t("workspace.projectNameField")],['role',t("application.yourRole")],['startDate',t("application.startDate")],['endDate',t("application.endDate")],['description',t("application.actualProjectDescription")]]],
+    ['awards', t("application.awards"), [['type',t("application.awardType")],['level',t("application.awardLevel")],['name',t("application.awardName")],['date',t("application.awardDate")]]],
+    ['campusLeadership', t("application.campusLeadership"), [['organization',t("application.organizationName")],['title',t("application.jobTitle")],['startDate',t("application.startDate")],['endDate',t("application.endDate")],['description',t("application.actualResponsibilities")]]]
+  ];
+  const RESULT_LABELS = { filled: t("application.filled"), preserved: t("application.existingContentKept"), missing: t("application.missingInformation"), missing_evidence: t("application.missingFactualEvidence"), unsupported: t("application.fillManually"), manual_required: t("application.requiresYourAction"), failed: t("application.fillFailed"), changed: t("application.fieldChanged"), attachment_uploaded: t("application.websiteReceivedTheOriginalFile"), attachment_selected: t("application.originalFileSelectedConfirmWebsiteReceipt"), attachment_required: t("application.selectAnAttachmentExplicitlyOrUploadManually"), attachment_mismatch: t("application.attachmentFormatDoesNotMeetPageRequirements"), attachment_too_large: t("application.attachmentExceedsPageLimit"), too_large: t("application.attachmentExceedsPageLimit"), no_match: t("application.noMatchingOptionOnPage"), options_unavailable: t("application.optionsNotLoadedOrPrerequisitesNotMet"), too_long: t("application.characterLimitExceeded") };
+
   const [profile, setProfile] = useState({});
   const [patch, setPatch] = useState({});
   const [status, setStatus] = useState(null);
@@ -38,7 +42,8 @@ export function ApplicationPanel({ conversation, disabled = false }) {
   const [documents, setDocuments] = useState([]);
   const [attachmentSelections, setAttachmentSelections] = useState({});
   const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState('');
+  const [noticeValue, setNotice] = useState('');
+  const notice = resolveUiMessage(noticeValue, t);
   const [activeButton, setActiveButton] = useState(null);
   const recordIds = useRef(new WeakMap());
   const nextRecordId = useRef(0);
@@ -49,7 +54,7 @@ export function ApplicationPanel({ conversation, disabled = false }) {
   const controller = useRef(null);
   const base = `/api/conversations/${encodeURIComponent(conversation.id)}/application`;
   const locked = busy || disabled;
-  const request = (route, body, signal) => requestJson(base + route, { signal, timeoutMs: 120000, ...(body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}) });
+  const request = (route, body, signal) => requestJson(base + route, { signal, timeoutMs: 120000, ...(body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {}) }, t);
 
   useEffect(() => {
     const initial = new AbortController();
@@ -85,40 +90,40 @@ export function ApplicationPanel({ conversation, disabled = false }) {
     setScan(current); setDocuments(available.documents);
   }
 
-  return <section className="application-panel" data-connected={Boolean(status?.connected)} aria-label="网申填表" onClickCapture={event => setActiveButton(event.target.closest('button'))} onSubmitCapture={event => setActiveButton(event.nativeEvent.submitter)}>
-    <div className="application-rule"><strong>只填空白，已有内容保留</strong><p>你需要时再开始。最后检查和提交由你完成；网页可能在填写时自动保存资料。</p></div>
+  return <section className="application-panel" data-connected={Boolean(status?.connected)} aria-label={t("workspace.applicationFormLabel")} onClickCapture={event => setActiveButton(event.target.closest('button'))} onSubmitCapture={event => setActiveButton(event.nativeEvent.submitter)}>
+    <div className="application-rule"><strong>{t("application.fillBlanksAndKeepExistingContent")}</strong><p>{t("application.startWhenYouNeedToYouReview")}</p></div>
     {notice && <p role="alert">{notice}</p>}
     <MotionDetails className="application-profile">
-      <summary>本地申请资料</summary>
-      <p>敏感资料加密保存在本机，不作为聊天内容发送给模型。未改动的字段保持原值；日期请用 YYYY-MM-DD，出生年月可用 YYYY-MM。多选资料每行写一个网页中的完整选项。</p>
-      <form onSubmit={event => { event.preventDefault(); act(async signal => { const normalized = Object.fromEntries(Object.entries(patch).map(([key,value]) => [key, MULTI_FIELDS.has(key) && Array.isArray(value) ? value.map(item => item.trim()).filter(Boolean) : value])); const saved = await request('/profile', { profile: normalized }, signal); setProfile(saved.profile); setPatch({}); setNotice('本地申请资料已保存。'); }); }}>
+      <summary>{t("application.localApplicationProfile")}</summary>
+      <p>{t("application.sensitiveInformationIsEncryptedOnThisComputer")}</p>
+      <form onSubmit={event => { event.preventDefault(); act(async signal => { const normalized = Object.fromEntries(Object.entries(patch).map(([key,value]) => [key, MULTI_FIELDS.has(key) && Array.isArray(value) ? value.map(item => item.trim()).filter(Boolean) : value])); const saved = await request('/profile', { profile: normalized }, signal); setProfile(saved.profile); setPatch({}); setNotice(uiMessage("application.localApplicationProfileSaved")); }); }}>
         <fieldset disabled={locked}>
-          {PROFILE_FIELDS.map(([name, label, sensitive]) => <label key={name}>{label}{MULTI_FIELDS.has(name) ? <textarea aria-label={label} maxLength={6000} value={Array.isArray(patch[name] ?? profile[name]) ? (patch[name] ?? profile[name]).join('\n') : patch[name] ?? profile[name] ?? ''} placeholder="每行一个完整选项，未知可留空" onChange={event => change(name, event.target.value.split('\n'))} /> : <input aria-label={label} type={sensitive ? 'password' : 'text'} autoComplete="off" maxLength={name === 'leaveReason' ? 2000 : 300} value={patch[name] ?? (sensitive ? '' : profile[name] ?? '')} placeholder={sensitive && profile.sensitiveConfigured?.includes(name) ? '已保存，留空保留' : '未知可留空'} onChange={event => change(name, event.target.value)} />}{sensitive && profile.sensitiveConfigured?.includes(name) && <ActionButton busy={busy} activeButton={activeButton} type="button" onClick={() => change(name, '')}>清除已保存的{label}</ActionButton>}</label>)}
-          {BOOLEAN_FIELDS.map(([name,label]) => <label key={name}>{label}<select aria-label={label} value={Object.hasOwn(patch, name) ? patch[name] ?? '' : profile[name] ?? ''} onChange={event => change(name, event.target.value === '' ? null : event.target.value === 'true')}><option value="">未确定</option><option value="true">是</option><option value="false">否</option></select></label>)}
-          {RECORDS.map(([family, label, fields]) => <MotionDetails key={family}><summary>{label}</summary>{(patch[family] ?? profile[family] ?? []).map((record, index) => <MotionRecord key={recordKey(record)} onRemove={() => setPatch(current => ({ ...current, [family]: (current[family] ?? profile[family] ?? []).filter(item => recordKey(item) !== recordKey(record)) }))}><legend>{label} {index + 1}</legend>{fields.map(([key, text]) => <label key={key}>{text}<input value={record[key] || ''} onChange={event => recordChange(family, index, key, event.target.value)} maxLength={4000} /></label>)}</MotionRecord>)}<ActionButton busy={busy} activeButton={activeButton} type="button" onClick={() => change(family, [...(patch[family] ?? profile[family] ?? []), {}])}>添加{label}</ActionButton></MotionDetails>)}
-          <ActionButton busy={busy} activeButton={activeButton} type="submit" disabled={!Object.keys(patch).length}>保存本地资料</ActionButton>
+          {PROFILE_FIELDS.map(([name, label, sensitive]) => <label key={name}>{label}{MULTI_FIELDS.has(name) ? <textarea aria-label={label} maxLength={6000} value={Array.isArray(patch[name] ?? profile[name]) ? (patch[name] ?? profile[name]).join('\n') : patch[name] ?? profile[name] ?? ''} placeholder={t("application.oneCompleteOptionPerLineLeaveUnknown")} onChange={event => change(name, event.target.value.split('\n'))} /> : <input aria-label={label} type={sensitive ? 'password' : 'text'} autoComplete="off" maxLength={name === 'leaveReason' ? 2000 : 300} value={patch[name] ?? (sensitive ? '' : profile[name] ?? '')} placeholder={sensitive && profile.sensitiveConfigured?.includes(name) ? t("application.savedLeaveBlankToKeep") : t("application.leaveBlankIfUnknown")} onChange={event => change(name, event.target.value)} />}{sensitive && profile.sensitiveConfigured?.includes(name) && <ActionButton busy={busy} activeButton={activeButton} type="button" onClick={() => change(name, '')}>{t("application.clearSaved", { label })}</ActionButton>}</label>)}
+          {BOOLEAN_FIELDS.map(([name,label]) => <label key={name}>{label}<select aria-label={label} value={Object.hasOwn(patch, name) ? patch[name] ?? '' : profile[name] ?? ''} onChange={event => change(name, event.target.value === '' ? null : event.target.value === 'true')}><option value="">{t("application.undecided")}</option><option value="true">{t("application.yes")}</option><option value="false">{t("application.no")}</option></select></label>)}
+          {RECORDS.map(([family, label, fields]) => <MotionDetails key={family}><summary>{label}</summary>{(patch[family] ?? profile[family] ?? []).map((record, index) => <MotionRecord key={recordKey(record)} onRemove={() => setPatch(current => ({ ...current, [family]: (current[family] ?? profile[family] ?? []).filter(item => recordKey(item) !== recordKey(record)) }))}><legend>{label} {index + 1}</legend>{fields.map(([key, text]) => <label key={key}>{text}<input value={record[key] || ''} onChange={event => recordChange(family, index, key, event.target.value)} maxLength={4000} /></label>)}</MotionRecord>)}<ActionButton busy={busy} activeButton={activeButton} type="button" onClick={() => change(family, [...(patch[family] ?? profile[family] ?? []), {}])}>{t("application.addRecord", { label })}</ActionButton></MotionDetails>)}
+          <ActionButton busy={busy} activeButton={activeButton} type="submit" disabled={!Object.keys(patch).length}>{t("application.saveLocalProfile")}</ActionButton>
         </fieldset>
       </form>
     </MotionDetails>
     <form onSubmit={event => { event.preventDefault(); act(async signal => { setStatus(await request('/start', { url }, signal)); await refreshTabs(signal); }); }}>
-      <label>企业校招网页<input type="url" aria-label="企业校招网页" value={url} onChange={event => setUrl(event.target.value)} placeholder="https://…" disabled={locked || status?.connected} /></label>
-      <p>打开专用本机浏览器后，由你登录并进入申请页。不会连接其他正在使用的浏览器窗口。</p>
-      {!status?.connected && <ActionButton busy={busy} activeButton={activeButton} type="submit" disabled={locked}>连接网页</ActionButton>}
+      <label>{t("application.companyRecruitingPage")}<input type="url" aria-label={t("application.companyRecruitingPage")} value={url} onChange={event => setUrl(event.target.value)} placeholder="https://…" disabled={locked || status?.connected} /></label>
+      <p>{t("application.signInAndOpenTheApplicationPage")}</p>
+      {!status?.connected && <ActionButton busy={busy} activeButton={activeButton} type="submit" disabled={locked}>{t("application.connectPage")}</ActionButton>}
     </form>
     {status?.connected && <>
-      <p className="application-current">当前网页：{status.currentUrl || '请选择申请网页'}</p>
-      <div className="application-actions"><ActionButton busy={busy} activeButton={activeButton} type="button" disabled={locked} onClick={() => act(refreshTabs)}>刷新网页列表</ActionButton><ActionButton busy={busy} activeButton={activeButton} type="button" disabled={locked} onClick={() => act(async signal => { setStatus(await request('/close', {}, signal)); setTabs([]); resetPage(); })}>断开浏览器</ActionButton></div>
-      {tabs.length > 0 && <label>选择填写网页<select aria-label="选择填写网页" value={status.tabId || ''} disabled={locked} onChange={event => { const tabId = event.target.value; act(async signal => { setStatus(await request('/tab', { tabId }, signal)); resetPage(); }); }}>{tabs.map(tab => <option key={tab.id} value={tab.id}>{tab.url || '空白页'}</option>)}</select></label>}
-      <div className="application-actions"><ActionButton busy={busy} activeButton={activeButton} type="button" disabled={locked} onClick={() => act(scanPage)}>扫描当前表单</ActionButton><ActionButton busy={busy} activeButton={activeButton} type="button" disabled={locked} onClick={() => act(async signal => { const expanded = await request('/rows', {}, signal); await scanPage(signal); setRowsResult(expanded); })}>补齐经历行</ActionButton><ActionButton busy={busy} activeButton={activeButton} type="button" disabled={locked || !scan} onClick={() => act(async signal => { const attachments = Object.entries(attachmentSelections).filter(([, documentId]) => documentId).map(([fieldId, documentId]) => ({ fieldId, documentId })); setResult(await request('/fill', { scanId: scan.scanId, attachments }, signal)); setAttachmentSelections({}); })}>填写空白字段</ActionButton></div>
+      <p className="application-current">{t("application.currentPage")}{status.currentUrl || t("application.selectAnApplicationPage")}</p>
+      <div className="application-actions"><ActionButton busy={busy} activeButton={activeButton} type="button" disabled={locked} onClick={() => act(refreshTabs)}>{t("application.refreshPageList")}</ActionButton><ActionButton busy={busy} activeButton={activeButton} type="button" disabled={locked} onClick={() => act(async signal => { setStatus(await request('/close', {}, signal)); setTabs([]); resetPage(); })}>{t("application.disconnectBrowser")}</ActionButton></div>
+      {tabs.length > 0 && <label>{t("application.selectPageToFill")}<select aria-label={t("application.selectPageToFill")} value={status.tabId || ''} disabled={locked} onChange={event => { const tabId = event.target.value; act(async signal => { setStatus(await request('/tab', { tabId }, signal)); resetPage(); }); }}>{tabs.map(tab => <option key={tab.id} value={tab.id}>{tab.url || t("application.blankPage")}</option>)}</select></label>}
+      <div className="application-actions"><ActionButton busy={busy} activeButton={activeButton} type="button" disabled={locked} onClick={() => act(scanPage)}>{t("application.scanCurrentForm")}</ActionButton><ActionButton busy={busy} activeButton={activeButton} type="button" disabled={locked} onClick={() => act(async signal => { const expanded = await request('/rows', {}, signal); await scanPage(signal); setRowsResult(expanded); })}>{t("application.addExperienceRows")}</ActionButton><ActionButton busy={busy} activeButton={activeButton} type="button" disabled={locked || !scan} onClick={() => act(async signal => { const attachments = Object.entries(attachmentSelections).filter(([, documentId]) => documentId).map(([fieldId, documentId]) => ({ fieldId, documentId })); setResult(await request('/fill', { scanId: scan.scanId, attachments }, signal)); setAttachmentSelections({}); })}>{t("application.fillBlankFields")}</ActionButton></div>
     </>}
-    {busy && <p role="status">正在处理网申步骤…</p>}
-    {rowsResult && <p role="status">新增 {rowsResult.added || 0} 行经历 · 待处理 {rowsResult.pending || 0} 行。按已保存的经历条数补齐，已有行保留。</p>}
-    {result && <p role="status">已填写 {result.filled || 0} 项{result.uploadedAttachments > 0 && ` · 网站已接收 ${result.uploadedAttachments} 个附件`} · 保留 {result.preserved || 0} 项 · 待处理 {result.pending || 0} 项。{result.selectedAttachments > 0 && `其中 ${result.selectedAttachments} 项已选择原文件，需确认网站接收。`}尚未提交。</p>}
+    {busy && <p role="status">{t("application.processingApplicationStep")}</p>}
+    {rowsResult && <p role="status">{t("application.rowsSummary", { added: rowsResult.added || 0, pending: rowsResult.pending || 0 })}</p>}
+    {result && <p role="status">{t("application.fillSummary", { filled: result.filled || 0, attachments: result.uploadedAttachments > 0 ? t("application.websiteReceivedAttachments", { count: result.uploadedAttachments }) : "", preserved: result.preserved || 0, pending: result.pending || 0, selected: result.selectedAttachments > 0 ? t("application.originalFilesSelectedConfirmWebsiteReceipt", { count: result.selectedAttachments }) : "" })}</p>}
     {scan && <ul className="application-fields">{scan.fields.map((field, index) => {
       const state = result?.results.find(item => item.fieldId === field.id)?.status;
-      return <li key={field.id} style={{ '--enter-delay': `calc(var(--stagger) * ${Math.min(index, 7)})` }}><span>{field.section ? `${field.section} · ` : ''}{field.label || '未命名字段'}</span><FieldState stateKey={state || `${field.occupied}-${field.unsupported}`}>{state ? RESULT_LABELS[state] || '需核对' : field.occupied ? '保留已有内容' : field.unsupported ? '需本人操作' : '空白'}</FieldState>{field.type === 'file' && !field.occupied && !field.unsupported && <label className="application-attachment">为{field.label || '未命名字段'}选择附件<select aria-label={`为${field.label || '未命名字段'}选择附件`} disabled={locked} value={attachmentSelections[field.id] || ''} onChange={event => { const documentId = event.target.value; setAttachmentSelections(current => ({ ...current, [field.id]: documentId })); }}><option value="">不上传，由我手动处理</option>{documents.map(doc => <option key={doc.id} value={doc.id}>{doc.name}</option>)}</select><small>仅当前求职者的已上传原文件；点击“填写空白字段”才上传。{field.accept ? `网页要求：${field.accept}` : ''}</small></label>}</li>;
+      return <li key={field.id} style={{ '--enter-delay': `calc(var(--stagger) * ${Math.min(index, 7)})` }}><span>{field.section ? `${field.section} · ` : ''}{field.label || t("application.unnamedField")}</span><FieldState stateKey={state || `${field.occupied}-${field.unsupported}`}>{state ? RESULT_LABELS[state] || t("application.needsChecking") : field.occupied ? t("application.existingContentKept") : field.unsupported ? t("application.requiresYourAction") : t("application.blank")}</FieldState>{field.type === 'file' && !field.occupied && !field.unsupported && <label className="application-attachment">{t("application.selectAttachmentFor", { label: field.label || t("application.unnamedField") })}<select aria-label={t("application.selectAttachmentFor", { label: field.label || t("application.unnamedField") })} disabled={locked} value={attachmentSelections[field.id] || ''} onChange={event => { const documentId = event.target.value; setAttachmentSelections(current => ({ ...current, [field.id]: documentId })); }}><option value="">{t("application.skipUploadIWillHandleItManually")}</option>{documents.map(doc => <option key={doc.id} value={doc.id}>{doc.name}</option>)}</select><small>{t("application.onlyThisCandidateSUploadedOriginalFiles")}{field.accept ? t("application.pageRequirements", { accept: field.accept }) : ''}</small></label>}</li>;
     })}</ul>}
-    <p>附件由你逐项选择，未选就不上传；原文件可能包含敏感资料，网页可能立即接收。支持的下拉会展开核对选项；简道云日期和按已保存经历补齐行可自动处理。未支持的日期面板、级联选择与跨页导航由你操作。不确定的信息留空。</p>
+    <p>{t("application.selectEachAttachmentExplicitlyUnselectedFilesAre")}</p>
   </section>;
 }
 

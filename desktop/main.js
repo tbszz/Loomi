@@ -24,6 +24,8 @@ const logPath = path.join(logDir, 'server.log');
 let mainWindow, loadingWindow, child, log, origin, saved = {}, quitting = false, stopping = false, serverExited = false;
 let warnings = [];
 let python, pythonExecutable, installingPython;
+let locale = 'en';
+const text = (en, zh) => locale === 'zh' ? zh : en;
 const localStatus = () => ({ state: 'local' });
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -57,13 +59,14 @@ async function start() {
   log = createWriteStream(logPath, { flags: 'a' });
   log.on('error', error => { console.error('Desktop log unavailable:', error.message); app.quit(); });
   try { saved = JSON.parse(await readFile(path.join(userData, 'window.json'), 'utf8')); } catch { /* defaults */ }
+  locale = saved.locale === 'zh' ? 'zh' : 'en';
   makeMenu();
 
   const port = await findFreePort();
   origin = `http://127.0.0.1:${port}`;
   // Open the dark main window at once; the intro plays here as soon as the server answers.
   const bounds = windowBounds(saved, screen.getAllDisplays().map(display => display.workArea));
-  mainWindow = new BrowserWindow({ ...bounds, minWidth: 1100, minHeight: 700, autoHideMenuBar: true, title: 'Loomi', titleBarStyle: 'hidden', titleBarOverlay: overlay('dark'), backgroundColor: '#121211', icon: path.join(here, 'assets/icon.png'), webPreferences: { preload: path.join(here, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, webviewTag: false, additionalArguments: [`--resume-version=${app.getVersion()}`] } });
+  mainWindow = new BrowserWindow({ ...bounds, minWidth: 1100, minHeight: 700, autoHideMenuBar: true, title: 'Loomi', titleBarStyle: 'hidden', titleBarOverlay: overlay('dark'), backgroundColor: '#121211', icon: path.join(here, 'assets/icon.png'), webPreferences: { preload: path.join(here, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, webviewTag: false, additionalArguments: [`--resume-version=${app.getVersion()}`, `--loomi-locale=${locale}`, ...(['light', 'dark'].includes(saved.theme) ? [`--loomi-theme=${saved.theme}`] : [])] } });
   const session = mainWindow.webContents.session;
   session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
   session.setPermissionCheckHandler(() => false);
@@ -83,7 +86,7 @@ async function start() {
   mainWindow.on('page-title-updated', event => event.preventDefault());
   installBridge();
   mainWindow.on('close', () => {
-    saved = { ...mainWindow.getNormalBounds(), maximized: mainWindow.isMaximized(), theme: saved.theme };
+    saved = { ...mainWindow.getNormalBounds(), maximized: mainWindow.isMaximized(), theme: saved.theme, locale };
     // A tiny local preference file; synchronous close acknowledgement is unnecessary.
     writeFile(path.join(userData, 'window.json'), JSON.stringify(saved)).catch(error => log.write(`[desktop] Window preferences: ${error.message}\n`));
   });
@@ -110,7 +113,7 @@ async function start() {
     log.write(`\n[desktop] Local server exited (${code})\n`);
     if (quitting) { log.end(() => app.quit()); }
     else if (mainWindow && !mainWindow.isDestroyed()) {
-      warnings = [...warnings, '本机服务已停止。请保存当前内容并重启应用；可从帮助菜单打开日志。'];
+      warnings = [...warnings, { code: 'server-stopped', message: '本机服务已停止。请保存当前内容并重启应用；可从帮助菜单打开日志。' }];
       mainWindow.webContents.send('desktop:warnings', warnings);
     }
   });
@@ -123,12 +126,12 @@ async function start() {
 async function waitUntilReady() {
   const deadline = Date.now() + 45000;
   while (Date.now() < deadline) {
-    if (serverExited) throw new Error('本机服务未能启动。');
-    if (quitting) throw new Error('应用已关闭。');
+    if (serverExited) throw new Error(text('The local service failed to start.', '本机服务未能启动。'));
+    if (quitting) throw new Error(text('The app was closed.', '应用已关闭。'));
     try { const response = await fetch(`${origin}/api/auth/me`, { signal: AbortSignal.timeout(1000) }); if (response.ok && 'user' in await response.json()) return; } catch { /* keep waiting */ }
     await delay(150);
   }
-  throw new Error('本机服务启动超时（45 秒）。');
+  throw new Error(text('The local service did not start within 45 seconds.', '本机服务启动超时（45 秒）。'));
 }
 
 function overlay(theme) { return { color: theme === 'dark' ? '#262624' : '#faf9f6', symbolColor: theme === 'dark' ? '#f0eee7' : '#292722', height: 36 }; }
@@ -144,7 +147,12 @@ function installBridge() {
     return installingPython;
   });
   for (const name of ['status', 'sign-out', 'now']) handle(`desktop:sync-${name}`, localStatus);
-  handle('desktop:sync-sign-in', () => { throw new Error('云端账户连接尚未开放。你的材料与对话仍只保存在本机。'); });
+  handle('desktop:sync-sign-in', () => { throw new Error(locale === 'zh' ? '云端账户连接尚未开放。你的材料与对话仍只保存在本机。' : 'Cloud connection is not available yet. Your materials and conversations stay on this computer.'); });
+  ipcMain.on('desktop:set-locale', (event, value) => {
+    if (!allowed(event) || (value !== 'en' && value !== 'zh')) return;
+    locale = value;
+    makeMenu();
+  });
   ipcMain.on('desktop:theme', (event, theme) => {
     if (!allowed(event) || !['light', 'dark'].includes(theme)) return;
     saved.theme = theme;
@@ -168,21 +176,23 @@ async function installPythonDeps() {
   python = checked;
   if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('desktop:warnings', warnings);
   if (failure) throw failure;
-  if (!checked.executable || checked.missing.length) throw new Error(checked.warnings.map(warning => warning.message || warning).join('\n'));
+  if (!checked.executable || checked.missing.length) throw new Error(checked.warnings.map(warning => warning.code === 'python-deps' ? text(`Python found; résumé export still needs ${warning.packages.join(', ')}.`, warning.message) : warning.code === 'python-missing' ? text('Python not found. Install Python 3, then restart.', warning.message) : warning.message || warning).join('\n'));
   return { warnings };
 }
 
 async function openPath(target) { const error = await shell.openPath(target); if (error) throw new Error(error); }
 function makeMenu() {
+  const label = (en, zh) => locale === 'zh' ? zh : en;
+  const role = (role, en, zh) => ({ role, label: label(en, zh) });
   Menu.setApplicationMenu(Menu.buildFromTemplate([
-    { label: '编辑', submenu: [{ role: 'undo' }, { role: 'redo' }, { type: 'separator' }, { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' }] },
-    ...(!app.isPackaged ? [{ label: '视图', submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }] }] : []),
-    { label: '帮助', submenu: [{ label: '打开数据文件夹', click: () => openPath(dataDir).catch(showFailure) }, { label: '打开日志', click: () => openPath(logPath).catch(showFailure) }, { label: `Loomi ${app.getVersion()}`, enabled: false }, { type: 'separator' }, { role: 'quit', label: '退出' }] },
+    { label: label('Edit', '编辑'), submenu: [role('undo', 'Undo', '撤销'), role('redo', 'Redo', '重做'), { type: 'separator' }, role('cut', 'Cut', '剪切'), role('copy', 'Copy', '复制'), role('paste', 'Paste', '粘贴'), role('selectAll', 'Select all', '全选')] },
+    ...(!app.isPackaged ? [{ label: label('View', '视图'), submenu: [role('reload', 'Reload', '重新加载'), role('toggleDevTools', 'Toggle developer tools', '切换开发者工具')] }] : []),
+    { label: label('Help', '帮助'), submenu: [{ label: label('Open data folder', '打开数据文件夹'), click: () => openPath(dataDir).catch(showFailure) }, { label: label('Open logs', '打开日志'), click: () => openPath(logPath).catch(showFailure) }, { label: `Loomi ${app.getVersion()}`, enabled: false }, { type: 'separator' }, role('quit', 'Quit', '退出')] },
   ]));
 }
 
 function shellPage(title, detail, failed) {
-  return `data:text/html;charset=utf-8,${encodeURIComponent(`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>Loomi</title><style>body{margin:0;padding:48px;background:#faf9f6;color:#292722;font:14px/1.7 'Segoe UI','Microsoft YaHei',sans-serif}.mark{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:#b66d51;color:#fff;font-weight:700;font-size:20px}small{display:block;letter-spacing:2px;color:#756f64;margin:20px 0 8px}h1{font-size:22px;font-weight:600;margin:0 0 12px}p{color:#756f64;overflow-wrap:anywhere;user-select:text}.pulse{width:28px;height:3px;background:#b66d51;margin-top:24px;animation:pulse 1.3s ease-in-out infinite alternate}@keyframes pulse{to{opacity:.2;transform:scaleX(2)}}@media(prefers-reduced-motion:reduce){.pulse{animation:none}}</style><div class="mark">L</div><small>LOOMI</small><h1>${escape(title)}</h1><p>${escape(detail)}</p>${failed ? '' : '<div class="pulse"></div>'}</html>`)}`;
+  return `data:text/html;charset=utf-8,${encodeURIComponent(`<!doctype html><html lang="${locale === 'zh' ? 'zh-CN' : 'en'}"><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>Loomi</title><style>body{margin:0;padding:48px;background:#faf9f6;color:#292722;font:14px/1.7 'Segoe UI','Microsoft YaHei',sans-serif}.mark{width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:#b66d51;color:#fff;font-weight:700;font-size:20px}small{display:block;letter-spacing:2px;color:#756f64;margin:20px 0 8px}h1{font-size:22px;font-weight:600;margin:0 0 12px}p{color:#756f64;overflow-wrap:anywhere;user-select:text}.pulse{width:28px;height:3px;background:#b66d51;margin-top:24px;animation:pulse 1.3s ease-in-out infinite alternate}@keyframes pulse{to{opacity:.2;transform:scaleX(2)}}@media(prefers-reduced-motion:reduce){.pulse{animation:none}}</style><div class="mark">L</div><small>LOOMI</small><h1>${escape(title)}</h1><p>${escape(detail)}</p>${failed ? '' : '<div class="pulse"></div>'}</html>`)}`;
 }
 
 async function showFailure(error) {
@@ -191,6 +201,6 @@ async function showFailure(error) {
   console.error(error);
   if (!loadingWindow || loadingWindow.isDestroyed()) loadingWindow = new BrowserWindow({ width: 660, height: 500, autoHideMenuBar: false, webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false } });
   mainWindow?.destroy(); mainWindow = null;
-  await loadingWindow.loadURL(shellPage('暂时无法打开工作区', `${error.message} 日志：${logPath}。你可以从「帮助」菜单打开日志，检查后重启应用。`, true));
+  await loadingWindow.loadURL(shellPage(text('Can’t open the workspace right now', '暂时无法打开工作区'), text(`${error.message} Log: ${logPath}. Open it from the Help menu, then restart the app.`, `${error.message} 日志：${logPath}。你可以从「帮助」菜单打开日志，检查后重启应用。`), true));
   loadingWindow.setMenuBarVisibility(true); loadingWindow.show();
 }

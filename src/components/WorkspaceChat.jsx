@@ -1,3 +1,4 @@
+import { useI18n } from '../i18nContext.js';
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   AssistantRuntimeProvider, useExternalStoreRuntime, ThreadPrimitive,
@@ -14,18 +15,12 @@ import { Crossfade, MotionGroup, Presence, useComposerSize, usePresence } from '
 import { motionDuration, runTiming } from '../motionState.js';
 import '../workspace.css';
 
-const suggestions = [
-  { eyebrow: 'ANALYSIS', label: '诊断简历', description: '基于目标岗位分析简历匹配度', prompt: '请帮我诊断简历，先核对已有资料。' },
-  { eyebrow: 'DISCOVERY', label: '寻找岗位', description: '检索符合你背景的公开岗位', prompt: '我想找合适的岗位。' },
-  { eyebrow: 'CUSTOMIZATION', label: '定制简历', description: '针对目标岗位优化经历表述', prompt: '我想根据目标岗位定制简历。' },
-  { eyebrow: 'SIMULATION', label: '准备面试', description: '生成可能的追问与回答思路', prompt: '帮我准备目标岗位的面试。' },
-];
-
 function isFileDrag(event) {
   return Array.from(event.dataTransfer?.types || []).includes('Files');
 }
 
 export function WorkspaceChat({ conversation, documents, pending, busy, canCancel, onSend, onCancel, onAttach, onDropFiles, onSelectJob, onOpenPreview, renderAttachment, scrubMessage, notice, onDismissNotice, catalogUserId }) {
+  const { t } = useI18n();
   const messages = useMemo(() => visibleMessages(conversation).map(scrubMessage), [conversation, scrubMessage]);
   const runtime = useExternalStoreRuntime({
     messages, convertMessage: toAssistantMessage,
@@ -82,7 +77,7 @@ export function WorkspaceChat({ conversation, documents, pending, busy, canCance
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <ThreadPrimitive.Root className="aui-thread" data-empty={empty} {...dragHandlers}>
-        <ThreadPrimitive.Viewport className="aui-viewport" autoScroll aria-label="对话内容">
+        <ThreadPrimitive.Viewport className="aui-viewport" autoScroll aria-label={t("chat.conversation")}>
           <div className="aui-messages" role="log" aria-live="polite" aria-relevant="additions">
             {empty ? <><Welcome hasResume={Boolean(documents?.length)} onAttach={onAttach} disabled={busy} /><Suggestions disabled={busy} /></> : null}
             <ThreadPrimitive.Messages>{({ message }) => {
@@ -92,17 +87,17 @@ export function WorkspaceChat({ conversation, documents, pending, busy, canCance
             <AgentRunTrail pending={pending} canCancel={canCancel} onCancel={onCancel} />
             {pending && !messages.slice(messages.findLastIndex(item => item.role === 'user') + 1).some(message => message.role === 'assistant' && message.content?.trim()) ? <div className="aui-pending-skeleton" aria-hidden="true"><span /><span /><span /></div> : null}
           </div>
-          {!empty ? <ThreadPrimitive.ScrollToBottom className="aui-scroll-bottom" aria-label="回到最新消息"><ArrowDown size={17} /></ThreadPrimitive.ScrollToBottom> : null}
+          {!empty ? <ThreadPrimitive.ScrollToBottom className="aui-scroll-bottom" aria-label={t("chat.goToLatestMessage")}><ArrowDown size={17} /></ThreadPrimitive.ScrollToBottom> : null}
         </ThreadPrimitive.Viewport>
         <div className="aui-composer-dock">
-          <Presence visible={Boolean(notice)} className="notice-presence"><div className="notice-reveal"><div><div className="aui-notice" role="status"><span>{notice}</span><button type="button" onClick={onDismissNotice} aria-label="关闭提示">关闭</button></div></div></div></Presence>
-          <Presence visible={Boolean(conversation?.context?.selectedJob)}><button type="button" className="aui-context-chip" onClick={onOpenPreview}><BriefcaseBusiness size={13} /><Crossfade identity={conversation?.context?.selectedJob?.id || conversation?.context?.selectedJob?.title}>当前目标 · {conversation?.context?.selectedJob?.title}</Crossfade></button></Presence>
+          <Presence visible={Boolean(notice)} className="notice-presence"><div className="notice-reveal"><div><div className="aui-notice" role="status"><span>{notice}</span><button type="button" onClick={onDismissNotice} aria-label={t("chat.dismissNotice")}>{t("workspace.close")}</button></div></div></div></Presence>
+          <Presence visible={Boolean(conversation?.context?.selectedJob)}><button type="button" className="aui-context-chip" onClick={onOpenPreview}><BriefcaseBusiness size={13} /><Crossfade identity={conversation?.context?.selectedJob?.id || conversation?.context?.selectedJob?.title}>{t("chat.currentTarget")}{conversation?.context?.selectedJob?.title}</Crossfade></button></Presence>
           <CareerComposer key={conversation?.id || 'new'} busy={busy} canCancel={canCancel} onAttach={onAttach} catalogUserId={catalogUserId} />
-          <p className="aui-composer-hint">建议以你的真实经历为依据，重要信息请与原文核对。</p>
+          <p className="aui-composer-hint">{t("chat.useYourRealExperienceAsTheBasis")}</p>
         </div>
         <LoomiPet pending={pending} lastMessage={messages.at(-1)} />
         <Presence visible={dragActive || dropAccepted}><div className="aui-drop-overlay" data-accepted={dropAccepted} aria-hidden="true">
-          <div className="aui-drop-card"><svg className="drop-dashes" aria-hidden="true"><rect /></svg><Upload size={22} strokeWidth={1.6} /><strong>松开鼠标，上传材料</strong><span>支持 PDF、DOCX、TXT、Markdown、JSON，最大 8MB</span></div>
+          <div className="aui-drop-card"><svg className="drop-dashes" aria-hidden="true"><rect /></svg><Upload size={22} strokeWidth={1.6} /><strong>{t("chat.dropToUploadYourMaterials")}</strong><span>{t("chat.pdfDocxTxtMarkdownJsonUpTo")}</span></div>
         </div></Presence>
       </ThreadPrimitive.Root>
     </AssistantRuntimeProvider>
@@ -110,6 +105,7 @@ export function WorkspaceChat({ conversation, documents, pending, busy, canCance
 }
 
 export function AgentRunTrail({ pending, canCancel, onCancel }) {
+  const { t } = useI18n();
   const { mounted, closing } = usePresence(Boolean(pending));
   const last = useRef(pending);
   if (pending) last.current = pending;
@@ -129,33 +125,43 @@ export function AgentRunTrail({ pending, canCancel, onCancel }) {
       return <li key={`${step.at}-${index}`} data-current={current} style={{ '--enter-delay': `calc(var(--stagger) * ${Math.min(index, 7)})` }}>
         <span className="agent-step-circle" aria-hidden="true">{current ? <span className="aui-status-dot" /> : <><Check className="agent-step-check" size={12} /><span className="agent-step-ripple" /></>}</span>
         <span className="agent-step-label">{current && run.stopping ? run.label : step.label}</span>
-        <span className="agent-step-duration" aria-live="off">{timing.steps[index]}S</span>
+        <span className="agent-step-duration" aria-live="off">{timing.steps[index]}{t("chat.seconds")}</span>
       </li>;
     })}</ol>
     <div className="agent-run-bar" aria-hidden="true"><span /></div>
-    <div className="agent-run-footer"><span className="agent-elapsed" aria-live="off">STEP {run.steps.length} · {timing.total}S</span>
-      {pending && canCancel ? <button type="button" className="agent-run-cancel" aria-label="停止当前任务" disabled={run.stopping || closing} onClick={onCancel}>{run.stopping ? '正在停止…' : 'CANCEL SESSION / 停止'}</button> : null}
+    <div className="agent-run-footer"><span className="agent-elapsed" aria-live="off">{t("chat.step")} {run.steps.length} · {timing.total}{t("chat.seconds")}</span>
+      {pending && canCancel ? <button type="button" className="agent-run-cancel" aria-label={t("chat.stopCurrentTask")} disabled={run.stopping || closing} onClick={onCancel}>{run.stopping ? t("workspace.stopping") : t("chat.cancelSession")}</button> : null}
     </div>
   </div>;
 }
 
 function Welcome({ hasResume, onAttach, disabled }) {
+  const { t } = useI18n();
   return <section className="aui-welcome">
-    <p className="aui-eyebrow">CAREER WORKSPACE · 你的求职工作区</p>
-    <h1>下一步，我们一起准备。</h1>
-    <p>{hasResume ? '简历已在档案里，从一个心仪的岗位或一个问题开始。' : '先上传一份简历，之后的分析、岗位匹配和面试准备都会基于它。'}</p>
-    {hasResume ? null : <button type="button" className="aui-welcome-upload" onClick={onAttach} disabled={disabled}><Upload size={16} />上传简历<span>PDF · DOCX · TXT，也可拖入对话区</span></button>}
+    <p className="aui-eyebrow">{t("chat.careerWorkspace")}</p>
+    <h1>{t("chat.letSPrepareYourNextStep")}</h1>
+    <p>{hasResume ? t("chat.yourResumeIsOnFileStartWith") : t("chat.uploadAResumeFirstAnalysisJobMatching")}</p>
+    {hasResume ? null : <button type="button" className="aui-welcome-upload" onClick={onAttach} disabled={disabled}><Upload size={16} />{t("chat.uploadResume")}<span>{t("chat.pdfDocxTxtOrDropIntoThe")}</span></button>}
   </section>;
 }
 
 function Suggestions({ disabled }) {
+  const { t } = useI18n();
+  const suggestions = [
+    { eyebrow: t("chat.analysis"), label: t("chat.analyzeResume"), description: t("chat.analyzeResumeFitForATargetJob"), prompt: t("chat.pleaseAnalyzeMyResumeAndCheckThe") },
+    { eyebrow: t("chat.discovery"), label: t("chat.findJobs"), description: t("chat.searchPublicJobsThatMatchYourBackground"), prompt: t("chat.iWouldLikeToFindSuitableJobs") },
+    { eyebrow: t("chat.customization"), label: t("chat.tailorResume"), description: t("chat.refineExperienceDescriptionsForYourTargetJob"), prompt: t("chat.iWouldLikeToTailorMyResume") },
+    { eyebrow: t("chat.simulation"), label: t("chat.prepareForInterviews"), description: t("chat.prepareLikelyFollowUpsAndAnswerOutlines"), prompt: t("chat.helpMePrepareForMyTargetJob") },
+  ];
+
   const aui = useAui();
-  return <div className="aui-suggestions" aria-label="求职对话建议">{suggestions.map(({ eyebrow, label, description, prompt }, index) =>
+  return <div className="aui-suggestions" aria-label={t("chat.careerConversationSuggestions")}>{suggestions.map(({ eyebrow, label, description, prompt }, index) =>
     <button key={label} aria-label={label} style={{ '--enter-delay': `calc(var(--stagger) * ${index})` }} type="button" disabled={disabled} onClick={() => { aui.thread.composer().setText(prompt); document.querySelector('.aui-composer-input')?.focus(); }}><span className="suggestion-eyebrow">{eyebrow}</span><strong>{label}</strong><span className="suggestion-description">{description}</span></button>
   )}</div>;
 }
 
 function CareerComposer({ busy, canCancel, onAttach, catalogUserId }) {
+  const { t } = useI18n();
   const aui = useAui();
   const text = useAuiState(s => s.composer.isEditing ? s.composer.text : '');
   const input = useRef(null);
@@ -185,8 +191,8 @@ function CareerComposer({ busy, canCancel, onAttach, catalogUserId }) {
     }
     const controller = new AbortController();
     setCatalog({ status: 'loading', skills: [] });
-    requestJson('/api/skills', { signal: controller.signal, timeoutMs: 15_000 }).then(data => {
-      if (!Array.isArray(data.skills)) throw new Error('Skill 目录格式无效');
+    requestJson('/api/skills', { signal: controller.signal, timeoutMs: 15_000 }, t).then(data => {
+      if (!Array.isArray(data.skills)) throw new Error(t("chat.invalidSkillsCatalogFormat"));
       setCatalog({ status: 'ready', skills: data.skills });
     }).catch(error => {
       if (!controller.signal.aborted) setCatalog({ status: error.status === 401 ? 'unauthenticated' : 'error', skills: [] });
@@ -228,18 +234,18 @@ function CareerComposer({ busy, canCancel, onAttach, catalogUserId }) {
   };
   return <ComposerPrimitive.Root className={`aui-composer${inserted ? ' skill-inserted' : ''}`} onAnimationEnd={event => { if (event.target === event.currentTarget) setInserted(false); }}>
     <Presence visible={open}><div className="aui-skill-menu">
-      <div className="aui-skill-menu-heading"><span>可用 Skills</span><span>↑↓ 选择 · Enter / Tab 确认</span></div>
-      <MotionGroup id={listId} role="listbox" aria-label="可用 Skills" className="aui-skill-options" selector="button[role=option]" activeKey={activeIndex}>
+      <div className="aui-skill-menu-heading"><span>{t("chat.availableSkills")}</span><span>{t("chat.chooseEnterTabConfirm")}</span></div>
+      <MotionGroup id={listId} role="listbox" aria-label={t("chat.availableSkills")} className="aui-skill-options" selector="button[role=option]" activeKey={activeIndex}>
         {matches.map((skill, index) => <button key={skill.name} style={{ '--enter-delay': `calc(var(--stagger) * ${Math.min(index, 7)})` }} id={`${listId}-${index}`} type="button" role="option" aria-selected={index === activeIndex} tabIndex={-1} onMouseDown={event => event.preventDefault()} onMouseEnter={() => setActive(index)} onClick={() => select(skill)}>
           <span className="aui-skill-label">{skill.label || skill.name}<code>/{skill.name}</code></span><span className="aui-skill-description">{skill.description}</span>
         </button>)}
       </MotionGroup>
-      {catalog.status === 'loading' ? <p className="aui-skill-loading" role="status">正在加载 Skills…</p> : ['error', 'unauthenticated'].includes(catalog.status) ? <p role="alert">
-        {catalog.status === 'unauthenticated' ? '请先登录，登录后可加载 Skills。' : 'Skills 加载失败，请重试。'}
-        {catalogUserId ? <button type="button" onMouseDown={event => event.preventDefault()} onClick={() => { setCatalogAttempt(attempt => attempt + 1); input.current?.focus(); }}>重试加载 Skills</button> : null}
-      </p> : !matches.length ? <p role="status">没有匹配的 Skill。</p> : null}
+      {catalog.status === 'loading' ? <p className="aui-skill-loading" role="status">{t("chat.loadingSkills")}</p> : ['error', 'unauthenticated'].includes(catalog.status) ? <p role="alert">
+        {catalog.status === 'unauthenticated' ? t("chat.signInToLoadSkills") : t("chat.couldNotLoadSkillsTryAgain")}
+        {catalogUserId ? <button type="button" onMouseDown={event => event.preventDefault()} onClick={() => { setCatalogAttempt(attempt => attempt + 1); input.current?.focus(); }}>{t("chat.retryLoadingSkills")}</button> : null}
+      </p> : !matches.length ? <p role="status">{t("chat.noMatchingSkill")}</p> : null}
     </div></Presence>
-    <ComposerPrimitive.Input ref={input} disabled={busy} className="aui-composer-input" placeholder="今天想推进哪一步？输入 / 选择 Skill" aria-label="给 Resume Protocol 发消息" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded={open} aria-controls={open ? listId : undefined} aria-activedescendant={open && matches.length ? `${listId}-${activeIndex}` : undefined} minRows={1} maxRows={7} submitMode="enter" addAttachmentOnPaste={false} cancelOnEscape={false}
+    <ComposerPrimitive.Input ref={input} disabled={busy} className="aui-composer-input" placeholder={t("chat.whatSYourNextStepTypeTo")} aria-label={t("chat.messageResumeProtocol")} aria-autocomplete="list" aria-haspopup="listbox" aria-expanded={open} aria-controls={open ? listId : undefined} aria-activedescendant={open && matches.length ? `${listId}-${activeIndex}` : undefined} minRows={1} maxRows={7} submitMode="enter" addAttachmentOnPaste={false} cancelOnEscape={false}
       onChange={event => {
         // Recover when an IME drops compositionend but resumes ordinary input,
         // matching assistant-ui's own composition recovery without losing focus.
@@ -251,12 +257,12 @@ function CareerComposer({ busy, canCancel, onAttach, catalogUserId }) {
       onCompositionStart={() => { composing.current = true; }} onCompositionEnd={event => { composing.current = false; setCursor(event.target.selectionStart); }} />
     <div className="aui-composer-toolbar">
       <div className="aui-composer-tools">
-        <button type="button" className="aui-attach" onClick={onAttach} disabled={busy} aria-label="上传简历" title="上传简历 · 也可直接拖入对话区 · PDF、DOCX、TXT、MD、JSON，最大 8MB"><Paperclip size={19} /></button>
-        <span>简历与岗位助手</span>
+        <button type="button" className="aui-attach" onClick={onAttach} disabled={busy} aria-label={t("chat.uploadResume")} title={t("chat.uploadResumeOrDropIntoTheConversation")}><Paperclip size={19} /></button>
+        <span>{t("chat.resumeJobAssistant")}</span>
       </div>
       <span className="aui-submit-slot" data-running={canCancel}>
-      {canCancel ? <ComposerPrimitive.Cancel className="aui-stop" aria-label="停止生成" title="停止生成"><SubmitIcon running /></ComposerPrimitive.Cancel>
-        : <ComposerPrimitive.Send className="aui-send" aria-label="发送消息" title="发送消息"><SubmitIcon /></ComposerPrimitive.Send>}
+      {canCancel ? <ComposerPrimitive.Cancel className="aui-stop" aria-label={t("chat.stopGenerating")} title={t("chat.stopGenerating")}><SubmitIcon running /></ComposerPrimitive.Cancel>
+        : <ComposerPrimitive.Send className="aui-send" aria-label={t("chat.sendMessage")} title={t("chat.sendMessage")}><SubmitIcon /></ComposerPrimitive.Send>}
       <kbd className="shortcut-hint">Enter</kbd></span>
     </div>
   </ComposerPrimitive.Root>;
@@ -267,6 +273,7 @@ function SubmitIcon({ running = false }) {
 }
 
 function CareerMessage({ message, streaming, conversation, documents, latestResumeId, onSelectJob, onOpenPreview, renderAttachment }) {
+  const { t } = useI18n();
   const isCopied = useAuiState(s => s.message.isCopied);
   if (!message) return null;
   const assistant = message.role === 'assistant';
@@ -277,14 +284,14 @@ function CareerMessage({ message, streaming, conversation, documents, latestResu
       {message.kind !== 'attachment' ? <div className={assistant && streaming ? 'aui-stream-text' : undefined} key={assistant && streaming ? message.content : 'text'}><SafeMarkdown text={message.content} /></div> : null}
       {message.kind === 'attachment' ? renderAttachment(message, documents) : null}
       {message.kind === 'resume' && message.data?.variant ? <div className="aui-artifact">
-        <FileText size={24} strokeWidth={1.4} /><div><strong>{message.data.variant.targetTitle || message.data.variant.title || '岗位版简历'}</strong><p>{currentResume ? '优化稿已准备好 · 可预览与下载' : '历史版本 · 当前优化稿请在资料面板查看'}</p></div>
-        {currentResume ? <button type="button" onClick={onOpenPreview}>打开优化稿</button> : null}
+        <FileText size={24} strokeWidth={1.4} /><div><strong>{message.data.variant.targetTitle || message.data.variant.title || t("chat.jobSpecificResume")}</strong><p>{currentResume ? t("chat.revisionReadyPreviewAndDownload") : t("chat.previousVersionViewTheLatestRevisionIn")}</p></div>
+        {currentResume ? <button type="button" onClick={onOpenPreview}>{t("chat.openRevisedResume")}</button> : null}
         {currentResume ? <div className="aui-artifact-downloads"><a href={`/api/conversations/${encodeURIComponent(conversation.id)}/resume.pdf`}><Download size={13} />PDF</a><a href={`/api/conversations/${encodeURIComponent(conversation.id)}/resume.docx`}><Download size={13} />DOCX</a></div> : null}
       </div> : <MessageResult message={message} context={conversation?.context} onSelectJob={onSelectJob} />}
     </div>
     {assistant ? <ActionBarPrimitive.Root className="aui-message-actions" autohide="never">
-      <ActionBarPrimitive.Copy data-copied={isCopied} aria-label={isCopied ? '已复制回复' : '复制回复'} title="复制回复"><span className="copy-icons"><Copy size={14} /><Check size={14} /></span></ActionBarPrimitive.Copy>
-      {['diagnosis', 'resume', 'interview'].includes(message.kind) ? <button type="button" onClick={onOpenPreview}><FileText size={14} />查看资料</button> : null}
+      <ActionBarPrimitive.Copy data-copied={isCopied} aria-label={isCopied ? t("chat.replyCopied") : t("chat.copyReply")} title={t("chat.copyReply")}><span className="copy-icons"><Copy size={14} /><Check size={14} /></span></ActionBarPrimitive.Copy>
+      {['diagnosis', 'resume', 'interview'].includes(message.kind) ? <button type="button" onClick={onOpenPreview}><FileText size={14} />{t("chat.viewMaterials")}</button> : null}
     </ActionBarPrimitive.Root> : null}
   </MessagePrimitive.Root>;
 }

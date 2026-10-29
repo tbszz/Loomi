@@ -1,9 +1,11 @@
+import { useI18n } from '../i18nContext.js';
 import React, { useRef, useState } from 'react';
 import LoomiIntro from './LoomiIntro.jsx';
 import LoginScreen from './LoginScreen.jsx';
 import './desktop.css';
 
 export default function DesktopEntry({ intro, booting, user, notice, onIntroDone, onSubmit, onSuccess }) {
+  const { t } = useI18n();
   const authenticated = useRef(null);
   const [error, setError] = useState('');
   const [entering, setEntering] = useState(false);
@@ -18,7 +20,7 @@ export default function DesktopEntry({ intro, booting, user, notice, onIntroDone
       <LoginScreen onSubmit={async values => { authenticated.current = await onSubmit(values); }} onSuccess={enter} />
     </div>
     {intro && <LoomiIntro onDone={onIntroDone} />}
-    {!intro && booting && <div className="rp-desktop desktop-entry-notice" role="status">正在打开本机工作区…</div>}
-    {!intro && (error || notice) && <div className="rp-desktop desktop-entry-notice" role="alert">{error || notice}{(error || user) && <button type="button" onClick={enter} disabled={entering}>重新打开工作区</button>}</div>}
+    {!intro && booting && <div className="rp-desktop desktop-entry-notice" role="status">{t("desktop.openingLocalWorkspace")}</div>}
+    {!intro && (error || notice) && <div className="rp-desktop desktop-entry-notice" role="alert">{error || notice}{(error || user) && <button type="button" onClick={enter} disabled={entering}>{t("desktop.reopenWorkspace")}</button>}</div>}
   </>;
 }

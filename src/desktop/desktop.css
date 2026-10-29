@@ -4,13 +4,13 @@ html[data-desktop="true"] .workspace-shell { height: calc(100dvh - 36px); min-he
 .desktop-entry { position: fixed; inset: 0; background: #121211; }
 .desktop-entry-notice { position: fixed; z-index: 30; bottom: 12px; left: 50%; transform: translateX(-50%); max-width: calc(100vw - 48px); padding: 8px 14px; border: 1px solid var(--dt-line); border-radius: 8px; background: var(--dt-surface); font-size: 12px; overflow-wrap: anywhere; }
 .desktop-entry-notice button { margin-left: 12px; padding: 4px 8px; border: 1px solid var(--dt-line); border-radius: 5px; background: var(--dt-soft); }
-.desktop-titlebar { position: fixed; top: 0; left: 0; right: 0; height: 36px; display: flex; align-items: center; gap: 9px; padding: 0 150px 0 18px; background: var(--aui-bg); border-bottom: 1px solid var(--aui-line); color: var(--aui-muted); z-index: 90; font: 500 11px/1 'Segoe UI',sans-serif; letter-spacing: .25px; -webkit-app-region: drag; user-select: none; }
+.desktop-titlebar { position: fixed; top: 0; left: 0; right: 0; height: 36px; display: flex; align-items: center; gap: 9px; padding: 0 150px 0 18px; background: var(--aui-bg); border-bottom: 1px solid var(--aui-line); color: var(--aui-muted); z-index: 90; font: 500 11px/1 var(--font-sans); letter-spacing: .25px; -webkit-app-region: drag; user-select: none; }
 .desktop-titlebar-caption { margin-left: 9px; padding-left: 16px; border-left: 1px solid var(--aui-line-strong); font-size: 10px; color: var(--aui-muted-soft); }
 .aui-workspace .project-sidebar footer:has(.desktop-account-area) { display: flex; flex-direction: column; gap: 3px; padding-bottom: 12px; }
 .aui-workspace .desktop-account-area { width: 100%; min-width: 0; padding-top: 7px; color: var(--aui-ink); font-size: 12px; }
 .desktop-account-card { display: flex; align-items: center; gap: 3px; min-width: 0; padding: 7px 5px; background: var(--aui-surface-soft); border: 1px solid var(--aui-line); border-radius: 9px; }
 .desktop-account-identity { flex: 1; min-width: 0; margin-left: 4px; }
-.desktop-avatar { flex: 0 0 27px; height: 27px; display: grid; place-items: center; border-radius: 8px; background: var(--aui-accent-soft); color: var(--aui-accent-strong); font: 600 13px/1 'Segoe UI',sans-serif; }
+.desktop-avatar { flex: 0 0 27px; height: 27px; display: grid; place-items: center; border-radius: 8px; background: var(--aui-accent-soft); color: var(--aui-accent-strong); font: 600 13px/1 var(--font-sans); }
 .desktop-account-identity strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 600; line-height: 1.5; }
 .aui-workspace .desktop-account-area button { -webkit-app-region: no-drag; border: 0; font: inherit; box-shadow: none; cursor: pointer; transition: background .16s ease, color .16s ease; }
 .aui-workspace .desktop-account-card button { display: grid; place-items: center; flex: 0 0 28px; min-width: 28px; min-height: 30px; width: 28px; padding: 4px; background: transparent; color: var(--aui-muted); }

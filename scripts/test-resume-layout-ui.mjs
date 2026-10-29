@@ -6,18 +6,23 @@ import { chromium } from 'playwright-core';
 import { createDatabase } from '../server/database.js';
 import { createApp } from '../server/app.js';
 import { buildClaimEvidence } from '../server/claimEvidence.js';
+import { findFreePort } from '../desktop/core.js';
 
 const directory = await mkdtemp(path.join(tmpdir(), 'resume-layout-ui-'));
 const output = path.resolve(process.env.RESUME_LAYOUT_OUTPUT || path.join(tmpdir(), 'resume-layout-ui-output'));
 await mkdir(output, { recursive: true });
 const db = createDatabase({ filename: path.join(directory, 'test.sqlite') });
-const server = createApp({ database: db, dataDir: directory, model: async () => { throw new Error('UI fixture must not call provider'); } }).listen(0, '127.0.0.1');
+// Configure the trusted origin before constructing the real application.
+const port = await findFreePort();
+process.env.RESUME_PROTOCOL_PORT = String(port);
+const server = createApp({ database: db, dataDir: directory, model: async () => { throw new Error('UI fixture must not call provider'); } }).listen(port, '127.0.0.1');
 await new Promise(resolve => server.once('listening', resolve));
 const base = `http://127.0.0.1:${server.address().port}`;
-process.env.RESUME_PROTOCOL_PORT = String(server.address().port);
 const browser = await chromium.launch({ executablePath: process.env.BROWSER_EXECUTABLE || 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-const page = await context.newPage();
+// Preserve Chinese regression coverage; default English is checked by test-workspace-ui.
+  await context.addInitScript(() => { try { localStorage?.setItem("loomi.locale", "zh"); } catch {} });
+  const page = await context.newPage();
 const errors = [];
 page.on('pageerror', error => errors.push(error.message));
 try {
@@ -33,6 +38,7 @@ try {
   const saved = db.getConversation(user.id, conversation.id);
   db.saveConversation(user.id, { ...saved, context: { ...saved.context, variantId, formalResume: content, variant: content } });
   await page.goto(`${base}/#workspace`);
+  await page.getByRole('button', { name: '打开简历预览', exact: true }).click();
   const control = page.getByRole('combobox', { name: '简历版式' });
   await control.waitFor();
   assert.equal(await control.locator('option').count(), 4);

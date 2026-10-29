@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { formatJobPoolSummary, normalizeResultItems } from "./chatResults.js";
+import { createTranslator } from './i18n.js';
 
 assert.deepEqual(
   normalizeResultItems([
@@ -19,18 +20,19 @@ assert.equal(
     offset: 20,
     hasMore: true
   }),
-  "本页 21-24 / 24 · 可换一批"
+  "This page 21-24 / 24 · More available"
 );
 
 assert.equal(
   formatJobPoolSummary({ total: 8, offset: 0, hasMore: false }),
-  "岗位池 8 条"
+  "Job pool: 8"
 );
 
-assert.equal(formatJobPoolSummary({ hasMore: true }), "还有更多来源结果");
-assert.equal(formatJobPoolSummary({uncertainties:[{id:'a'},{id:'b'}],total:1,offset:0,mergedSearches:2}), '已汇总 2 条岗位线索');
-assert.equal(formatJobPoolSummary({jobs:[{id:'main'}],related:[{id:'description'},{id:'mention'}],rejected:[{id:'rejected'}],total:8,offset:2,hasMore:true}), '本页 3-6 / 8 · 可换一批');
-assert.equal(formatJobPoolSummary({related:[{id:'reference'}],total:1}), '本页 1-1 / 1');
-assert.equal(formatJobPoolSummary({jobs:[{id:'main'}],related:[{id:'reference'}],mergedSearches:2}), '已汇总 2 条岗位线索');
+assert.equal(formatJobPoolSummary({ hasMore: true }), "More source results available");
+assert.equal(formatJobPoolSummary({uncertainties:[{id:'a'},{id:'b'}],total:1,offset:0,mergedSearches:2}), 'Collected 2 job leads');
+assert.equal(formatJobPoolSummary({jobs:[{id:'main'}],related:[{id:'description'},{id:'mention'}],rejected:[{id:'rejected'}],total:8,offset:2,hasMore:true}), 'This page 3-6 / 8 · More available');
+assert.equal(formatJobPoolSummary({related:[{id:'reference'}],total:1}), 'This page 1-1 / 1');
+assert.equal(formatJobPoolSummary({jobs:[{id:'main'}],related:[{id:'reference'}],mergedSearches:2}), 'Collected 2 job leads');
+assert.equal(formatJobPoolSummary({ jobs: [{}], total: 2, hasMore: true }, createTranslator('zh')), '本页 1-1 / 2 · 可换一批');
 
 console.log("chatResults tests passed");

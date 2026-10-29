@@ -52,3 +52,18 @@
 @media (prefers-reduced-motion: reduce) {
   .desktop-login *, .login-card { animation: none !important; transition: none !important; }
 }
+.login-language-toggle {
+  position: fixed;
+  top: 48px;
+  right: 24px;
+  z-index: 21;
+  min-width: 36px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--dt-line);
+  border-radius: 6px;
+  background: var(--dt-surface);
+  color: var(--dt-muted);
+  font-size: 12px;
+  -webkit-app-region: no-drag;
+}

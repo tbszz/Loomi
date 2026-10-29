@@ -9,13 +9,14 @@ import { PassThrough } from 'node:stream';
 import { navigationAction, pythonDependencyInstall, pythonResult } from './core.js';
 
 test('dependency IPC uses the server interpreter, rechecks failures and preserves unrelated warnings', async t => {
-  const handlers = new Map(), calls = [], probes = [], broadcasts = [];
+  const handlers = new Map(), listeners = new Map(), menus = [], calls = [], probes = [], broadcasts = [];
   let logs = '', failure, missing = ['reportlab', 'docx'];
   const executable = 'C:/Python With Spaces/python.exe';
   const window = { isDestroyed: () => false, webContents: { mainFrame: { url: 'http://127.0.0.1:1234/' }, send: (...args) => broadcasts.push(args) } };
   const fixture = {
-    app: { isPackaged: false, getPath: () => process.cwd(), setPath() {}, setAppUserModelId() {}, requestSingleInstanceLock: () => false, quit() {} },
-    ipcMain: { handle: (name, callback) => handlers.set(name, callback), on() {} },
+    app: { isPackaged: false, getVersion: () => 'test', getPath: () => process.cwd(), setPath() {}, setAppUserModelId() {}, requestSingleInstanceLock: () => false, quit() {} },
+    Menu: { buildFromTemplate: template => template, setApplicationMenu: menu => menus.push(menu) },
+    ipcMain: { handle: (name, callback) => handlers.set(name, callback), on: (name, callback) => listeners.set(name, callback) },
     detectPython: async options => { probes.push(options); return pythonResult({ executable, missing }); },
     execFile: (command, args, options, callback) => {
       calls.push({ command, args, options });
@@ -31,6 +32,24 @@ test('dependency IPC uses the server interpreter, rechecks failures and preserve
   const setupFixture = compileFunction(`${source}\nreturn f => { log = f.log; mainWindow = f.window; origin = f.origin; python = f.python; pythonExecutable = python.executable; warnings = [...python.warnings, 'unrelated warning']; installBridge(); };`, Object.keys(dependencies))(...Object.values(dependencies));
     setupFixture({ log: { write: value => { logs += value; } }, window, origin: 'http://127.0.0.1:1234', python: pythonResult({ executable, missing }) });
     const event = { sender: window.webContents, senderFrame: window.webContents.mainFrame };
+    await t.test('locale IPC validates sender and value, then rebuilds every menu label', () => {
+      const setLocale = listeners.get('desktop:set-locale');
+      assert.equal(typeof setLocale, 'function');
+      for (const invalid of ['fr', '', null, {}, 'EN']) setLocale(event, invalid);
+      setLocale({ ...event, sender: {} }, 'zh');
+      setLocale({ ...event, senderFrame: { ...event.senderFrame } }, 'zh');
+      setLocale({ ...event, senderFrame: { url: 'https://foreign.test' } }, 'zh');
+      assert.equal(menus.length, 0);
+      setLocale(event, 'en');
+      assert.deepEqual(menus.at(-1).map(item => item.label), ['Edit', 'View', 'Help']);
+      assert.equal(menus.at(-1)[0].submenu.find(item => item.role === 'copy').label, 'Copy');
+      setLocale(event, 'zh');
+      assert.deepEqual(menus.at(-1).map(item => item.label), ['编辑', '视图', '帮助']);
+      assert.equal(menus.at(-1)[0].submenu.find(item => item.role === 'copy').label, '复制');
+      assert.equal(menus.at(-1)[2].submenu.at(-1).label, '退出');
+      setLocale(event, 'en');
+      assert.equal(menus.at(-1)[2].submenu[0].label, 'Open data folder');
+    });
     const install = () => handlers.get('desktop:install-python-deps')(event);
     const diagnostics = () => handlers.get('desktop:diagnostics')(event);
     await t.test('rejects foreign renderers and subframes', () => {

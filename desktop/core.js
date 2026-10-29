@@ -63,9 +63,10 @@ export function pythonDependencyInstall(executable) {
 }
 
 export function pythonResult(result) {
-  if (!result) return { executable: null, missing: [], warnings: ['未找到 Python。简历导出和招聘资讯采集暂不可用；上传材料与本机记录仍可使用。安装 Python 3 后重启即可。'] };
+  if (!result) return { executable: null, missing: [], warnings: [{ code: 'python-missing', message: '未找到 Python。简历导出和招聘资讯采集暂不可用；上传材料与本机记录仍可使用。安装 Python 3 后重启即可。' }] };
   if (!result.executable || !Array.isArray(result.missing)) throw new Error('Python 检测结果无效。');
-  return { executable: result.executable, missing: result.missing, warnings: result.missing.length ? [{ code: 'python-deps', message: `Python 已找到；简历导出还需要安装 ${result.missing.map(m => m === 'docx' ? 'python-docx' : m).join('、')}。` }] : [] };
+  const packages = result.missing.map(m => m === 'docx' ? 'python-docx' : m);
+  return { executable: result.executable, missing: result.missing, warnings: packages.length ? [{ code: 'python-deps', packages, message: `Python 已找到；简历导出还需要安装 ${packages.join('、')}。` }] : [] };
 }
 
 export async function detectPython({ run = promisify(execFile), env = process.env, platform = process.platform } = {}) {

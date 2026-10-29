@@ -1,5 +1,14 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+// Each launch uses a free localhost port, hence a new storage origin. Restore
+// the desktop preferences main saved in window.json before React reads them.
+const argument = name => process.argv.find(arg => arg.startsWith(`--${name}=`))?.slice(name.length + 3);
+const restore = (key, value, allowed) => {
+  try { if (allowed.includes(value)) localStorage.setItem(key, value); } catch { /* Denied storage must not prevent startup. */ }
+};
+restore('loomi.locale', argument('loomi-locale'), ['en', 'zh']);
+restore('resume-protocol.theme', argument('loomi-theme'), ['light', 'dark']);
+
 /** @typedef {{state:'local'|'syncing'|'synced'|'offline'|'error',pending?:number,message?:string}} SyncStatus */
 /** @param {string} channel @param {(value:any)=>void} callback @returns {()=>void} */
 const subscribe = (channel, callback) => {
@@ -15,6 +24,7 @@ contextBridge.exposeInMainWorld('resumeDesktop', {
   openDataFolder: () => ipcRenderer.invoke('desktop:open-data'),
   openLogs: () => ipcRenderer.invoke('desktop:open-logs'),
   onThemeChange: callback => subscribe('desktop:theme-changed', callback),
+  setLocale: locale => { if (locale === 'en' || locale === 'zh') ipcRenderer.send('desktop:set-locale', locale); },
   getDiagnostics: () => ipcRenderer.invoke('desktop:diagnostics'),
   installPythonDeps: () => ipcRenderer.invoke('desktop:install-python-deps'),
   onWarnings: callback => subscribe('desktop:warnings', callback),

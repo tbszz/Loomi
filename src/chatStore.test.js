@@ -13,7 +13,7 @@ const fixedNow = "2026-09-07T03:00:00.000Z";
 
 {
   const conversation = createConversation({ id: "chat-1", now: fixedNow });
-  assert.equal(conversation.title, "新对话");
+  assert.equal(conversation.title, "New conversation");
   assert.equal(conversation.messages.length, 1);
   assert.equal(conversation.messages[0].role, "assistant");
 }

@@ -1,10 +1,5 @@
+import { createTranslator } from './i18n.js';
 export const CHAT_STORAGE_KEY = "resume-protocol.chat.v1";
-
-const WELCOME_MESSAGE = {
-  role: "assistant",
-  content: "告诉我你想推进什么。你可以粘贴简历、查找岗位、生成岗位版，或开始面试准备。",
-  kind: "text"
-};
 
 const DEFAULT_CONTEXT = {
   material: "",
@@ -16,12 +11,18 @@ const DEFAULT_CONTEXT = {
   formalResume: null
 };
 
-export function createConversation(options = {}) {
+export function createConversation(options = {}, t = createTranslator()) {
+  const WELCOME_MESSAGE = {
+    role: "assistant",
+    content: t("history.tellMeWhatYouWouldLikeTo"),
+    kind: "text"
+  };
+
   const now = options.now || new Date().toISOString();
   const id = options.id || createId("chat");
   return {
     id,
-    title: "新对话",
+    title: t("history.newConversation"),
     createdAt: now,
     updatedAt: now,
     messages: [{ ...WELCOME_MESSAGE, id: `${id}-welcome`, createdAt: now }],
@@ -29,8 +30,8 @@ export function createConversation(options = {}) {
   };
 }
 
-export function createChatState(options = {}) {
-  const conversation = createConversation(options);
+export function createChatState(options = {}, t = createTranslator()) {
+  const conversation = createConversation(options, t);
   return {
     version: 1,
     activeConversationId: conversation.id,
@@ -38,14 +39,14 @@ export function createChatState(options = {}) {
   };
 }
 
-export function appendMessage(state, conversationId, message) {
+export function appendMessage(state, conversationId, message, t = createTranslator()) {
   return updateConversation(state, conversationId, (conversation) => {
     const messages = [...conversation.messages, message];
     const firstUserMessage = messages.find((item) => item.role === "user");
     return {
       ...conversation,
-      title: conversation.title === "新对话" && firstUserMessage
-        ? createConversationTitle(firstUserMessage.content)
+      title: ["New conversation", "新对话"].includes(conversation.title) && firstUserMessage
+        ? createConversationTitle(firstUserMessage.content, t)
         : conversation.title,
       updatedAt: message.createdAt || new Date().toISOString(),
       messages
@@ -104,12 +105,12 @@ export function saveChatState(storage, state) {
   }
 }
 
-export function createConversationTitle(content) {
+export function createConversationTitle(content, t = createTranslator()) {
   const firstThought = String(content || "")
     .replace(/\s+/g, " ")
     .split(/[，。！？!?\n]/)[0]
     .trim();
-  return firstThought.slice(0, 18) || "新对话";
+  return firstThought.slice(0, 18) || t("history.newConversation");
 }
 
 function updateConversation(state, conversationId, updater) {
@@ -121,7 +122,7 @@ function updateConversation(state, conversationId, updater) {
   };
 }
 
-function normalizeConversation(value, fallbackOptions = {}) {
+function normalizeConversation(value, fallbackOptions = {}, t = createTranslator()) {
   if (!value?.id) return null;
   const now = fallbackOptions.now || new Date().toISOString();
   const messages = Array.isArray(value.messages)
@@ -131,7 +132,7 @@ function normalizeConversation(value, fallbackOptions = {}) {
   return {
     ...value,
     id: String(value.id),
-    title: typeof value.title === "string" ? value.title : "新对话",
+    title: typeof value.title === "string" ? value.title : t("history.newConversation"),
     createdAt: typeof value.createdAt === "string" ? value.createdAt : now,
     updatedAt: typeof value.updatedAt === "string" ? value.updatedAt : now,
     messages,

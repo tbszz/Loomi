@@ -22,9 +22,11 @@ async function shot(page, name) { const file = `${output}/${name}.png`; await pa
 async function check(name, run) { await run(); checks.push(name); console.log(`PASS ${name}`); }
 async function bridge(context) {
   await context.addInitScript(() => {
+    // This regression fixture deliberately exercises the Chinese UI.
+    try { localStorage?.setItem("loomi.locale", "zh"); } catch {}
     document.addEventListener('DOMContentLoaded', () => { document.documentElement.dataset.desktop = 'true'; }, { once: true });
     let listeners = [], attempts = 0;
-    let warnings = [{ code: 'python-deps', message: 'Python 已找到；简历导出还需要安装 reportlab、python-docx。' }];
+    let warnings = [{ code: 'python-deps', packages: ['reportlab', 'python-docx'], message: 'Python 已找到；简历导出还需要安装 reportlab、python-docx。' }];
     window.setDesktopTestWarnings = value => { warnings = value; listeners.forEach(callback => callback(warnings)); };
     window.resumeDesktop = {
       platform: 'win32', version: 'test', openDataFolder: async () => {}, openLogs: async () => {},
