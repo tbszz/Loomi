@@ -36,6 +36,7 @@ import { readableDocumentName } from './documentName.js';
 import { ApplicationPanel } from './components/ApplicationPanel.jsx';
 const DesktopAccount = window.resumeDesktop ? React.lazy(() => import('./desktop/DesktopAccount.jsx').then(module => ({ default: module.DesktopAccount }))) : null;
 const DesktopChrome = window.resumeDesktop ? React.lazy(() => import('./desktop/DesktopAccount.jsx').then(module => ({ default: module.DesktopChrome }))) : null;
+const DesktopEntry = window.resumeDesktop ? React.lazy(() => import('./desktop/DesktopEntry.jsx')) : null;
 import { PasswordResetForm } from './components/PasswordResetForm.jsx';
 import { MotionGroup, Presence, usePresence, waitForMotion } from './motionHooks.jsx';
 import { startRun, appendRunStatus } from './motionState.js';
@@ -52,6 +53,7 @@ const AUTH_ENDPOINTS = {
 function App() {
   const [view, setView] = useState(() => window.location.hash === "#workspace" ? "workspace" : "landing");
   const [booting, setBooting] = useState(true);
+  const [desktopIntro, setDesktopIntro] = useState(Boolean(window.resumeDesktop));
   const [user, setUser] = useState(null);
   const [candidates, setCandidates] = useState([]);
   const [activeCandidateId, setActiveCandidateId] = useState("");
@@ -94,7 +96,7 @@ function App() {
     // bar but leaves React on the workspace, so the user sees the landing URL with
     // the workspace still on screen and cannot get back.
     const onHashChange = () => {
-      const next = window.location.hash === "#workspace" ? "workspace" : "landing";
+      const next = window.resumeDesktop || window.location.hash === "#workspace" ? "workspace" : "landing";
       setView(current => (current === next ? current : next));
       if (next === "landing") {
         setSidebarOpen(false);
@@ -121,6 +123,7 @@ function App() {
   const [pending, setPending] = useState(null);
   const [notice, setNotice] = useState("");
   const [theme, setTheme] = useState(() => readStoredTheme());
+  const desktopEntryVisible = DesktopEntry && (desktopIntro || booting || !user || view !== "workspace");
   useEffect(() => window.resumeDesktop?.onThemeChange(setTheme), []);
   const fileInputRef = useRef(null);
   const activeConversationRef = useRef('');
@@ -161,9 +164,9 @@ function App() {
   const resumeVariant = activeConversation?.context?.variant || activeConversation?.context?.formalResume || null;
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.theme = desktopEntryVisible ? 'dark' : theme;
     localStorage.setItem(THEME_STORAGE_KEY, theme);
-  }, [theme]);
+  }, [theme, desktopEntryVisible]);
 
   useEffect(() => {
     let alive = true;
@@ -178,7 +181,7 @@ function App() {
         setModelSettings(settings.settings || modelSettings);
         if (me.user) {
           await loadWorkspace(alive);
-          if (window.location.hash === "#workspace") setView("workspace");
+          if (window.resumeDesktop || window.location.hash === "#workspace") setView("workspace");
         } else if (window.location.hash === "#workspace") {
           setNotice("登录已失效，请先登录后再发送");
           setAuthMode("login");
@@ -306,6 +309,7 @@ function App() {
     try {
       await requestJson("/api/auth/logout", { method: "POST" });
       setUser(null);
+      if (window.resumeDesktop) { setSettingsVisible(false); setSidebarOpen(false); setPanelOpen(false); }
       setCandidates([]);
       setActiveCandidateId("");
       setProjects([]);
@@ -676,6 +680,27 @@ function App() {
     onReset={completeAuth}
   />;
 
+  if (desktopEntryVisible) {
+    return <React.Suspense fallback={<div style={{ position: 'fixed', inset: 0, background: '#121211' }} />}><DesktopEntry
+      intro={desktopIntro}
+      booting={booting}
+      user={user}
+      notice={notice}
+      onIntroDone={() => setDesktopIntro(false)}
+      onSubmit={async ({ mode, email, password, name }) => {
+        setNotice("");
+        const result = await requestJson(AUTH_ENDPOINTS[mode], {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, ...(mode === 'register' ? { name } : {}) })
+        });
+        if (!result.user) throw new Error('登录未返回有效账户。');
+        return result.user;
+      }}
+      onSuccess={completeAuth}
+    /></React.Suspense>;
+  }
+
   if (view === "landing") {
     return (
       <>
@@ -968,9 +993,10 @@ function ProjectSidebar({
         {notice ? <p className="sidebar-notice">{notice}</p> : null}
         <footer>
           <button type="button" className="sidebar-import" aria-label="导入旧记录" onClick={onImport}><Upload size={13} /><span>IMPORT RECORDS · 导入旧记录</span></button>
+          {DesktopAccount && <React.Suspense fallback={null}><DesktopAccount user={user} onLogout={onLogout} /></React.Suspense>}
           <div className="sidebar-account-row">
           <button type="button" onClick={onSettings}><Settings size={15} /><span>设置</span></button>
-          {DesktopAccount ? <React.Suspense fallback={null}><DesktopAccount user={user} /></React.Suspense> : <button type="button" onClick={onLogout}><LogOut size={15} /><span>{user?.name || user?.email || "账户"}</span></button>}
+          {!DesktopAccount && <button type="button" onClick={onLogout}><LogOut size={15} /><span>{user?.name || user?.email || "账户"}</span></button>}
           <button type="button" className="sidebar-chevron" onClick={onCollapse} aria-label={collapsed ? "展开项目目录" : "收起项目目录"}><ChevronLeft size={16} /></button>
           </div>
         </footer>

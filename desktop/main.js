@@ -1,12 +1,11 @@
-import { app, BrowserWindow, Menu, ipcMain, nativeTheme, safeStorage, screen, shell } from 'electron';
-import { fork } from 'node:child_process';
+import { app, BrowserWindow, Menu, ipcMain, nativeTheme, screen, shell } from 'electron';
+import { fork, execFile } from 'node:child_process';
 import path from 'node:path';
-import os from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { createWriteStream, existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile, stat, rename } from 'node:fs/promises';
 import { setTimeout as delay } from 'node:timers/promises';
-import { findFreePort, navigationAction, detectPython, loadLocalAccount, saveLocalAccount, authenticateLocalAccount, windowBounds } from './core.js';
+import { findFreePort, navigationAction, detectPython, pythonDependencyInstall, windowBounds } from './core.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = app.isPackaged ? path.join(process.resourcesPath, 'app.asar.unpacked') : path.dirname(here);
@@ -24,6 +23,7 @@ const logDir = path.join(userData, 'logs');
 const logPath = path.join(logDir, 'server.log');
 let mainWindow, loadingWindow, child, log, origin, saved = {}, quitting = false, stopping = false, serverExited = false;
 let warnings = [];
+let python, pythonExecutable, installingPython;
 const localStatus = () => ({ state: 'local' });
 const escape = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -65,7 +65,8 @@ async function start() {
 
   const port = await findFreePort();
   origin = `http://127.0.0.1:${port}`;
-  const python = await detectPython();
+  python = await detectPython();
+  pythonExecutable = python.executable;
   warnings = python.warnings;
   const env = { ...process.env, RESUME_PROTOCOL_PORT: String(port), RESUME_PROTOCOL_HOST: '127.0.0.1', RESUME_PROTOCOL_DATA_DIR: dataDir, RESUME_PROTOCOL_SECURE_COOKIES: 'false', ...(python.executable ? { RESUME_PROTOCOL_PYTHON: python.executable } : {}) };
   // PDF.js classifies Electron utility processes as renderers (no DOMMatrix).
@@ -85,19 +86,10 @@ async function start() {
     }
   });
   await waitUntilReady();
-  if (!safeStorage.isEncryptionAvailable()) throw new Error('Windows 账户加密服务不可用，无法安全保存本机账户。请检查系统账户后重试。');
-  const codec = { encrypt: value => safeStorage.encryptString(value), decrypt: bytes => safeStorage.decryptString(bytes) };
-  const accountPath = path.join(userData, 'local-account.json');
-  const account = await loadLocalAccount(accountPath, codec, os.userInfo().username);
-  const authenticated = await authenticateLocalAccount(account, (endpoint, payload) => fetch(`${origin}${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: payload.email, password: payload.password, name: payload.name }), signal: AbortSignal.timeout(15000) }));
-  await saveLocalAccount(accountPath, { ...account, registered: true }, codec);
   if (quitting) return;
   const bounds = windowBounds(saved, screen.getAllDisplays().map(display => display.workArea));
-  mainWindow = new BrowserWindow({ ...bounds, minWidth: 1100, minHeight: 700, show: false, autoHideMenuBar: true, title: 'Loomi', titleBarStyle: 'hidden', titleBarOverlay: overlay(saved.theme), backgroundColor: saved.theme === 'dark' ? '#262624' : '#faf9f6', icon: path.join(here, 'assets/icon.png'), webPreferences: { preload: path.join(here, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, webviewTag: false, additionalArguments: [`--resume-version=${app.getVersion()}`] } });
+  mainWindow = new BrowserWindow({ ...bounds, minWidth: 1100, minHeight: 700, show: false, autoHideMenuBar: true, title: 'Loomi', titleBarStyle: 'hidden', titleBarOverlay: overlay('dark'), backgroundColor: '#121211', icon: path.join(here, 'assets/icon.png'), webPreferences: { preload: path.join(here, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false, webviewTag: false, additionalArguments: [`--resume-version=${app.getVersion()}`] } });
   const session = mainWindow.webContents.session;
-  const pair = authenticated.cookie.split(';')[0];
-  const separator = pair.indexOf('=');
-  await session.cookies.set({ url: origin, name: pair.slice(0, separator), value: pair.slice(separator + 1), path: '/', httpOnly: true, sameSite: 'lax' });
   session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
   session.setPermissionCheckHandler(() => false);
   session.webRequest.onHeadersReceived((details, callback) => {
@@ -112,13 +104,15 @@ async function start() {
   });
   mainWindow.webContents.setWindowOpenHandler(({ url }) => { external(url); return { action: 'deny' }; });
   mainWindow.webContents.on('will-attach-webview', event => event.preventDefault());
+  // index.html is shared with the web build; the desktop window always reads Loomi.
+  mainWindow.on('page-title-updated', event => event.preventDefault());
   installBridge();
   mainWindow.on('close', () => {
     saved = { ...mainWindow.getNormalBounds(), maximized: mainWindow.isMaximized(), theme: saved.theme };
     // A tiny local preference file; synchronous close acknowledgement is unnecessary.
     writeFile(path.join(userData, 'window.json'), JSON.stringify(saved)).catch(error => log.write(`[desktop] Window preferences: ${error.message}\n`));
   });
-  await mainWindow.loadURL(`${origin}/#workspace`);
+  await mainWindow.loadURL(`${origin}/`);
   if (saved.maximized) mainWindow.maximize();
   mainWindow.show();
   loadingWindow?.destroy(); loadingWindow = null;
@@ -144,6 +138,10 @@ function installBridge() {
   handle('desktop:open-data', () => openPath(dataDir));
   handle('desktop:open-logs', () => openPath(logPath));
   handle('desktop:diagnostics', () => ({ warnings, cloudUrl: process.env.RESUME_PROTOCOL_CLOUD_URL || 'https://app.resumeprotocol.com' }));
+  handle('desktop:install-python-deps', () => {
+    if (!installingPython) installingPython = installPythonDeps().finally(() => { installingPython = null; });
+    return installingPython;
+  });
   for (const name of ['status', 'sign-out', 'now']) handle(`desktop:sync-${name}`, localStatus);
   handle('desktop:sync-sign-in', () => { throw new Error('云端账户连接尚未开放。你的材料与对话仍只保存在本机。'); });
   ipcMain.on('desktop:theme', (event, theme) => {
@@ -151,6 +149,26 @@ function installBridge() {
     saved.theme = theme;
     if (process.platform === 'win32') mainWindow.setTitleBarOverlay(overlay(theme));
   });
+}
+
+async function installPythonDeps() {
+  const { command, args } = pythonDependencyInstall(pythonExecutable);
+  log.write('\n[desktop] Installing Python export dependencies\n');
+  let failure;
+  try {
+    await new Promise((resolve, reject) => {
+      const installer = execFile(command, args, { windowsHide: true, timeout: 300000, maxBuffer: 8 * 1024 * 1024, encoding: 'utf8', env: { ...process.env, PYTHONIOENCODING: 'utf-8' } }, error => error ? reject(error) : resolve());
+      installer.stdout.on('data', bytes => log.write(bytes));
+      installer.stderr.on('data', bytes => log.write(bytes));
+    });
+  } catch (error) { failure = error; log.write(`[desktop] Python dependency install: ${error.message}\n`); }
+  const checked = await detectPython({ env: { ...process.env, RESUME_PROTOCOL_PYTHON: pythonExecutable } });
+  warnings = [...warnings.filter(warning => !python.warnings.includes(warning)), ...checked.warnings];
+  python = checked;
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('desktop:warnings', warnings);
+  if (failure) throw failure;
+  if (!checked.executable || checked.missing.length) throw new Error(checked.warnings.map(warning => warning.message || warning).join('\n'));
+  return { warnings };
 }
 
 async function openPath(target) { const error = await shell.openPath(target); if (error) throw new Error(error); }

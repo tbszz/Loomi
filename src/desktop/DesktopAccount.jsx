@@ -1,21 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Cloud, FolderOpen, ArrowUpRight, X, AlertCircle, Check, LoaderCircle } from 'lucide-react';
+import { Cloud, FolderOpen, ArrowUpRight, LogOut, X, AlertCircle, Check, LoaderCircle } from 'lucide-react';
 import { syncStatusLabel } from './sync-status.js';
 import './desktop.css';
 
 const desktop = window.resumeDesktop;
 
 export function DesktopChrome() {
-  return <div className="desktop-titlebar"><span className="desktop-monogram" aria-hidden="true">RP</span><span>Resume Protocol</span><span className="desktop-titlebar-caption">个人职业工作区</span></div>;
+  return <div className="desktop-titlebar"><span>Loomi</span><span className="desktop-titlebar-caption">个人职业工作区</span></div>;
 }
 
-export function DesktopAccount({ user }) {
+export function DesktopAccount({ user, onLogout }) {
   const [status, setStatus] = useState({ state: 'local' });
   const [warnings, setWarnings] = useState([]);
   const [cloudUrl, setCloudUrl] = useState('');
   const [visible, setVisible] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [installing, setInstalling] = useState(false);
+  const [installError, setInstallError] = useState('');
+  const installingRef = useRef(false);
   const dialog = useRef(null);
   const trigger = useRef(null);
   useEffect(() => {
@@ -47,12 +50,26 @@ export function DesktopAccount({ user }) {
   async function openData() {
     try { await desktop.openDataFolder(); } catch (error) { setWarnings(current => [...current, error.message]); }
   }
+  async function installDeps() {
+    if (installingRef.current) return;
+    installingRef.current = true;
+    setInstalling(true); setInstallError('');
+    try { const result = await desktop.installPythonDeps(); setWarnings(result.warnings); }
+    catch (error) { setInstallError(error.message.replace(/^Error invoking remote method '[^']+': Error: /, '')); }
+    finally { installingRef.current = false; setInstalling(false); }
+  }
   return <div className="desktop-account-area">
-    {warnings.length > 0 && <div className="desktop-warning" role="status"><AlertCircle size={15} aria-hidden="true" /><div>{warnings.map((warning, i) => <p key={i}>{warning}</p>)}<button type="button" onClick={() => desktop.openLogs().catch(error => setWarnings([error.message]))}>查看日志 <ArrowUpRight size={12} /></button></div><button type="button" aria-label="收起环境提示" onClick={() => setWarnings([])}><X size={13} /></button></div>}
+    {(warnings.length > 0 || installError || installing) && <div className="desktop-warning" role="status">
+      <div className="desktop-warning-heading"><AlertCircle size={13} aria-hidden="true" /><span>环境提示</span><button type="button" aria-label="收起环境提示" onClick={() => { setWarnings([]); setInstallError(''); }} disabled={installing}><X size={13} /></button></div>
+      <div className="desktop-warning-details">{warnings.map((warning, i) => <p key={i}>{warning.message || warning}</p>)}{installError && <p role="alert">{installError}</p>}</div>
+      <div className="desktop-warning-actions">{(warnings.some(warning => warning.code === 'python-deps') || installing) && <button type="button" onClick={installDeps} disabled={installing}>{installing && <LoaderCircle size={12} className="desktop-spin" />}{installing ? '正在安装…' : '一键安装'}</button>}<button type="button" onClick={() => desktop.openLogs().catch(error => setWarnings(current => [...current, error.message]))}>查看日志 <ArrowUpRight size={12} /></button></div>
+    </div>}
     <div className="desktop-account-card">
-      <div className="desktop-account-identity"><span className="desktop-avatar" aria-hidden="true">{Array.from(user?.name || 'R')[0].toUpperCase()}</span><div><strong>本机账户</strong><span className="desktop-account-caption">你的职业积累，随时继续</span></div><button type="button" className="desktop-data-button" aria-label="打开本机数据文件夹" title="打开本机数据文件夹" onClick={openData}><FolderOpen size={16} /></button></div>
-      <span className="desktop-status" data-state={status.state} title={syncStatusLabel(status)}><span className="desktop-status-dot" />{syncStatusLabel(status)}</span>
-      <button type="button" ref={trigger} className="desktop-connect" onClick={() => setVisible(true)}><Cloud size={15} /><span>连接云端账户</span><ArrowUpRight size={14} /></button>
+      <span className="desktop-avatar" aria-hidden="true">{Array.from(user?.name || 'L')[0].toUpperCase()}</span>
+      <div className="desktop-account-identity"><strong title={user?.name || user?.email}>{user?.name || user?.email || '本机账户'}</strong><span className="desktop-status" data-state={status.state} title={syncStatusLabel(status)}><span className="desktop-status-dot" />{syncStatusLabel(status)}</span></div>
+      <button type="button" className="desktop-data-button" aria-label="打开本机数据文件夹" title="打开本机数据文件夹" onClick={openData}><FolderOpen size={15} /></button>
+      <button type="button" ref={trigger} className="desktop-connect" aria-label="连接云端账户" title="连接云端账户" onClick={() => setVisible(true)}><Cloud size={15} /></button>
+      <button type="button" className="desktop-logout" aria-label="退出登录" title="退出登录" onClick={onLogout}><LogOut size={15} /></button>
     </div>
     {visible && <dialog ref={dialog} className="desktop-dialog" aria-labelledby="desktop-connect-title" aria-describedby="desktop-connect-description" onCancel={event => { event.preventDefault(); close(); }} onClick={event => { if (event.target === dialog.current) close(); }}>
       <form onSubmit={signIn}>
