@@ -270,8 +270,9 @@ try {
     await page.getByText(/来源：zhang-resume\.txt/).waitFor({ timeout: 20000 });
     const shown = await page.locator('.aui-message').last().innerText();
     assert.match(shown, /来源：zhang-resume\.txt/, 'the page must show the cited source');
-    await page.getByRole('button', { name: '打开简历预览', exact: true }).click();
-    await page.locator('.evidence-panel').waitFor();
+    // Evidence lives in the docked Documents card since the cards refactor.
+    await page.locator('.chat-tools [data-card-toggle="documents"]').click();
+    await page.locator('[data-card-id="documents"] .evidence-panel').waitFor();
     await page.getByText('长期背景事实', { exact: true }).waitFor();
     const panel = await page.locator('.evidence-panel').innerText();
     assert.match(panel, /React|郑州轻工业大学/, 'the evidence panel must list the extracted facts');
