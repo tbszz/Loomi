@@ -19,7 +19,7 @@ function isFileDrag(event) {
   return Array.from(event.dataTransfer?.types || []).includes('Files');
 }
 
-export function WorkspaceChat({ conversation, documents, pending, busy, canCancel, onSend, onCancel, onAttach, onDropFiles, onSelectJob, onOpenPreview, renderAttachment, scrubMessage, notice, onDismissNotice, catalogUserId }) {
+export function WorkspaceChat({ conversation, documents, pending, busy, canCancel, onSend, onCancel, onAttach, onDropFiles, onSelectJob, onOpenPreview, renderAttachment, scrubMessage, notice, onDismissNotice, catalogUserId, compact = false }) {
   const { t } = useI18n();
   const messages = useMemo(() => visibleMessages(conversation).map(scrubMessage), [conversation, scrubMessage]);
   const runtime = useExternalStoreRuntime({
@@ -79,7 +79,7 @@ export function WorkspaceChat({ conversation, documents, pending, busy, canCance
       <ThreadPrimitive.Root className="aui-thread" data-empty={empty} {...dragHandlers}>
         <ThreadPrimitive.Viewport className="aui-viewport" autoScroll aria-label={t("chat.conversation")}>
           <div className="aui-messages" role="log" aria-live="polite" aria-relevant="additions">
-            {empty ? <><Welcome hasResume={Boolean(documents?.length)} onAttach={onAttach} disabled={busy} /><Suggestions disabled={busy} /></> : null}
+            {empty ? compact ? <div className="side-chat-empty"><h3>{t('sideChat.emptyTitle')}</h3><p>{t('sideChat.emptyBody')}</p></div> : <><Welcome hasResume={Boolean(documents?.length)} onAttach={onAttach} disabled={busy} /><Suggestions disabled={busy} /></> : null}
             <ThreadPrimitive.Messages>{({ message }) => {
               const careerMessage = message.metadata?.custom?.careerMessage;
               return <CareerMessage message={careerMessage} streaming={Boolean(pending)} conversation={conversation} documents={documents} latestResumeId={latestResumeId} onSelectJob={onSelectJob} onOpenPreview={onOpenPreview} renderAttachment={renderAttachment} />;
@@ -92,10 +92,10 @@ export function WorkspaceChat({ conversation, documents, pending, busy, canCance
         <div className="aui-composer-dock">
           <Presence visible={Boolean(notice)} className="notice-presence"><div className="notice-reveal"><div><div className="aui-notice" role="status"><span>{notice}</span><button type="button" onClick={onDismissNotice} aria-label={t("chat.dismissNotice")}>{t("workspace.close")}</button></div></div></div></Presence>
           <Presence visible={Boolean(conversation?.context?.selectedJob)}><button type="button" className="aui-context-chip" onClick={onOpenPreview}><BriefcaseBusiness size={13} /><Crossfade identity={conversation?.context?.selectedJob?.id || conversation?.context?.selectedJob?.title}>{t("chat.currentTarget")}{conversation?.context?.selectedJob?.title}</Crossfade></button></Presence>
-          <CareerComposer key={conversation?.id || 'new'} busy={busy} canCancel={canCancel} onAttach={onAttach} catalogUserId={catalogUserId} />
-          <p className="aui-composer-hint">{t("chat.useYourRealExperienceAsTheBasis")}</p>
+          <CareerComposer key={conversation?.id || 'new'} busy={busy} canCancel={canCancel} onAttach={onAttach} catalogUserId={catalogUserId} compact={compact} />
+          {!compact && <p className="aui-composer-hint">{t("chat.useYourRealExperienceAsTheBasis")}</p>}
         </div>
-        <LoomiPet pending={pending} lastMessage={messages.at(-1)} />
+        {!compact && <LoomiPet pending={pending} lastMessage={messages.at(-1)} />}
         <Presence visible={dragActive || dropAccepted}><div className="aui-drop-overlay" data-accepted={dropAccepted} aria-hidden="true">
           <div className="aui-drop-card"><svg className="drop-dashes" aria-hidden="true"><rect /></svg><Upload size={22} strokeWidth={1.6} /><strong>{t("chat.dropToUploadYourMaterials")}</strong><span>{t("chat.pdfDocxTxtMarkdownJsonUpTo")}</span></div>
         </div></Presence>
@@ -160,7 +160,7 @@ function Suggestions({ disabled }) {
   )}</div>;
 }
 
-function CareerComposer({ busy, canCancel, onAttach, catalogUserId }) {
+function CareerComposer({ busy, canCancel, onAttach, catalogUserId, compact }) {
   const { t } = useI18n();
   const aui = useAui();
   const text = useAuiState(s => s.composer.isEditing ? s.composer.text : '');
@@ -245,7 +245,7 @@ function CareerComposer({ busy, canCancel, onAttach, catalogUserId }) {
         {catalogUserId ? <button type="button" onMouseDown={event => event.preventDefault()} onClick={() => { setCatalogAttempt(attempt => attempt + 1); input.current?.focus(); }}>{t("chat.retryLoadingSkills")}</button> : null}
       </p> : !matches.length ? <p role="status">{t("chat.noMatchingSkill")}</p> : null}
     </div></Presence>
-    <ComposerPrimitive.Input ref={input} disabled={busy} className="aui-composer-input" placeholder={t("chat.whatSYourNextStepTypeTo")} aria-label={t("chat.messageResumeProtocol")} aria-autocomplete="list" aria-haspopup="listbox" aria-expanded={open} aria-controls={open ? listId : undefined} aria-activedescendant={open && matches.length ? `${listId}-${activeIndex}` : undefined} minRows={1} maxRows={7} submitMode="enter" addAttachmentOnPaste={false} cancelOnEscape={false}
+    <ComposerPrimitive.Input ref={input} disabled={busy} className="aui-composer-input" placeholder={compact ? t("chat.sideChatPlaceholder") : t("chat.whatSYourNextStepTypeTo")} aria-label={compact ? t("chat.messageSideChat") : t("chat.messageResumeProtocol")} aria-autocomplete="list" aria-haspopup="listbox" aria-expanded={open} aria-controls={open ? listId : undefined} aria-activedescendant={open && matches.length ? `${listId}-${activeIndex}` : undefined} minRows={1} maxRows={7} submitMode="enter" addAttachmentOnPaste={false} cancelOnEscape={false}
       onChange={event => {
         // Recover when an IME drops compositionend but resumes ordinary input,
         // matching assistant-ui's own composition recovery without losing focus.
@@ -257,8 +257,8 @@ function CareerComposer({ busy, canCancel, onAttach, catalogUserId }) {
       onCompositionStart={() => { composing.current = true; }} onCompositionEnd={event => { composing.current = false; setCursor(event.target.selectionStart); }} />
     <div className="aui-composer-toolbar">
       <div className="aui-composer-tools">
-        <button type="button" className="aui-attach" onClick={onAttach} disabled={busy} aria-label={t("chat.uploadResume")} title={t("chat.uploadResumeOrDropIntoTheConversation")}><Paperclip size={19} /></button>
-        <span>{t("chat.resumeJobAssistant")}</span>
+        {!compact && <button type="button" className="aui-attach" onClick={onAttach} disabled={busy} aria-label={t("chat.uploadResume")} title={t("chat.uploadResumeOrDropIntoTheConversation")}><Paperclip size={19} /></button>}
+        <span>{compact ? t("chat.sideChat") : t("chat.resumeJobAssistant")}</span>
       </div>
       <span className="aui-submit-slot" data-running={canCancel}>
       {canCancel ? <ComposerPrimitive.Cancel className="aui-stop" aria-label={t("chat.stopGenerating")} title={t("chat.stopGenerating")}><SubmitIcon running /></ComposerPrimitive.Cancel>

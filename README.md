@@ -18,9 +18,9 @@ npm run desktop:dist     # 打包 Windows NSIS 安装包到 release/
 
 ---
 
-## 原项目说明（Resume Protocol）
+## 原项目说明（Loomi，原名 Resume Protocol）
 
-Resume Protocol 是一个长期陪伴式 Personal Career Agent：围绕每个求职者建立可持续积累、可检索、可追溯的个人职业背景库，并在不同 Conversation 中复用这些真实信息完成简历分析、JD 分析、岗位判断、定制简历和面试准备。
+Loomi 是一个长期陪伴式 Personal Career Agent：围绕每个求职者建立可持续积累、可检索、可追溯的个人职业背景库，并在不同 Conversation 中复用这些真实信息完成简历分析、JD 分析、岗位判断、定制简历和面试准备。
 
 当前仓库处于 P0 架构迁移阶段。目标架构以 Claude Agent SDK 作为 Primary Career Agent Runtime，以 Candidate Knowledge Base 作为长期个人背景，以第一方 Career Skills 提供垂直求职能力。
 
@@ -29,7 +29,7 @@ Resume Protocol 是一个长期陪伴式 Personal Career Agent：围绕每个求
 项目只长期维护少量核心文档：
 
 - [`PRD.md`](PRD.md)：P0 要做什么、如何验收。
-- [`ARCHITECTURE.md`](ARCHITECTURE.md)：整体架构、Claude Agent SDK 与 Resume Protocol 的边界。
+- [`ARCHITECTURE.md`](ARCHITECTURE.md)：整体架构、Claude Agent SDK 与 Loomi 的边界。
 - [`DEVELOPMENT_RULES.md`](DEVELOPMENT_RULES.md)：开发和规划必须遵守的中心规则。
 - [`DESIGN.md`](DESIGN.md)：当前工作区 UI / UX 约束。
 - [`AGENTS.md`](AGENTS.md)：给 coding agent 的项目入口规则。
@@ -63,7 +63,7 @@ Evidence Grounding / Verification
 Claude Agent SDK
 = 通用 Agent Runtime：会话、Agent Loop、规划、Skills、Tools/MCP、权限/Hook 等
 
-Resume Protocol
+Loomi
 = 求职领域：Candidate KB、RAG、Career Skills、业务 Tools、Job Knowledge、事实校验
 ```
 
@@ -180,7 +180,7 @@ Claude 和 MiniMax 默认配置均通过 Claude Agent SDK 执行主 Agent；兼�
 P0 的目标不是开放 Claude Code 的所有系统能力，而是：
 
 - 使用 SDK 的 Agent Runtime、Session、Skills、MCP/Tool 和权限机制；
-- 只暴露 Resume Protocol 明确注册的业务 Tool；
+- 只暴露 Loomi 明确注册的业务 Tool；
 - Candidate 文件和数据库访问继续通过受控业务 Tool / Service；
 - 默认不开放任意 Bash、任意文件写入和不受控外网动作。
 

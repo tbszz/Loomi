@@ -18,14 +18,14 @@ const html = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 // slow or offline network. Keep the document free of external stylesheets.
 assert.doesNotMatch(html, /<link[^>]+href="https?:\/\//i, "index.html must not load an external stylesheet");
 assert.doesNotMatch(html, /onlinewebfonts|fonts\.googleapis|fonts\.gstatic/i);
-assert.match(html, /Resume Protocol/);
+assert.match(html, /Loomi/);
 
 assert.match(main, /LANDING_VIDEO_URL/);
 assert.match(main, /hf_20260715_112512_f3b7a972-83dd-4401-9c4b-f08d3733f5ca\.mp4/);
 assert.match(main, /loop=\{false\}/);
 assert.match(main, /onEnded=\{\(event\) => event\.currentTarget\.pause\(\)\}/);
 assert.match(main, /(?:t|uiMessage)\("landing\.start"\)/);
-assert.match(main, /Resume Protocol/);
+assert.match(main, /Loomi/);
 assert.match(main, /window\.location\.hash === "#workspace"/);
 assert.match(main, /window\.location\.hash = "workspace"/);
 assert.match(main, /window\.history\.replaceState/);
@@ -326,7 +326,7 @@ if (process.argv.includes('--job-spaces-browser') || process.argv.includes('--ge
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`http://127.0.0.1:${server.address().port}/__composer`);
     await page.evaluate(() => localStorage.setItem("loomi.locale", "zh"));
-    const input = page.getByRole('textbox', { name: '给 Resume Protocol 发消息' });
+    const input = page.getByRole('textbox', { name: '给 Loomi 发消息' });
     const sent = () => page.evaluate(() => window.sent);
     await input.fill('Plain Enter');
     await input.press('Enter');

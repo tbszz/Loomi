@@ -12,6 +12,8 @@ module.exports = {
     '!**/*.test.*', '!**/__tests__/**', '!**/test/**', '!**/tests/**', '!**/*.map', '!**/__pycache__/**', '!**/*.pyc',
     '!data/**', '!tmp/**', '!output/**', '!competitor-analysis/**', '!.scan/**', '!release/**', '!**/.env*',
   ],
+  // build/python comes from npm run desktop:python; export works without a system Python.
+  extraResources: [{ from: 'build/python', to: 'python' }],
   win: { target: [{ target: 'nsis', arch: ['x64'] }], icon: 'desktop/assets/icon.ico', artifactName: 'Loomi-${version}-Setup-${arch}.${ext}' },
   nsis: { oneClick: false, perMachine: false, allowToChangeInstallationDirectory: true, createDesktopShortcut: true, deleteAppDataOnUninstall: false },
 };

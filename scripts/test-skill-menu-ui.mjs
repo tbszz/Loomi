@@ -33,7 +33,7 @@ try {
   page.on('request', request => { if (new URL(request.url()).pathname === '/api/skills') catalogRequests++; });
   await page.goto(`${base}/#workspace`);
   await page.getByRole('heading', { name: '下一步，我们一起准备。' }).waitFor();
-  const input = page.getByRole('textbox', { name: '给 Resume Protocol 发消息' });
+  const input = page.getByRole('textbox', { name: '给 Loomi 发消息' });
   const menu = page.getByRole('listbox', { name: '可用 Skills' });
   const options = menu.getByRole('option');
   await input.fill('/');

@@ -258,7 +258,7 @@ try {
     await page.getByRole('textbox', { name: '求职者名称' }).fill('张三');
     await page.getByRole('button', { name: '创建', exact: true }).click();
     await page.getByRole('combobox', { name: '切换求职者' }).waitFor();
-    const composer = page.getByRole('textbox', { name: '给 Resume Protocol 发消息' });
+    const composer = page.getByRole('textbox', { name: '给 Loomi 发消息' });
     await composer.fill('你好，我想准备求职。');
     await page.getByRole('button', { name: '发送消息', exact: true }).click();
     await page.getByText('可以先告诉我你想投的岗位，我会基于你的真实材料帮你准备。', { exact: true }).waitFor();

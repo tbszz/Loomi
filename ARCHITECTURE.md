@@ -1,11 +1,11 @@
-# Resume Protocol Architecture
+# Loomi Architecture
 
 Updated: 2026-09-22
 Status: P0 target architecture
 
 ## 1. What this project is
 
-Resume Protocol is a long-term Personal Career Agent.
+Loomi is a long-term Personal Career Agent.
 
 Its core value is not “generate a resume once.” It is:
 
@@ -60,11 +60,11 @@ Client
 → deterministic services (database / retrieval / export)
 ```
 
-## 3. The key boundary: SDK runtime vs Resume Protocol domain
+## 3. The key boundary: SDK runtime vs Loomi domain
 
 ### Claude Agent SDK owns generic agent behavior
 
-Primary Career Agent is not a custom agent framework written by Resume Protocol. It is an Agent powered by Claude Agent SDK.
+Primary Career Agent is not a custom agent framework written by Loomi. It is an Agent powered by Claude Agent SDK.
 
 Use SDK capabilities for generic runtime concerns whenever the installed version supports them:
 
@@ -78,9 +78,9 @@ Use SDK capabilities for generic runtime concerns whenever the installed version
 
 Do not rebuild these above the SDK with a second Brain, custom planner, router Agent, or custom agent loop.
 
-### Resume Protocol owns career-domain state and truth
+### Loomi owns career-domain state and truth
 
-Resume Protocol must own:
+Loomi must own:
 
 - Candidate identity and isolation;
 - Candidate Knowledge Base;
@@ -96,7 +96,7 @@ A useful mental model is:
 
 ```text
 Claude Agent SDK = how the Agent thinks and acts
-Resume Protocol  = what the Agent knows, can do, and is allowed to claim
+Loomi  = what the Agent knows, can do, and is allowed to claim
 ```
 
 ## 4. Candidate is the long-lived entity

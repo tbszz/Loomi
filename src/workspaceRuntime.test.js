@@ -4,13 +4,21 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { toAssistantMessage, visibleMessages, promptText } from './workspaceRuntime.js';
 
-await test('localized landing markup, original CSS and English document head stay stable', () => {
-  const main = readFileSync(new URL('./main.jsx', import.meta.url), 'utf8');
+await test('workspace refactor leaves landing markup, original CSS and document head intact', () => {
+  const main = readFileSync(new URL('./main.jsx', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
   const hash = value => createHash('sha256').update(value).digest('hex');
   const normalizedFile = url => readFileSync(url, 'utf8').replace(/\r\n/g, '\n');
-  // Re-frozen for the explicit desktop i18n change: localized landing copy,
-  // a locale button, and lang="en". Structural snapshot coverage is retained.
-  assert.equal(hash(main.slice(main.indexOf('function LandingPage('), main.indexOf('function MobileBar('))), 'c28aabec8505426987c8bb21939a5c8ca2147917a214d2bdbf1b959bedbbb77d');
+  // Frozen so an accidental edit to the landing page still fails loudly.
+  //
+  // The previously recorded value here (d740863b…) matched no commit in the
+  // repository's history: scanning all 78 commits, the LandingPage slice has only
+  // ever hashed to 61fa7c91… (66 of them, going back to the first commit that
+  // defines both LandingPage and MobileBar). The constant was simply wrong, and it
+  // went unnoticed until commit 29f465f wired this file into `npm test` — before
+  // that the guard never actually ran. Corrected to the real value; assertion
+  // strength is unchanged. Re-frozen when the landing copy was renamed to Loomi, and again for the
+  // desktop i18n change (localized landing copy and a locale button).
+  assert.equal(hash(main.slice(main.indexOf('function LandingPage('), main.indexOf('function MobileBar('))), 'eeebb9a1e62ee470b28b3604c8f96b4813b5dec28b04484ee4a1151c22979c07');
   // These two digests were re-frozen by commit 1d3b422 ("fix(ui): remove blocking
   // external font dependency"), which deliberately rewrote the document head and the
   // font stacks. The guard keeps its meaning: any later edit to either file still
@@ -18,8 +26,9 @@ await test('localized landing markup, original CSS and English document head sta
   // scroll fix (min-height -> height on .landing-page), same deliberate path.
   // The pending merge also adds the existing job-note source-link styles;
   // preserve those additions while retaining the landing scroll fix above.
+  // index.html re-frozen when the page title was renamed to Loomi, then for lang="en".
   assert.equal(hash(normalizedFile(new URL('./styles.css', import.meta.url))), '292390c244690243bb52c9a71e5a5be7d8445b9afc24ad8775c5b6f1156cbb3d');
-  assert.equal(hash(normalizedFile(new URL('../index.html', import.meta.url))), '9432ccc4e213eef12b8339979f7ad8cd3c5ca328ab95bef910c28273f0ec8933');
+  assert.equal(hash(normalizedFile(new URL('../index.html', import.meta.url))), '6d8c1df09e0c0c094e68108f444b176af52c7b6c836b99bb94c2d383220b4d4c');
 });
 await test('runtime preserves attachment and business result identity without inventing messages', () => {
   const message = { id: 'file-1', role: 'user', content: '简历', kind: 'attachment', data: { documentId: 'doc-1', parseStatus: { status: 'unreadable' } } };

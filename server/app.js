@@ -126,12 +126,21 @@ export function createApp({ database = createDatabase(), mailer, model, search, 
     res.json({ok:true});
   });
   app.post("/api/conversations", (req, res) => {
+    const parentId = req.body?.parentId;
+    if (parentId !== undefined && (typeof parentId !== 'string' || !parentId.trim())) return res.status(400).json({ error: '父对话标识无效。' });
+    const parent = parentId ? database.getConversation(req.user.id, parentId) : null;
+    if (parentId && !parent) return res.status(404).json({ error: '对话不存在。' });
     if (!ownsProject(req.user.id, req.body?.projectId)) return res.status(404).json({error:'项目不存在。'});
     // Most accounts are one job seeker: bind new threads to the latest candidate,
     // creating one on first use, so nobody has to fill a form before chatting.
-    const candidateId = req.body?.candidateId || database.listCandidates(req.user.id)[0]?.id || database.createCandidate(req.user.id, DEFAULT_CANDIDATE_NAME).id;
+    const candidateId = parent?.candidateId || req.body?.candidateId || database.listCandidates(req.user.id)[0]?.id || database.createCandidate(req.user.id, DEFAULT_CANDIDATE_NAME).id;
     if (!database.getCandidate(req.user.id, candidateId)) return res.status(404).json({ error: '求职者不存在。' });
-    res.json({ conversation: database.saveConversation(req.user.id, {...createConversation({ id: randomUUID() }), candidateId, projectId: req.body?.projectId || null}) });
+    const conversation = { ...createConversation({ id: randomUUID() }), candidateId, projectId: req.body?.projectId || null, parentId: parent?.id || null };
+    if (parent) {
+      conversation.context = structuredClone(parent.context);
+      conversation.messages = [];
+    }
+    res.json({ conversation: database.saveConversation(req.user.id, conversation) });
   });
   app.post("/api/conversations/import", (req, res) => {
     const incoming = req.body?.conversations;
@@ -180,6 +189,8 @@ export function createApp({ database = createDatabase(), mailer, model, search, 
     try {
     // Candidate documents and facts outlive an individual work thread.
     database.deleteConversation(req.user.id, req.params.id);
+    // Side chats are hidden from the list, so they go with their parent.
+    for (const side of database.listConversations(req.user.id).filter(item => item.parentId === req.params.id)) database.deleteConversation(req.user.id, side.id);
     res.json({ ok: true });
     } finally { active.delete(req.params.id); }
   });
@@ -370,7 +381,7 @@ export function createApp({ database = createDatabase(), mailer, model, search, 
     const format = req.query.format || "markdown";
     if (!["markdown", "json"].includes(format)) return res.status(400).json({ error: "支持 Markdown 或 JSON 导出。" });
     const output = format === "json" ? JSON.stringify(req.conversation, null, 2) : exportMarkdown(req.conversation);
-    res.set("Content-Disposition", `attachment; filename="resume-protocol.${format === "json" ? "json" : "md"}"`);
+    res.set("Content-Disposition", `attachment; filename="loomi.${format === "json" ? "json" : "md"}"`);
     res.type(format === "json" ? "application/json" : "text/markdown").send(output);
   });
   const exporting = new Set();

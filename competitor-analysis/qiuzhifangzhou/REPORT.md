@@ -64,7 +64,7 @@
 
 ### 5.3 AI改简历（/resume「简历魔改」）
 - 三档力度重写：STAR 法则改写 / 适度拔高 / 按 HR 口味魔改（做通用简历）。
-- 「过机筛 AI」（ATS）：贴入目标岗位 JD → AI「对着 JD 反向优化关键词、深度改简历」，做专岗简历（与用户 Resume Protocol 的 jd-analysis + resume-tailoring 同位）。
+- 「过机筛 AI」（ATS）：贴入目标岗位 JD → AI「对着 JD 反向优化关键词、深度改简历」，做专岗简历（与用户 Loomi 的 jd-analysis + resume-tailoring 同位）。
 - 在线简历模板：6+ 套所见即所得模板（简约单栏/几何排版/时间轴/标题色条/顶部色块/居中留白），`?mode=ui`；Markdown 为源，导出 PDF 用 html2pdf.js，文件名自动从 `# xxx的简历` 提取。
 - 简历多版本管理（setVersion/版本列表），插件端会按岗位挑版本。
 
@@ -86,7 +86,7 @@
 - 验证码登录（sendCode/loginByCode）+ 自研旋转验证码（captchaRotate/captchaVerify）+ refreshToken；账户注销（deleteAccount）。
 - 前端路由守卫 `requiresAuth`/`requiresSpecialPermission`；admin API 与普通 API 同域同包（安全性依赖服务端鉴权，前端仅作入口隐藏）。
 
-## 6. 对 Resume Protocol 的对照与启示
+## 6. 对 Loomi 的对照与启示
 
 1. **半自动填表是市场共识**：竞品的插件也是「AI 填 80% → 人工补漏 → 人工提交」，与我们 JEV P1「半自动、禁止自动提交」的约束一致，说明这条产品红线不影响竞争力，可以放心作为宣传点（可控、安全）。
 2. **可对比的真实指标**：竞品公开「识别 70% 官网 / 填写 80% 字段」。我们的 JEV 验收也可以定义同口径指标（表单字段覆盖率 × 网站兼容率），比「通过 0 个」的核验器口径更面向用户。
@@ -148,7 +148,7 @@
 - **错误遥测**：`logError {functionName, duration, errorStack, company, resumeId, browser, version, url}`——含填写耗时与公司维度，支撑官方「识别70%/填80%」指标。
 - **好评增长闭环**：填充次数（websiteCount/fieldCount，本地存储）达阈值弹窗「已帮你填 X 个网站 Y 个字段」→ 引导商店评分 → 粘贴/上传评分截图（base64 PNG → `uploadStarRating`）→ 服务端记录 `starRatingUploaded`，取消次数也被记忆（减少打扰）。
 
-### 8.6 值得借鉴到 Resume Protocol JEV 的设计
+### 8.6 值得借鉴到 Loomi JEV 的设计
 
 1. **「语义骨架」表示法**：无属性、含当前值的结构化 HTML 是 LLM 理解第三方表单的极优中间表示（token 效率高、对改版鲁棒、天然脱敏属性层）。JEV 做表单理解时可直接采用，比原始 HTML/截图更适合文本 LLM。
 2. **字段判定与取值分成两个服务端调用**：先「这一页有什么字段」（页面级，可缓存，sessionId 复用），再「每个字段填什么」（值级，按 resumeId）。中间靠插件本地做字段名↔DOM 映射，LLM 不接触真实 DOM id，边界干净。

@@ -1,4 +1,4 @@
-# Resume Protocol Design
+# Loomi Design
 
 Updated: 2026-09-17
 Scope: UI / UX contract only
@@ -7,7 +7,7 @@ Scope: UI / UX contract only
 
 ## 1. Product experience
 
-Resume Protocol 的体验应像一个长期工作的个人 Career Workspace，而不是传统 Dashboard，也不是“填写表单 → 点生成”的一次性简历工具。
+Loomi 的体验应像一个长期工作的个人 Career Workspace，而不是传统 Dashboard，也不是“填写表单 → 点生成”的一次性简历工具。
 
 主入口保持 AI Conversation；Files、Jobs、Resume Preview、Settings 是辅助工作区。
 
@@ -25,7 +25,7 @@ Resume Protocol 的体验应像一个长期工作的个人 Career Workspace，�
 
 ## 2. Workspace layout
 
-桌面端使用左侧目录与居中对话区；右侧证据区在 ≥1280px 时为可拖拽、可最小化的浮动玻璃卡片：
+桌面端使用普通左侧目录与居中对话区；资料、网申、旁聊各为一张独立辅助卡片，默认在右侧停靠，为聊天保留独立空间：
 
 ```text
 Left
@@ -34,13 +34,17 @@ Candidate / Project / Conversations
 Center
 Conversation transcript + composer
 
-Right (floating)
-Current file / evidence / resume preview / generated artifact
+Right (docked cards; opt-in floating)
+Documents / Apply / Side chat
 ```
 
 左下角保留账户、主题和模型设置等低频入口。
 
-窄屏保留 Drawer / Panel 切换侧栏；≥1440px 打开证据卡片时为对话预留右侧空间，不能让聊天正文被固定侧栏压缩到不可用。
+≥1440px 最多堆叠两张卡片，首次比例 60/40，可拖动分隔条，每张至少 200px；高度不足时只显示一张。第三张打开时将最久未使用的卡片收为标签。1200–1439px 只显示一张，其余收为顶部标签；<1200px 使用右侧遮罩抽屉，支持 Esc、点击遮罩关闭与焦点返回。
+
+卡片列默认 448px，可调整到 360–640px，始终为主聊天保留至少 480px；聊天正文最大 720px 并居中。卡片沿用 12px 圆角、12px 间隔与工作区中性阴影。每张卡片均有仅图标的弹出/停靠按钮；主动弹出的浮窗支持拖动、缩放和最小化，限制在窗口内且避开主聊天标题和输入区。布局按用户保存并验证恢复。
+
+左侧始终为固定宽度普通列，不浮动；保留 Ctrl+B 折叠与窄屏抽屉。标题栏提供「资料 / 网申 / 旁聊」开关，旁聊使用带加号气泡图标。新产物和实际网申结果可自动打开对应卡片；主输入框有焦点或文字时只提示小圆点。旁聊沿用相同候选人背景，在创建时复制主会话上下文；消息与主会话独立，侧栏不列出旁聊，每段主会话恢复最新旁聊。
 
 ## 3. Candidate context
 

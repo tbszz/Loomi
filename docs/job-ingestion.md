@@ -1,6 +1,6 @@
 # Unified public job ingestion
 
-Resume Protocol reads source data/API outputs, not upstream workspaces. The existing `search_jobs` → `jobKnowledge.search` contract serves official company adapters, GitHub JSON/SQLite/Markdown, NCSS and Hiring Radar. Candidate KB and the single Claude Agent SDK runtime are unchanged.
+Loomi reads source data/API outputs, not upstream workspaces. The existing `search_jobs` → `jobKnowledge.search` contract serves official company adapters, GitHub JSON/SQLite/Markdown, NCSS and Hiring Radar. Candidate KB and the single Claude Agent SDK runtime are unchanged.
 
 ## Hiring Radar
 

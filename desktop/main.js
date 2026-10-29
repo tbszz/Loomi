@@ -91,7 +91,10 @@ async function start() {
     writeFile(path.join(userData, 'window.json'), JSON.stringify(saved)).catch(error => log.write(`[desktop] Window preferences: ${error.message}\n`));
   });
   if (saved.maximized) mainWindow.maximize();
-  python = await detectPython();
+  // The installer ships its own Python with the export packages; a system Python is only the fallback.
+  const bundledPython = path.join(process.resourcesPath, 'python', 'python.exe');
+  if (app.isPackaged && !process.env.RESUME_PROTOCOL_PYTHON && existsSync(bundledPython)) python = await detectPython({ env: { ...process.env, RESUME_PROTOCOL_PYTHON: bundledPython } });
+  if (!python?.executable) python = await detectPython();
   pythonExecutable = python.executable;
   warnings = python.warnings;
   // Export packages are installed for the user in the background; the warning only returns if that fails.

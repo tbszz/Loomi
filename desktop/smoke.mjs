@@ -12,7 +12,7 @@ const profile = path.resolve('tmp', packaged ? 'desktop-packaged-profile' : 'des
 await mkdir(output, { recursive: true });
 const env = { ...process.env, RESUME_PROTOCOL_DESKTOP_USER_DATA: profile };
 delete env.ELECTRON_RUN_AS_NODE;
-const executablePath = packaged ? path.resolve('release/win-unpacked/Resume Protocol.exe') : require('electron');
+const executablePath = packaged ? path.resolve('release/win-unpacked/Loomi.exe') : require('electron');
 const app = await electron.launch({ executablePath, args: packaged ? [] : [path.resolve('.')], env, timeout: 60000 });
 let page;
 const errors = [];

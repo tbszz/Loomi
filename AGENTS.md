@@ -1,4 +1,4 @@
-# Resume Protocol project contract
+# Loomi project contract
 
 Before planning or changing the project, read these canonical docs in order:
 

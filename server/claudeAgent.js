@@ -369,7 +369,7 @@ function subprocessEnvironment(config, directory, maxTokens) {
       ANTHROPIC_DEFAULT_HAIKU_MODEL: config.model,
     } : {}),
     CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1',
-    CLAUDE_AGENT_SDK_CLIENT_APP: 'resume-protocol/0.1.0',
+    CLAUDE_AGENT_SDK_CLIENT_APP: 'loomi/0.1.0',
     CLAUDE_CODE_MAX_OUTPUT_TOKENS: String(maxTokens),
     ...(config.gitBashPath ? { CLAUDE_CODE_GIT_BASH_PATH: config.gitBashPath } : {}),
   };
