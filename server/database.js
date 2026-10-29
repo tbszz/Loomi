@@ -167,7 +167,7 @@ export function createDatabase({ filename } = {}) {
         SELECT data FROM conversations
         WHERE user_id = ?
         ORDER BY updated_at DESC
-      `).all(requireString(userId, "userId")).map((row) => parseJson(row.data, null)).filter(Boolean);
+      `).all(requireString(userId, "userId")).map((row) => parseJson(row.data, null)).filter(Boolean).map(conversation => ({ ...conversation, parentId: conversation.parentId || null }));
     },
 
     listCandidates(userId) {
@@ -212,6 +212,7 @@ export function createDatabase({ filename } = {}) {
       const row = db.prepare("SELECT data, agent_session_id AS agentSessionId FROM conversations WHERE user_id = ? AND id = ?").get(requireString(userId, "userId"), requireString(id, "conversationId"));
       if (!row) return null;
       const conversation = parseJson(row.data, null);
+      if (conversation) conversation.parentId ||= null;
       if (conversation) conversation.agentSessionId = row.agentSessionId || conversation.agentSessionId || null;
       return conversation;
     },
@@ -928,6 +929,7 @@ function normalizeConversation(conversation) {
   return {
     id: requireString(conversation.id || randomUUID(), "conversation.id"),
     candidateId: conversation.candidateId || null,
+    parentId: typeof conversation.parentId === 'string' ? conversation.parentId : null,
     title: String(conversation.title || "Untitled conversation").slice(0, 200),
     projectId: typeof conversation.projectId === 'string' ? conversation.projectId : null,
     agentSessionId: typeof conversation.agentSessionId === 'string' && conversation.agentSessionId.trim() ? conversation.agentSessionId.trim() : null,
