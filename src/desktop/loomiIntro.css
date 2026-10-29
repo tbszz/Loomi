@@ -1,0 +1,33 @@
+.loomi-intro { position: fixed; inset: 0; z-index: 100; overflow: hidden; background: transparent; cursor: pointer; -webkit-app-region: no-drag; }
+.intro-wash { position: absolute; inset: 0; background: radial-gradient(ellipse 460px 360px at 50% 44%, color-mix(in srgb, var(--dt-accent) 9%, transparent), transparent), var(--dt-bg); animation: intro-reveal var(--intro-duration) linear both; }
+.intro-thread { position: absolute; left: 50%; top: 0; height: calc(50% - 55px); width: 1px; background: color-mix(in srgb, var(--dt-ink) 27%, transparent); transform-origin: top; animation: intro-thread var(--intro-duration) linear both; }
+.intro-traveler { position: absolute; width: 184px; height: 184px; left: calc(50% - 92px); top: calc(50% - 160px); transform-origin: center top; animation: intro-descent var(--intro-duration) linear both; }
+.intro-title { position: absolute; left: 0; right: 0; top: calc(50% + 63px); text-align: center; animation: intro-title var(--intro-duration) linear both; }
+.intro-title .desktop-wordmark { font-size: 43px; line-height: 1.15; }
+.intro-title p { margin: 16px 0 0; color: var(--dt-muted); font-size: 13px; letter-spacing: .12em; }
+.intro-skip { position: absolute; right: 28px; bottom: 24px; padding: 10px 12px; background: none; border: 0; color: var(--dt-muted); font-size: 12px; animation: intro-skip var(--intro-duration) linear both; }
+.intro-skip span { margin-left: 8px; }
+@keyframes intro-reveal { 0%,84.85% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes intro-thread {
+  0% { transform: scaleY(0); opacity: 0; } 4% { opacity: 1; }
+  18.18%,42.42% { transform: scaleY(1); opacity: 1; }
+  57.5%,100% { transform: scaleY(1); opacity: 0; }
+}
+@keyframes intro-descent {
+  0%,18.18% { transform: translateY(calc(-50vh - 20px)) scale(.82,1.12); opacity: 0; }
+  18.2% { opacity: 1; }
+  29% { transform: translateY(18px) scale(1.06,.91); }
+  34% { transform: translateY(-12px) scale(.97,1.04); }
+  42.42%,60.6% { transform: translateY(0) scale(1); opacity: 1; }
+  72% { transform: translateY(-6px) scale(1); }
+  84.85% { transform: translateY(0) scale(1); opacity: 1; animation-timing-function: cubic-bezier(.22,.7,.3,1); }
+  /* Matches LoginScreen's 440px card, 42px footer and 76/36 stage inset. */
+  100% { transform: translate(132px,-140px) scale(.47826087); opacity: 1; }
+}
+@keyframes intro-title { 0%,60.6% { opacity: 0; transform: translateY(8px); } 72%,84.85% { opacity: 1; transform: translateY(0); } 89.4%,100% { opacity: 0; transform: translateY(-12px); } }
+@keyframes intro-skip { 0%,15% { opacity: 0; visibility: hidden; } 15.16%,90% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }
+.loomi-intro[data-reduced="true"] .intro-wash { animation: intro-static-fade 400ms linear both; }
+.loomi-intro[data-reduced="true"] :is(.intro-traveler, .intro-title) { animation: intro-static-fade 400ms linear both; }
+.loomi-intro[data-reduced="true"] :is(.intro-thread, .intro-skip) { display: none; }
+@keyframes intro-static-fade { 0%,75% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .intro-traveler, .intro-title { transform: none; } }
