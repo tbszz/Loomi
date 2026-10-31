@@ -1,4 +1,3 @@
-import { PDFParse } from 'pdf-parse';
 import { extractText, parseJsonObject } from './minimaxClient.js';
 
 const DEFAULT_MAX_PAGES = 8;
@@ -19,6 +18,7 @@ export async function extractPdfText(buffer, options = {}) {
     return errorExtraction('这不是有效的 PDF 文件。', { method: 'text' });
   }
 
+  const { PDFParse } = await import('pdf-parse');
   const parser = new PDFParse({ data: buffer });
   try {
     throwIfAborted(signal);

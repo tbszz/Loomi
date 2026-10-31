@@ -104,6 +104,17 @@ function cleanup(dir) {
     assert.deepEqual(db.searchCandidateKnowledge(user.id, candidate.id, '??? 🤖'), { facts: [], chunks: [] });
     assert.equal(db.searchCandidateKnowledge(user.id, candidate.id, 'React').facts[0].id, 'search-fact');
     assert.equal(db.searchCandidateKnowledge(user.id, candidate.id, '').facts[0].id, 'search-fact', 'empty query is the scoped list operation');
+
+    // Reopening keeps an in-sync index as it is and repairs a drifted one.
+    db.close();
+    db = createDatabase({ filename });
+    assert.equal(db.searchCandidateKnowledge(user.id, candidate.id, 'React').facts[0].id, 'search-fact');
+    db.raw.exec("DELETE FROM candidate_knowledge_fts WHERE ref_id = 'search-fact'");
+    db.raw.exec("INSERT INTO candidate_knowledge_fts (kind, ref_id, tokens) VALUES ('fact', 'removed-fact', 'react')");
+    db.close();
+    db = createDatabase({ filename });
+    assert.equal(db.searchCandidateKnowledge(user.id, candidate.id, 'React').facts[0].id, 'search-fact');
+    assert.equal(db.raw.prepare("SELECT COUNT(*) n FROM candidate_knowledge_fts WHERE ref_id = 'removed-fact'").get().n, 0);
   } finally {
     db?.close();
     cleanup(dir);

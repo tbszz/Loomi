@@ -1,4 +1,3 @@
-import { PDFParse } from 'pdf-parse';
 
 const PNG_HEADER = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 
@@ -24,6 +23,7 @@ export async function renderPdfPages(buffer, {
     throw new Error('PDF 页面图片总大小限制无效。');
   }
 
+  const { PDFParse } = await import('pdf-parse');
   const parser = new PDFParse({ data: buffer });
   try {
     const info = await parser.getInfo();

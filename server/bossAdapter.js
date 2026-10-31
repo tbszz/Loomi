@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { chromium } from "playwright-core";
 
 let context = null;
 let page = null;
@@ -29,6 +28,7 @@ export async function startBossBrowser({ url = DEFAULT_SEARCH_URL } = {}) {
   }
   const userDataDir = path.join(os.homedir(), ".resume-protocol", "boss-browser-profile");
   fs.mkdirSync(userDataDir, { recursive: true });
+  const { chromium } = await import("playwright-core");
   context = await chromium.launchPersistentContext(userDataDir, {
     executablePath,
     headless: false,
