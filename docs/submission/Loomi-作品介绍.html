@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Loomi 作品介绍</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm 16mm; }
+  :root {
+    --ink: #1a1a2e;
+    --muted: #5b5f73;
+    --line: #e4e2ef;
+    --brand: #5b3fd6;
+    --brand-soft: #f2eefd;
+    --accent: #0f9d8a;
+    --warn: #c2410c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif;
+    font-size: 10pt;
+    line-height: 1.62;
+    background: #fff;
+  }
+  h1, h2, h3 { line-height: 1.3; margin: 0; }
+  h2 {
+    font-size: 17pt;
+    color: var(--brand);
+    margin: 0 0 10pt;
+    padding-bottom: 6pt;
+    border-bottom: 2px solid var(--brand-soft);
+  }
+  h2 .num { font-size: 11pt; color: #a99be8; margin-right: 8pt; font-weight: 600; }
+  h3 { font-size: 12pt; margin: 11pt 0 5pt; }
+  p { margin: 0 0 8pt; }
+  ul { margin: 0 0 8pt; padding-left: 18pt; }
+  li { margin-bottom: 3pt; }
+  code {
+    font-family: Consolas, "Cascadia Mono", monospace;
+    font-size: 9pt;
+    background: #f4f3f8;
+    padding: 0 3pt;
+    border-radius: 3px;
+  }
+  section { page-break-before: always; }
+  .muted { color: var(--muted); }
+  .small { font-size: 9pt; }
+
+  /* cover */
+  .cover {
+    height: 255mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 10mm 4mm 0;
+  }
+  .cover .tag { color: var(--brand); font-weight: 600; letter-spacing: 2pt; font-size: 10pt; }
+  .cover h1 { font-size: 44pt; margin: 18pt 0 6pt; letter-spacing: 1pt; }
+  .cover .sub { font-size: 17pt; color: var(--muted); margin-bottom: 26pt; }
+  .cover .pitch {
+    font-size: 12pt;
+    border-left: 4px solid var(--brand);
+    padding: 8pt 14pt;
+    background: var(--brand-soft);
+    border-radius: 0 8px 8px 0;
+    max-width: 150mm;
+  }
+  .cover .shot { margin-top: 22pt; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .cover .shot img { width: 100%; display: block; }
+  .cover .meta { font-size: 9.5pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10pt; display: grid; grid-template-columns: 1fr 1fr; gap: 4pt 20pt; }
+  .cover .meta b { color: var(--ink); font-weight: 600; }
+
+  /* blocks */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10pt; margin: 8pt 0 10pt; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10pt; margin: 8pt 0 10pt; }
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9pt 11pt;
+    break-inside: avoid;
+  }
+  .card h4 { margin: 0 0 4pt; font-size: 10.5pt; }
+  .card h4 .n { color: var(--brand); margin-right: 5pt; }
+  .card p { margin: 0; font-size: 9.5pt; color: var(--muted); }
+  .callout {
+    background: var(--brand-soft);
+    border-radius: 8px;
+    padding: 10pt 14pt;
+    margin: 10pt 0;
+    break-inside: avoid;
+  }
+  .callout b { color: var(--brand); }
+
+  table { width: 100%; border-collapse: collapse; margin: 6pt 0 10pt; font-size: 9.5pt; break-inside: avoid; }
+  th, td { border-bottom: 1px solid var(--line); padding: 5pt 7pt; text-align: left; vertical-align: top; }
+  th { background: #f7f6fb; font-weight: 600; }
+
+  /* flow */
+  .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 4pt; margin: 8pt 0 12pt; }
+  .flow span {
+    border: 1px solid #cfc6f5;
+    background: #fff;
+    border-radius: 14px;
+    padding: 2pt 9pt;
+    font-size: 9pt;
+  }
+  .flow span.key { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .flow i { font-style: normal; color: #a99be8; }
+
+  /* architecture */
+  .arch { border: 1px solid var(--line); border-radius: 10px; padding: 10pt; margin: 8pt 0 12pt; break-inside: avoid; }
+  .layer { display: grid; grid-template-columns: 26mm 1fr; gap: 8pt; align-items: stretch; margin-bottom: 6pt; }
+  .layer:last-child { margin-bottom: 0; }
+  .layer .lbl { font-size: 8.5pt; color: var(--muted); display: flex; align-items: center; justify-content: flex-end; text-align: right; line-height: 1.35; }
+  .layer .boxes { display: flex; gap: 6pt; }
+  .box { flex: 1; border-radius: 6px; padding: 5pt 8pt; font-size: 8.8pt; line-height: 1.45; }
+  .box b { display: block; font-size: 9.5pt; margin-bottom: 1pt; }
+  .b-ui { background: #eef4ff; border: 1px solid #c9dafc; }
+  .b-api { background: #f3f3f6; border: 1px solid #dadae3; }
+  .b-agent { background: var(--brand); color: #fff; }
+  .b-agent b { color: #fff; }
+  .b-domain { background: var(--brand-soft); border: 1px solid #d7cdf8; }
+  .b-svc { background: #e9f7f4; border: 1px solid #bfe6de; }
+  .b-store { background: #fbf6ec; border: 1px solid #ecdcbc; }
+  .arch .arrow { text-align: center; color: #a99be8; font-size: 9pt; margin: -2pt 0 4pt 26mm; }
+
+  figure { margin: 8pt 0 12pt; break-inside: avoid; }
+  figure img { width: 100%; border: 1px solid var(--line); border-radius: 8px; display: block; }
+  figcaption { font-size: 8.5pt; color: var(--muted); text-align: center; margin-top: 4pt; }
+
+  .innov { display: grid; grid-template-columns: 9mm 1fr; gap: 0 8pt; margin-bottom: 10pt; break-inside: avoid; }
+  .innov .idx { font-size: 18pt; font-weight: 700; color: #cbbff5; line-height: 1.1; }
+  .innov h4 { margin: 0 0 3pt; font-size: 11pt; }
+  .innov p { margin: 0; font-size: 9.8pt; }
+  .innov .vs { font-size: 9pt; color: var(--muted); margin-top: 3pt; }
+.gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 8pt 10pt; }
+  .gallery figure { margin: 0; }
+  .gallery figcaption { text-align: left; font-size: 8.3pt; }
+</style>
+</head>
+<body>
+
+<!-- 封面 -->
+<div class="cover">
+  <div>
+    <div class="tag">作品介绍文档</div>
+    <h1>Loomi</h1>
+    <div class="sub">长期陪伴式个人求职 Agent</div>
+    <div class="pitch">
+      上传一次材料，Loomi 就为求职者建立一份<b>可追溯来源</b>的长期背景库，并在之后每一次简历分析、JD 分析、定制简历和面试准备中复用这些真实信息。<b>每一句写进简历的话，都能指回原始材料。</b>
+    </div>
+    <div class="shot"><img src="../images/home.png" alt="Loomi 首页"></div>
+  </div>
+  <div class="meta">
+    <div><b>作品类型</b>　桌面应用（Windows）+ 本地 Web 服务</div>
+    <div><b>Agent 运行时</b>　Claude Agent SDK</div>
+    <div><b>代码仓库</b>　github.com/tbszz/Loomi</div>
+    <div><b>文档日期</b>　2026 年 10 月</div>
+  </div>
+</div>
+
+<!-- 1. 项目背景 -->
+<section>
+  <h2><span class="num">01</span>项目背景</h2>
+
+  <h3>求职者真实遇到的问题</h3>
+  <div class="grid2">
+    <div class="card"><h4><span class="n">①</span>同样的经历要反复讲</h4><p>换一个 AI 工具、开一个新对话、投一个新岗位，就要把教育背景、项目、实习重新讲一遍。现有工具大多以"一份简历"为中心，不会记住人。</p></div>
+    <div class="card"><h4><span class="n">②</span>AI 改简历容易"编造"</h4><p>大模型为了贴合 JD，会凭空加上候选人没用过的技术、没做过的指标、被放大的职责。多数产品靠 Prompt 里一句"不要编造"来约束，无法保证。</p></div>
+    <div class="card"><h4><span class="n">③</span>国内校招信息分散、网申繁琐</h4><p>大厂官网招聘接口各不相同，聚合站文本常常不完整；企业网申长表单动辄几十个字段，同样的信息一遍遍手填。</p></div>
+    <div class="card"><h4><span class="n">④</span>Agent 工具门槛高</h4><p>开源的求职 Agent/Skill 大多要求用户会用 Claude Code、Codex 等编程工具，非技术背景的应届生很难用起来。</p></div>
+  </div>
+
+  <h3>我们的定位</h3>
+  <div class="callout">
+    <b>一个懂国内校招、并且保证不编造的本地求职 Agent。</b><br>
+    Loomi 不追求"一次性生成一份漂亮简历"，而是把候选人当作长期存在的实体：建立可信的背景库 → 跨对话长期陪伴 → 在需要时检索对的证据 → 用求职领域的 Skill 与 Tool 产出<b>有据可查</b>的结果。
+  </div>
+
+  <h3>设计原则</h3>
+  <table>
+    <tr><th style="width:24%">原则</th><th>含义</th></tr>
+    <tr><td>Candidate-first</td><td>候选人是长期实体，对话只是工作线程；一位用户可以管理多位候选人。</td></tr>
+    <tr><td>Evidence-first</td><td>任何事实性的职业陈述都必须有来源，没有证据的内容不能进入最终简历。</td></tr>
+    <tr><td>Agent / SDK-first</td><td>通用 Agent 能力（循环、会话、Skill、Tool、权限）交给 Claude Agent SDK，不重复造轮子。</td></tr>
+    <tr><td>代码保证，而非 Prompt 保证</td><td>数据隔离、工具授权、事实核验都由确定性代码完成，模型无法绕过。</td></tr>
+    <tr><td>如实失败</td><td>工具失败绝不包装成成功；聚合站岗位文本不等同于完整官方 JD，缺失要求标记为"未核实"。</td></tr>
+  </table>
+</section>
+
+<!-- 2. 产品概览 -->
+<section>
+  <h2><span class="num">02</span>产品概览</h2>
+
+  <h3>核心闭环</h3>
+  <div class="flow">
+    <span>创建候选人</span><i>→</i>
+    <span>上传简历 / 项目材料</span><i>→</i>
+    <span class="key">抽取带出处的事实 + 检索切片</span><i>→</i>
+    <span>粘贴或选择 JD</span><i>→</i>
+    <span>Agent 检索候选人证据</span><i>→</i>
+    <span>JD 分析</span><i>→</i>
+    <span>定制简历</span><i>→</i>
+    <span class="key">逐条 Claim → Evidence 核验</span><i>→</i>
+    <span>导出 PDF / DOCX</span>
+  </div>
+
+  <h3>主要功能</h3>
+  <div class="grid2">
+    <div class="card"><h4>候选人背景库</h4><p>支持 PDF / DOCX / TXT / Markdown / 粘贴文本。保留原件、逐页文字、识别方式与状态；扫描件自动走本机 OCR（Windows.Media.Ocr / Tesseract）或多模态转录。抽取出教育、经历、项目、技能、成果、指标、求职偏好等结构化事实，每条都带原文引用与页码。</p></div>
+    <div class="card"><h4>四个求职 Skill</h4><p><code>resume-analysis</code> 简历诊断、<code>jd-analysis</code> JD 拆解、<code>resume-tailoring</code> 定制简历、<code>interview-prep</code> 面试准备。工作区输入 <code>/</code> 即可选择，也可由 Agent 自主调用。另有 <code>resume-layout</code> 版式与 <code>application-form</code> 网申两个扩展 Skill。</p></div>
+    <div class="card"><h4>证据约束的定制简历</h4><p>每条简历陈述持久化对应的 <code>fact_ids</code>；导出永远读取已核验、已持久化的简历版本。提供项目型、工作型、简洁型等原创单栏版式，中文排版可读，内容自然分页而不是压缩删减，支持真实 PDF 页面预览。</p></div>
+    <div class="card"><h4>岗位知识</h4><p>接入腾讯、字节跳动、华为、小米等 14 条大厂官方招聘接口、Hiring Radar 与国家大学生就业服务平台。每条岗位保留来源 URL、抓取时间与有效状态，并做届别 / 学历等资格判断。</p></div>
+    <div class="card"><h4>半自动网申填表</h4><p>在本机专用浏览器中扫描企业校招页面，按本地申请资料<b>只填空白字段</b>，保留已有内容；不确定的字段留待确认而不是猜；最终检查与提交由本人完成。</p></div>
+    <div class="card"><h4>桌面端开箱即用</h4><p>Electron 打包的 Windows 安装包，内置 Python 与导出依赖；可选云同步。支持 Claude、MiniMax、BigModel 及任意 Anthropic 兼容端点作为主 Agent 模型。</p></div>
+  </div>
+
+</section>
+
+<section>
+  <h2><span class="num">02</span>产品界面</h2>
+  <p class="small muted">以下截图来自真实运行的 Loomi（服务端、数据库、文档解析、事实抽取、检索、Claim 核验与界面均为真实代码），候选人"陈一鸣"为虚构演示数据；为保证可复现，模型回复使用固定脚本。</p>
+  <div class="gallery">
+    <figure><img src="../images/resume-diagnosis.png"><figcaption>简历诊断：右侧"资料"卡片列出带出处的长期背景事实</figcaption></figure>
+    <figure><img src="../images/memory-retrieval.png"><figcaption>跨会话记忆：新会话无需上传，回答逐条标注来源文件</figcaption></figure>
+    <figure><img src="../images/tailored-resume.png"><figcaption>定制简历：按 JD 生成、经 Claim 核验后可预览并导出 PDF / DOCX</figcaption></figure>
+    <figure><img src="../images/interview-prep.png"><figcaption>面试准备：围绕真实项目的追问与七天复习计划</figcaption></figure>
+    <figure><img src="../images/skill-menu.png"><figcaption>输入 / 唤起四个第一方求职 Skill</figcaption></figure>
+    <figure><img src="../images/applications.png"><figcaption>网申卡片：只填空白、保留已有内容，提交由本人完成</figcaption></figure>
+  </div>
+</section>
+
+<!-- 3. 技术架构 -->
+<section>
+  <h2><span class="num">03</span>技术架构</h2>
+
+  <p>Loomi 刻意保持架构精简：<b>一个主 Agent、一套长期候选人知识库、少量 Skill / Tool，以及围绕它们的确定性校验</b>。</p>
+
+  <div class="arch">
+    <div class="layer"><div class="lbl">交互层</div><div class="boxes">
+      <div class="box b-ui"><b>Electron 桌面外壳</b>主进程 / preload / 本地服务入口 / 云同步</div>
+      <div class="box b-ui"><b>React 工作区</b>对话 · 资料 · 岗位 · 简历 · 面试 · 网申卡片</div>
+    </div></div>
+    <div class="arrow">▼ HTTP / SSE 流式</div>
+    <div class="layer"><div class="lbl">应用 API</div><div class="boxes">
+      <div class="box b-api"><b>Express 服务</b>鉴权 · 候选人 · 会话 · 上传 · 导出 · SSE 流式输出 · 中止</div>
+    </div></div>
+    <div class="arrow">▼</div>
+    <div class="layer"><div class="lbl">Agent 运行时<br><span class="small">(Claude Agent SDK)</span></div><div class="boxes">
+      <div class="box b-agent"><b>Primary Career Agent</b>多步 Agent 循环 · SDK 会话续接 · Skill 发现与调用 · MCP 工具循环 · PreToolUse Hook 权限控制 · 流式与中止</div>
+    </div></div>
+    <div class="arrow">▼</div>
+    <div class="layer"><div class="lbl">求职领域层<br><span class="small">(Loomi 自研)</span></div><div class="boxes">
+      <div class="box b-domain"><b>第一方 Career Skills</b>resume-analysis<br>jd-analysis<br>resume-tailoring<br>interview-prep</div>
+      <div class="box b-domain"><b>Career Tools / MCP</b>search_candidate_knowledge · read_document · save_candidate_fact · search_jobs · select_job · generate_resume · prepare_interview · export_resume</div>
+    </div></div>
+    <div class="arrow">▼</div>
+    <div class="layer"><div class="lbl">确定性服务</div><div class="boxes">
+      <div class="box b-svc"><b>候选人知识库</b>结构化事实 + 文档切片<br>混合检索 + 出处</div>
+      <div class="box b-svc"><b>Claim → Evidence 核验</b>候选人绑定<br>归属校验</div>
+      <div class="box b-svc"><b>岗位知识</b>官方源适配器<br>来源 / 时效 / 资格</div>
+      <div class="box b-svc"><b>文档与导出</b>PDF 解析 / OCR<br>PDF · DOCX 渲染</div>
+    </div></div>
+    <div class="arrow">▼</div>
+    <div class="layer"><div class="lbl">存储</div><div class="boxes">
+      <div class="box b-store"><b>SQLite（node:sqlite）+ FTS5 全文索引 · 本地附件 · 加密的模型密钥 · 可选向量索引</b></div>
+    </div></div>
+  </div>
+
+  <div class="callout">
+    <b>关键边界：</b>Claude Agent SDK 负责"Agent 如何思考与行动"；Loomi 负责"Agent 知道什么、能做什么、被允许声称什么"。<br>
+    <span class="small muted">因此系统中没有第二个"大脑 LLM"、路由 Agent 或自研工作流引擎——所有通用 Agent 能力都复用 SDK。</span>
+  </div>
+
+</section>
+
+<section>
+  <h2><span class="num">03</span>技术架构 · 关键设计</h2>
+
+  <h3>3.1　候选人知识库与出处（Provenance）</h3>
+  <p>知识库由两部分组成：<b>结构化事实</b>（Candidate Fact）与<b>文档切片</b>（Document Chunk）。每条事实都携带完整出处：</p>
+  <table>
+    <tr><th style="width:28%">字段</th><th>作用</th></tr>
+    <tr><td><code>source_type / source_id</code></td><td>来自哪份文档，或来自用户在对话中的明确陈述（<code>user_asserted</code>）</td></tr>
+    <tr><td><code>source_quote / source_page</code></td><td>原文引用与页码位置，可在"资料"卡片中高亮回原文</td></tr>
+    <tr><td><code>confidence / status</code></td><td><code>verified</code> / <code>user_asserted</code> / <code>disputed</code> / <code>disabled</code>；来源冲突时不静默覆盖</td></tr>
+  </table>
+  <p>只有两种记忆：<b>SDK 会话 / 对话历史</b>负责单个对话的短期连续性；<b>候选人知识库</b>负责跨对话的长期背景。Agent 生成的文字、JD 中的要求<b>永远不会</b>自动变成候选人事实。</p>
+
+  <h3>3.2　混合检索</h3>
+  <div class="flow">
+    <span>结构化事实检索</span><i>+</i><span>关键词 / BM25（FTS5）</span><i>+</i><span>语义向量检索（可选）</span><i>→</i><span>去重 / 重排</span><i>→</i><span class="key">有界 Evidence Pack</span>
+  </div>
+  <p>Agent 不会拿到整个知识库，只通过 <code>search_candidate_knowledge</code> 获得与当前任务相关的有限证据。中文文本在默认分词无法切分时回退到汉字二元组；未配置向量模型时自动退回 BM25，功能不中断。</p>
+
+  <h3>3.3　Claim → Evidence 核验</h3>
+  <div class="flow">
+    <span>原始文档 / 用户明确陈述</span><i>→</i><span>Candidate Fact + 出处</span><i>→</i><span>简历 Claim</span><i>→</i><span class="key">fact_ids / 原文证据</span>
+  </div>
+  <p>定制简历中的每条事实性陈述都要映射到候选人事实，核验至少拦截五类问题：<b>未出现过的技术</b>、<b>无依据的数字或结果</b>、<b>夸大的职责范围</b>、<b>把 JD 要求抄进候选人经历</b>、<b>跨候选人的数据污染</b>。没有证据的 Claim 不能进入最终简历；导出只读取持久化的已核验版本。</p>
+
+  <h3>3.4　安全与隔离由代码保证</h3>
+  <ul>
+    <li>所有候选人数据查询都以 <code>user_id + candidate_id</code> 过滤，在执行前校验；越权直接抛错，而非静默收窄。</li>
+    <li>每个对话的 SDK 工作区由 <code>user_id + candidate_id + conversation_id</code> 哈希得到，配置目录相互隔离。</li>
+    <li>SDK <code>PreToolUse</code> Hook 只放行精确注册的 MCP 工具与第一方 Skill；MCP Schema 校验拒绝非法参数，并剥离模型伪造的候选人选择器。</li>
+    <li>上传材料、JD、第三方网页文本一律视为数据，其中出现的"指令"不获得任何系统权限。</li>
+  </ul>
+
+  <h3>3.5　岗位知识的可信来源</h3>
+  <p><code>officialJobSources.js</code> 是官方招聘源的唯一登记处，每个来源带有专门适配器（JSON API / 内嵌 HTML / 未适配）。来源状态区分已同步 / 可达 / 未适配 / 失败，避免把"还没接入"误报为"没有岗位"；岗位的标题、URL 与域名必须都属于声明的官方来源，聚合站中缺失的要求保持"未核实"。</p>
+</section>
+
+<section>
+  <h2><span class="num">03</span>技术栈与工程质量</h2>
+
+  <h3>技术栈</h3>
+  <table>
+    <tr><th style="width:20%">层次</th><th>技术</th></tr>
+    <tr><td>桌面端</td><td>Electron 42、electron-builder（NSIS 安装包，内置 Python 运行时）</td></tr>
+    <tr><td>前端</td><td>React、Vite、assistant-ui、lucide-react；中英双语 i18n；深浅色主题</td></tr>
+    <tr><td>服务端</td><td>Node.js 22、Express 5、multer、zod 参数校验、nodemailer（找回密码）</td></tr>
+    <tr><td>Agent</td><td><code>@anthropic-ai/claude-agent-sdk</code>（锁定版本）；Claude / MiniMax / BigModel / Anthropic 兼容端点</td></tr>
+    <tr><td>检索</td><td>SQLite FTS5 + BM25、汉字二元组分词回退；可选 Ollama / 千问 / Google Embedding 向量检索</td></tr>
+    <tr><td>文档</td><td>pdf-parse、mammoth、Windows.Media.Ocr / Tesseract、多模态转录；reportlab、python-docx 导出</td></tr>
+    <tr><td>网申</td><td>playwright-core 驱动本机专用浏览器；支持同源 iframe、简道云控件、多行记录与附件选择</td></tr>
+  </table>
+
+  <h3>工程质量</h3>
+  <table>
+    <tr><th style="width:30%">指标</th><th>说明</th></tr>
+    <tr><td>自动化测试</td><td>77 个测试文件，覆盖候选人隔离、检索、事实抽取、JD 硬性要求、Claim 核验、会话续接、Skill 使用、工具失败如实上报等 Golden Case</td></tr>
+    <tr><td>离线 / 联网分离</td><td><code>npm test</code> 全离线运行；真实模型、真实 Embedding、官方岗位源对账、完整流程验收、工作区 UI 自动化单独运行</td></tr>
+    <tr><td>端到端验收</td><td>创建候选人 → 上传 → 粘贴 JD → 定制 → 带证据导出 PDF / DOCX 的完整场景；真实模型的 Skill 路由冒烟测试</td></tr>
+    <tr><td>可追踪性</td><td>每个任务可按 user_id、candidate_id、conversation_id、agent_session_id、工具调用、检索查询、命中事实、错误与产物追踪</td></tr>
+  </table>
+</section>
+
+<!-- 4. 应用场景 -->
+<section>
+  <h2><span class="num">04</span>应用场景</h2>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>场景一　应届生秋招全流程</h4>
+      <p>上传简历和课程项目报告，Loomi 自动建立背景库。面对每一个目标岗位，只需粘贴 JD：Agent 拆解硬性要求与资格限制，检索匹配证据，生成只包含真实经历的定制简历，并导出 PDF / DOCX 直接投递。</p>
+    </div>
+    <div class="card">
+      <h4>场景二　跨对话持续积累</h4>
+      <p>用户在某次对话中补充"这个项目里我负责了接口设计和压测"，确认后以 <code>user_asserted</code> 写入背景库。之后任何新对话、任何岗位都能检索到这条经历，无需重复上传或解释。</p>
+    </div>
+    <div class="card">
+      <h4>场景三　面试准备</h4>
+      <p>基于目标 JD 与候选人证据，生成可能的追问链、STAR 故事准备、证据薄弱点预警和岗位相关复习主题，帮助候选人避免在面试中"被问穿"。</p>
+    </div>
+    <div class="card">
+      <h4>场景四　企业校招网申</h4>
+      <p>打开企业校招长表单，Loomi 在本机浏览器中按本地资料只填写空白字段，已有内容（包括 0 和"否"）全部保留，不确定字段留待用户确认。在验收用的单页招聘表单上，54 个合成内容字段全部匹配正确，提交仍由本人完成。</p>
+    </div>
+    <div class="card">
+      <h4>场景五　找岗位与资格判断</h4>
+      <p>从 14 条大厂官方接口和国家大学生就业服务平台检索岗位，结合届别、学历等条件判断资格，并标明每条岗位的来源与抓取时间，帮助应届生把精力集中在真正可投的机会上。</p>
+    </div>
+    <div class="card">
+      <h4>场景六　就业指导与辅导机构（B 端延展）</h4>
+      <p>多候选人严格隔离的能力天然适合高校就业中心、就业指导老师和求职辅导机构：一位老师可以为多名学生分别维护背景库，彼此数据互不可见。</p>
+    </div>
+  </div>
+
+  <h3>目标用户</h3>
+  <table>
+    <tr><th style="width:26%">用户</th><th>核心诉求</th><th style="width:30%">Loomi 提供</th></tr>
+    <tr><td>国内应届生 / 实习求职者</td><td>岗位多、网申多、简历要反复改</td><td>背景库 + 定制简历 + 网申填表</td></tr>
+    <tr><td>非技术背景求职者</td><td>想用 Agent 但不会用编程工具</td><td>安装即用的桌面应用</td></tr>
+    <tr><td>重视真实性的求职者</td><td>担心 AI 写出经不起追问的内容</td><td>逐条证据映射与核验</td></tr>
+    <tr><td>就业指导老师 / 机构</td><td>同时服务多名学生</td><td>多候选人隔离与长期档案</td></tr>
+  </table>
+</section>
+
+<!-- 5. 创新点 -->
+<section>
+  <h2><span class="num">05</span>创新点</h2>
+
+  <div class="innov"><div class="idx">1</div><div>
+    <h4>防编造靠确定性代码，而不是 Prompt</h4>
+    <p>候选人事实带完整出处，每条简历 Claim 持久化 <code>fact_ids</code>，导出只读已核验版本。"不编造"从模型的自觉变成了系统的保证。</p>
+    <div class="vs">对比：Resume-Matcher、career-ops 等主流开源项目主要在 Prompt 中写"不要编造"，没有 Claim → 证据的结构化映射。</div>
+  </div></div>
+
+  <div class="innov"><div class="idx">2</div><div>
+    <h4>长期背景库，而不是一次性简历</h4>
+    <p>以候选人为长期实体，结构化事实 + BM25 + 向量混合检索，跨对话复用；支持用户在对话中补充事实，并严格区分"用户陈述"与"模型推断"。</p>
+    <div class="vs">对比：传统简历编辑器以"一份简历文件"为中心，换岗位就要重新整理。</div>
+  </div></div>
+
+  <div class="innov"><div class="idx">3</div><div>
+    <h4>SDK-first 的精简 Agent 架构</h4>
+    <p>主 Agent 直接运行在 Claude Agent SDK 的 Agent 循环上，会话续接、Skill、MCP 工具、Hook 权限全部复用 SDK；Loomi 只专注求职领域的知识、工具与校验。求职方法论以 Skill 形式按需加载，常驻系统提示保持精简。</p>
+    <div class="vs">意义：避免"大脑 LLM + 路由 Agent + 自研工作流"的重复层，降低成本与出错点，也便于随 SDK 演进。</div>
+  </div></div>
+
+  <div class="innov"><div class="idx">4</div><div>
+    <h4>深度适配国内校招</h4>
+    <p>14 条大厂官方招聘接口的专用适配器、国家大学生就业服务平台、届别 / 学历资格判断、企业长表单网申（含简道云控件、多行记录、附件选择）。</p>
+    <div class="vs">对比：GitHub 上的英文求职项目基本只覆盖 Greenhouse / Lever / Ashby 等海外招聘系统。</div>
+  </div></div>
+
+  <div class="innov"><div class="idx">5</div><div>
+    <h4>"如实失败"作为产品原则</h4>
+    <p>工具失败绝不包装成成功；PDF 部分页面识别失败时不声称"已完整审阅"；聚合站岗位标记为"未核实"；岗位源区分"未接入"与"无岗位"；网申只填空白、不猜测、不代替用户提交。</p>
+  </div></div>
+
+  <div class="innov"><div class="idx">6</div><div>
+    <h4>面向普通求职者的桌面分发</h4>
+    <p>career-ops、ASu-skills 等同类 Agent 工作流需要用户熟悉 Claude Code / Codex；Loomi 打包为内置 Python 运行时的 Windows 安装包，非技术用户也能直接使用，并支持多家国内模型与任意 Anthropic 兼容端点。</p>
+  </div></div>
+
+</section>
+
+<!-- 6. 规划 -->
+<section>
+  <h2><span class="num">06</span>后续规划</h2>
+  <p>后续功能都将复用"候选人知识库 + Skill + Tool + Claude Agent SDK"，不新增大脑或重复的运行时层。</p>
+  <table>
+    <tr><th style="width:28%">方向</th><th>内容</th></tr>
+    <tr><td>投递看板</td><td>把目标岗位、简历版本与网申结果串成一条记录，跟踪测评 / 笔试 / 面试 / offer 状态与截止日；状态只由用户确认或网申回执证实。</td></tr>
+    <tr><td>岗位匹配与投递建议</td><td>在岗位列表展示匹配度，硬门槛不满足直接标出，每个匹配点或差距都可点开查看证据，给出"建议投 / 可冲 / 不建议"。</td></tr>
+    <tr><td>STAR 故事库 + 模拟面试</td><td>故事作为一类绑定证据的候选人事实；友好 / 高压两种模拟面试模式，结束后评分并标出"被问穿点"。</td></tr>
+    <tr><td>三分钟首次体验</td><td>内置默认模型额度，上传简历后立即展示带出处的背景库与诊断，降低配置门槛。</td></tr>
+  </table>
+
+  <div class="callout" style="margin-top:18pt">
+    <b>一句话总结：</b>Loomi 让求职者"上传一次，长期被记住"，并用确定性代码保证每一句写进简历的话都有真实来源——<b>可信 + 省事</b>，是它与同类产品最本质的区别。
+  </div>
+
+  <p class="small muted" style="margin-top:14pt">代码仓库：https://github.com/tbszz/Loomi　·　详细设计见仓库中的 PRD.md、ARCHITECTURE.md、DEVELOPMENT_RULES.md 与 docs/ 目录。</p>
+</section>
+
+</body>
+</html>

@@ -4,6 +4,20 @@
 
 Loomi is a long-term personal career agent. It builds a growing, searchable, source-traceable background profile for each job seeker, then reuses those verified facts across conversations for resume analysis, job description analysis, tailored resumes and interview prep.
 
+## Screenshots
+
+![Loomi workspace](docs/images/home.png)
+
+| Résumé diagnosis with sourced background facts | Cross-conversation recall with cited sources |
+| --- | --- |
+| ![Résumé diagnosis](docs/images/resume-diagnosis.png) | ![Recall](docs/images/memory-retrieval.png) |
+| **JD-tailored résumé, exported as PDF / DOCX** | **Interview follow-ups and a seven-day plan** |
+| ![Tailored résumé](docs/images/tailored-resume.png) | ![Interview prep](docs/images/interview-prep.png) |
+| **Type `/` to pick a career Skill** | **Applications: fills blanks only, you submit** |
+| ![Skill menu](docs/images/skill-menu.png) | ![Applications](docs/images/applications.png) |
+
+The candidate shown is fictional demo data. Regenerate with `npm run build && node scripts/capture-product-screenshots.mjs`.
+
 ## Features
 
 - **Candidate knowledge base**: upload PDF / DOCX / TXT / Markdown files and turn them into Candidate Facts with provenance, reused across conversations.

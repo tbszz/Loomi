@@ -4,6 +4,20 @@
 
 Loomi 是一个长期陪伴式的个人求职 Agent：为每位求职者建立可积累、可检索、可追溯来源的职业背景库，并在不同对话中复用这些真实信息，完成简历分析、JD 分析、定制简历和面试准备。
 
+## 界面预览
+
+![Loomi 工作区](docs/images/home.png)
+
+| 简历诊断 + 带出处的背景事实 | 跨会话检索，回答标注来源 |
+| --- | --- |
+| ![简历诊断](docs/images/resume-diagnosis.png) | ![跨会话检索](docs/images/memory-retrieval.png) |
+| **按 JD 定制简历，导出 PDF / DOCX** | **面试追问与七天复习计划** |
+| ![定制简历](docs/images/tailored-resume.png) | ![面试准备](docs/images/interview-prep.png) |
+| **输入 `/` 选择求职 Skill** | **网申：只填空白，提交由本人完成** |
+| ![Skill 菜单](docs/images/skill-menu.png) | ![网申](docs/images/applications.png) |
+
+截图中的候选人为虚构演示数据，可用 `npm run build && node scripts/capture-product-screenshots.mjs` 重新生成。
+
 ## 功能
 
 - **候选人背景库**：上传 PDF / DOCX / TXT / Markdown，抽取成带出处的 Candidate Fact，跨对话长期复用。

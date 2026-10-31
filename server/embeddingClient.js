@@ -1,5 +1,4 @@
 import { createHash } from 'node:crypto';
-import { fetch as undiciFetch, ProxyAgent } from 'undici';
 import { createQianwenEmbeddingProvider } from './cloudEmbeddingClient.js';
 import { createGoogleEmbeddingProvider } from './googleEmbeddingClient.js';
 
@@ -42,8 +41,13 @@ function proxyFetchImpl(env) {
   try {
     const url = new URL(proxyUrl);
     if (!['http:', 'https:'].includes(url.protocol) || !url.hostname) throw new Error();
-    const agent = new ProxyAgent({ uri: url.origin });
-    return (endpoint, init) => undiciFetch(endpoint, { ...init, dispatcher: agent });
+    // undici loads on the first embedding request, not at app startup.
+    let transport;
+    return async (endpoint, init) => {
+      transport ??= import('undici').then(({ fetch, ProxyAgent }) => ({ fetch, agent: new ProxyAgent({ uri: url.origin }) }));
+      const { fetch, agent } = await transport;
+      return fetch(endpoint, { ...init, dispatcher: agent });
+    };
   } catch {
     // The configured value may embed credentials; never echo it back.
     throw new Error('云端嵌入代理配置无效。');

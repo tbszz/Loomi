@@ -861,15 +861,28 @@ function migrate(db) {
     data.candidateId = candidateId;
     db.prepare("UPDATE documents SET candidate_id = ?, data = ? WHERE id = ? AND user_id = ?").run(candidateId,JSON.stringify(data),row.id,row.user_id);
   }
-  // Rebuild from authoritative rows on startup, including databases upgraded
-  // from the pre-FTS implementation and records removed while FTS was unavailable.
-  if(retrievalMode==='fts5') {
-    db.exec('DELETE FROM candidate_knowledge_fts');
-    const insert=db.prepare('INSERT INTO candidate_knowledge_fts(kind,ref_id,tokens) VALUES (?,?,?)');
-    for(const row of db.prepare('SELECT id,value FROM candidate_facts').all()) insert.run('fact',row.id,indexTokens(row.value).join(' '));
-    for(const row of db.prepare('SELECT id,text FROM document_chunks').all()) insert.run('chunk',row.id,indexTokens(row.text).join(' '));
+  // Writes keep the index current; rebuild from authoritative rows only when it
+  // drifted: databases upgraded from the pre-FTS implementation, records removed
+  // while FTS was unavailable, or a write interrupted between its two statements.
+  if(retrievalMode==='fts5' && ftsDrifted(db)) {
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      db.exec('DELETE FROM candidate_knowledge_fts');
+      const insert=db.prepare('INSERT INTO candidate_knowledge_fts(kind,ref_id,tokens) VALUES (?,?,?)');
+      for(const row of db.prepare('SELECT id,value FROM candidate_facts').all()) insert.run('fact',row.id,indexTokens(row.value).join(' '));
+      for(const row of db.prepare('SELECT id,text FROM document_chunks').all()) insert.run('chunk',row.id,indexTokens(row.text).join(' '));
+      db.exec('COMMIT');
+    } catch(error) { db.exec('ROLLBACK'); throw error; }
   }
   return retrievalMode;
+}
+
+function ftsDrifted(db) {
+  const count=sql=>db.prepare(sql).get().n;
+  return count("SELECT COUNT(*) n FROM candidate_knowledge_fts WHERE kind='fact'")!==count('SELECT COUNT(*) n FROM candidate_facts')
+    || count("SELECT COUNT(*) n FROM candidate_knowledge_fts WHERE kind='chunk'")!==count('SELECT COUNT(*) n FROM document_chunks')
+    || count("SELECT COUNT(*) n FROM candidate_knowledge_fts f WHERE f.kind='fact' AND NOT EXISTS (SELECT 1 FROM candidate_facts c WHERE c.id=f.ref_id)")>0
+    || count("SELECT COUNT(*) n FROM candidate_knowledge_fts f WHERE f.kind='chunk' AND NOT EXISTS (SELECT 1 FROM document_chunks c WHERE c.id=f.ref_id)")>0;
 }
 
 function assertCandidateRecord(db,table,id,userId,candidateId) {

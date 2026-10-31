@@ -3,7 +3,6 @@ import { existsSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { chromium } from 'playwright-core';
 import { scanCustomControls, fillCustomControl } from './applicationCustomControls.js';
 import { scanJiandaoyunControls, fillJiandaoyunControl } from './applicationJiandaoyun.js';
 import { ensureApplicationRows } from './applicationRows.js';
@@ -37,7 +36,7 @@ async function disposeScan(scan) {
   await Promise.allSettled([...handles].filter(Boolean).map(handle => handle.dispose()));
 }
 
-export function createApplicationBrowser({ dataDir = path.join(os.homedir(), '.resume-protocol'), pageProvider, launch = options => chromium.launchPersistentContext(options.directory, options.launchOptions) } = {}) {
+export function createApplicationBrowser({ dataDir = path.join(os.homedir(), '.resume-protocol'), pageProvider, launch = async options => (await import('playwright-core')).chromium.launchPersistentContext(options.directory, options.launchOptions) } = {}) {
   const sessions = new Map();
   const obtain = scope => {
     const session = sessions.get(keyOf(scope));

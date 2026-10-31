@@ -8,7 +8,6 @@ import multer from "multer";
 import { extractPdfText } from "./documentExtraction.js";
 import { createDocumentModel } from "./documentModel.js";
 import { renderPdfPages } from './pdfPages.js';
-import mammoth from "mammoth";
 import { createDatabase, DEFAULT_CANDIDATE_NAME } from "./database.js";
 import { createAuthRouter, requireUser } from "./auth.js";
 import { listCareerSkills } from './careerSkills.js';
@@ -490,7 +489,7 @@ async function extractFileText(file, options = {}) {
   const ext = path.extname(file.originalname).toLowerCase();
   if (ext === ".pdf") return extractPdfText(file.buffer, options);
   if (ext === ".docx") {
-    try { return readableExtraction((await mammoth.extractRawText({ buffer: file.buffer })).value || ""); }
+    try { return readableExtraction((await (await import("mammoth")).default.extractRawText({ buffer: file.buffer })).value || ""); }
     catch { return unreadableExtraction("DOCX 文件可能损坏或加密，请检查原文件是否能正常打开。"); }
   }
   if ([".txt", ".md", ".json"].includes(ext)) return readableExtraction(file.buffer.toString("utf8"));
